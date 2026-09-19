@@ -1,0 +1,51 @@
+// My Trade Status — its own database. Nothing here is shared with any other
+// system: the whole point of this repo is that a tracking link does not need
+// the rest of a plumbing firm's website to exist.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// One tracked job. The code in the URL is the only credential a customer has,
+/// so it is long, unguessable, and revocable by setting isActive false.
+model TradeStatus {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  jobRef        String?                      // the trade's own job number
+  externalId    String?                      // e.g. a ServiceM8 job UUID
+  customerName  String?
+  jobAddress    String?
+  jobSummary    String?                      // "Unvented cylinder swap"
+  stage         String    @default("BOOKED") // BOOKED | ON_MY_WAY | ON_SITE | PAUSED | DONE
+  stageNote     String?
+  scheduledFor  DateTime?
+  arrivingAt    DateTime?                    // when they set off — a record, never a promise
+  isActive      Boolean   @default(true)
+  viewCount     Int       @default(0)
+  lastViewedAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  events        TradeStatusEvent[]
+
+  @@index([code])
+  @@index([isActive, updatedAt])
+}
+
+/// Every stage change, so the customer reads a timeline rather than one word.
+model TradeStatusEvent {
+  id            String      @id @default(cuid())
+  tradeStatusId String
+  stage         String
+  note          String?
+  createdAt     DateTime    @default(now())
+
+  tradeStatus   TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
+
+  @@index([tradeStatusId, createdAt])
+}
