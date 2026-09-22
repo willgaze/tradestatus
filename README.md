@@ -25,12 +25,29 @@ traffic, so the product does not make one.
 
 ## Setup
 
+One command. It creates the Neon database, creates the Vercel project, sets
+every environment variable, deploys, and creates the tables. You sign in to
+Neon and Vercel in the browser when prompted — no API tokens to copy or
+revoke afterwards.
+
+```bash
+bash scripts/setup.sh
+```
+
+It prints the dashboard URL and a generated password at the end. The secrets
+are generated on your machine, so they never appear in git or in a chat log.
+
+### By hand instead
+
 ```bash
 npm install
 cp .env.example .env        # fill in DATABASE_URL, JWT_SECRET, OPERATOR_PASSWORD
 npm run db:push             # creates the two tables
 npm run dev
 ```
+
+Use Neon's **pooled** connection string. A serverless function opens a
+connection per invocation, and a direct string runs the database out of them.
 
 `NEXT_PUBLIC_TRADE_NAME` and `NEXT_PUBLIC_TRADE_PHONE` decide whose name and
 number the customer sees. Nothing about any one trade is hardcoded.
