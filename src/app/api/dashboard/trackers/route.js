@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { generateCode, isValidStage } from '@/lib/trade-status'
+import { dbReason } from '@/lib/db-errors'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,7 @@ export async function GET() {
     return NextResponse.json({ trackers })
   } catch (error) {
     console.error('tracker list failed:', error)
-    return NextResponse.json({ error: 'unavailable' }, { status: 503 })
+    return NextResponse.json({ error: dbReason(error) }, { status: 503 })
   }
 }
 
@@ -50,6 +51,6 @@ export async function POST(request) {
     return NextResponse.json({ tracker }, { status: 201 })
   } catch (error) {
     console.error('tracker create failed:', error)
-    return NextResponse.json({ error: 'unavailable' }, { status: 503 })
+    return NextResponse.json({ error: dbReason(error) }, { status: 503 })
   }
 }

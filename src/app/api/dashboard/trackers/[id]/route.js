@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
+import { dbReason } from '@/lib/db-errors'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +49,7 @@ export async function PATCH(request, { params }) {
   } catch (error) {
     if (error?.code === 'P2025') return NextResponse.json({ error: 'not_found' }, { status: 404 })
     console.error('tracker update failed:', error)
-    return NextResponse.json({ error: 'unavailable' }, { status: 503 })
+    return NextResponse.json({ error: dbReason(error) }, { status: 503 })
   }
 }
 
@@ -64,6 +65,6 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     if (error?.code === 'P2025') return NextResponse.json({ error: 'not_found' }, { status: 404 })
     console.error('tracker revoke failed:', error)
-    return NextResponse.json({ error: 'unavailable' }, { status: 503 })
+    return NextResponse.json({ error: dbReason(error) }, { status: 503 })
   }
 }

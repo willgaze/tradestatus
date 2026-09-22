@@ -2,6 +2,20 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { STAGES, stageOf } from '@/lib/trade-status'
+import { DB_REASONS } from '@/lib/db-errors'
+
+// The API answers a failure with a reason code rather than a status number,
+// because "503" tells the one person who can fix this nothing. Whoever is
+// looking at this screen is the person who sets DATABASE_URL and runs the
+// migration, so say which of those is missing.
+async function failure(response, fallback) {
+  let reason = null
+  try { reason = (await response.json())?.error } catch { /* no body */ }
+  const known = DB_REASONS[reason]
+  if (known) return { title: known.title, fix: known.fix }
+  if (response.status === 401) return { title: 'Signed out', fix: 'Sign in again to carry on.' }
+  return { title: fallback, fix: null }
+}
 
 // Built for a phone held in one hand on a driveway: the stage buttons are the
 // whole point, and they are the biggest thing on the row.
@@ -19,10 +33,12 @@ export default function Console() {
   const load = useCallback(async () => {
     try {
       const r = await fetch('/api/dashboard/trackers', { cache: 'no-store' })
-      if (!r.ok) throw new Error(`Could not load jobs (${r.status})`)
+      if (!r.ok) return setError(await failure(r, 'Could not load jobs'))
       setTrackers((await r.json()).trackers || [])
       setError(null)
-    } catch (e) { setError(e.message) } finally { setLoading(false) }
+    } catch {
+      setError({ title: 'Could not reach the server', fix: 'Check your connection and try again.' })
+    } finally { setLoading(false) }
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -34,10 +50,12 @@ export default function Console() {
       const r = await fetch('/api/dashboard/trackers', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
       })
-      if (!r.ok) throw new Error(`Could not create the link (${r.status})`)
+      if (!r.ok) return setError(await failure(r, 'Could not create the link'))
       setForm(EMPTY)
       await load()
-    } catch (e) { setError(e.message) } finally { setSaving(false) }
+    } catch {
+      setError({ title: 'Could not create the link', fix: 'Check your connection and try again.' })
+    } finally { setSaving(false) }
   }
 
   const patch = async (id, body) => {
@@ -48,16 +66,20 @@ export default function Console() {
       const r = await fetch(`/api/dashboard/trackers/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       })
-      if (!r.ok) throw new Error(`Update failed (${r.status})`)
-    } catch (e) { setError(e.message) } finally { await load() }
+      if (!r.ok) setError(await failure(r, 'Update failed'))
+    } catch {
+      setError({ title: 'Update failed', fix: 'Check your connection and try again.' })
+    } finally { await load() }
   }
 
   const revoke = async (id) => {
     try {
       const r = await fetch(`/api/dashboard/trackers/${id}`, { method: 'DELETE' })
-      if (!r.ok) throw new Error(`Could not switch that link off (${r.status})`)
+      if (!r.ok) return setError(await failure(r, 'Could not switch that link off'))
       await load()
-    } catch (e) { setError(e.message) }
+    } catch {
+      setError({ title: 'Could not switch that link off', fix: 'Check your connection and try again.' })
+    }
   }
 
   const copyLink = async (code) => {
@@ -86,7 +108,12 @@ export default function Console() {
       </div>
       <p className="mt-1 text-slate-600">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
 
-      {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-red-800">{error}</p>}
+      {error && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
+          <p className="font-semibold">{error.title}</p>
+          {error.fix && <p className="mt-1 text-sm">{error.fix}</p>}
+        </div>
+      )}
 
       <form onSubmit={create} className="mt-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-2">
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
