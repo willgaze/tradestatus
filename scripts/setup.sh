@@ -33,20 +33,42 @@ echo "    Your dashboard password will be shown at the end. Write it down then."
 say "Neon — a browser window will open for you to sign in"
 npx --yes neonctl@latest auth
 
-say "Creating the Neon project '$PROJECT'"
-# --output json keeps this readable by machine rather than by eye.
-NEON_JSON="$(npx --yes neonctl@latest projects create --name "$PROJECT" --output json)"
-NEON_PROJECT_ID="$(node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);console.log(j.project?.id ?? j.id)})' <<<"$NEON_JSON")"
-[ -n "$NEON_PROJECT_ID" ] || die "Could not read the new Neon project id."
-echo "    project id: $NEON_PROJECT_ID"
+# Reuse a project of this name if one exists. Without this, a second run
+# after any later failure silently creates a second database and leaves the
+# first one orphaned and paid for.
+say "Looking for an existing Neon project called '$PROJECT'"
+FIND_BY_NAME='let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+  let j; try { j = JSON.parse(s) } catch { return }
+  const found = [];
+  (function walk(n){ if (!n || typeof n !== "object") return;
+    if (Array.isArray(n)) return n.forEach(walk);
+    if (n.name === process.argv[1] && n.id) found.push(n.id);
+    Object.values(n).forEach(walk) })(j);
+  if (found[0]) console.log(found[0]) })'
+NEON_PROJECT_ID="$(npx --yes neonctl@latest projects list --output json 2>/dev/null | node -e "$FIND_BY_NAME" "$PROJECT" || true)"
+
+if [ -n "$NEON_PROJECT_ID" ]; then
+  echo "    reusing $NEON_PROJECT_ID"
+else
+  say "Creating the Neon project '$PROJECT'"
+  NEON_PROJECT_ID="$(npx --yes neonctl@latest projects create --name "$PROJECT" --output json \
+    | node -e "$FIND_BY_NAME" "$PROJECT" || true)"
+  [ -n "$NEON_PROJECT_ID" ] || die "Could not read the new Neon project id."
+  echo "    project id: $NEON_PROJECT_ID"
+fi
 
 say "Fetching the pooled connection string"
 # Pooled, because serverless functions open a connection per invocation and a
 # direct string runs the database out of them.
+#
+# neonctl prints this one as a bare string even with --output json, which is
+# why an earlier version of this script died on JSON.parse. Pull the URL out
+# of whatever comes back rather than assuming a shape.
 DATABASE_URL="$(npx --yes neonctl@latest connection-string \
-  --project-id "$NEON_PROJECT_ID" --pooled --output json \
-  | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);console.log(typeof j==="string"?j:(j.connection_uri ?? j.uri))})')"
+  --project-id "$NEON_PROJECT_ID" --pooled 2>/dev/null \
+  | tr -d '\r' | grep -oE 'postgres(ql)?://[^[:space:]"]+' | tail -n 1)"
 case "$DATABASE_URL" in postgres*) ;; *) die "Did not get a Postgres connection string from Neon." ;; esac
+echo "    got it (pooled)"
 
 # --- tables ------------------------------------------------------------------
 say "Creating the two tables"
