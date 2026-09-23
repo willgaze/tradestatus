@@ -79,16 +79,37 @@ DATABASE_URL="$DATABASE_URL" npx prisma db push
 say "Vercel — a browser window will open for you to sign in"
 npx --yes vercel@latest login
 
+# Everything else of Will's lives under the team, not the personal account, and
+# `link --yes` picks whichever scope the CLI happens to default to. Name it.
+# Override with VERCEL_SCOPE= if you are setting this up under another account.
+VERCEL_SCOPE="${VERCEL_SCOPE:-willgazes-projects}"
+SCOPE_ARGS=(--scope "$VERCEL_SCOPE")
+
+say "Creating the Vercel project '$PROJECT'"
+# `link --yes` is documented to create a missing project, but it does it
+# silently and from the directory name, so a failure here surfaces as a
+# confusing link error three steps later. Create it up front and say so.
+# Already exists (a re-run) is success, not failure.
+if CREATE_OUT="$(npx --yes vercel@latest project add "$PROJECT" "${SCOPE_ARGS[@]}" 2>&1)"; then
+  echo "    created"
+else
+  case "$CREATE_OUT" in
+    *already\ exists*|*Project\ already*) echo "    already there, reusing it" ;;
+    *) printf '%s\n' "$CREATE_OUT" >&2
+       die "Could not create the Vercel project. If it says you lack permission, check you are on the right team ($VERCEL_SCOPE)." ;;
+  esac
+fi
+
 say "Linking the Vercel project"
-npx --yes vercel@latest link --yes --project "$PROJECT"
+npx --yes vercel@latest link --yes --project "$PROJECT" "${SCOPE_ARGS[@]}"
 
 say "Setting environment variables"
 set_env() {
   local key="$1" value="$2"
   for target in production preview development; do
     # --force overwrites on a re-run rather than erroring on a duplicate.
-    printf '%s' "$value" | npx --yes vercel@latest env add "$key" "$target" --force >/dev/null 2>&1 \
-      || printf '%s' "$value" | npx --yes vercel@latest env add "$key" "$target" >/dev/null
+    printf '%s' "$value" | npx --yes vercel@latest env add "$key" "$target" "${SCOPE_ARGS[@]}" --force >/dev/null 2>&1 \
+      || printf '%s' "$value" | npx --yes vercel@latest env add "$key" "$target" "${SCOPE_ARGS[@]}" >/dev/null
   done
   echo "    $key"
 }
@@ -100,7 +121,7 @@ set_env NEXT_PUBLIC_TRADE_PHONE     "$TRADE_PHONE"
 set_env NEXT_PUBLIC_TRADE_PHONE_TEL "$TRADE_PHONE_TEL"
 
 say "Deploying to production"
-DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes | tail -n 1)"
+DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes "${SCOPE_ARGS[@]}" | tail -n 1)"
 
 # --- done --------------------------------------------------------------------
 cat <<DONE
@@ -117,5 +138,9 @@ cat <<DONE
 
   Create a job in the dashboard, copy its customer link,
   and open it on your phone.
+
+  If you ever rotate the Neon password, just run this script
+  again — it re-reads the connection string from Neon and
+  pushes the new one to Vercel. Nothing else changes.
 ────────────────────────────────────────────────────────────
 DONE
