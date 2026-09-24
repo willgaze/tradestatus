@@ -17,7 +17,15 @@ export default async function TrackPage({ params }) {
       where: { code: String(code).toUpperCase() },
       include: { events: { orderBy: { createdAt: 'asc' } } },
     })
-    if (row?.isActive) status = publicShape(row)
+    if (row?.isActive) {
+      status = publicShape(row)
+      // One visit, one count — this runs per page load (force-dynamic) rather
+      // than per poll. Deliberately not awaited: a counter must never hold up
+      // or break the customer's page.
+      prisma.tradeStatus
+        .update({ where: { id: row.id }, data: { viewCount: { increment: 1 }, lastViewedAt: new Date() } })
+        .catch(() => {})
+    }
   } catch (error) {
     console.error('track lookup failed:', error)
     unavailable = true

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { generateCode, isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
+import { cleanText } from '@/lib/clean-text'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,20 +35,36 @@ export async function POST(request) {
       return NextResponse.json({ error: 'bad_scheduled_date' }, { status: 400 })
     }
 
-    const tracker = await prisma.tradeStatus.create({
-      data: {
-        code: generateCode(),
-        jobRef: body.jobRef?.trim() || null,
-        externalId: body.externalId?.trim() || null,
-        customerName: body.customerName?.trim() || null,
-        jobAddress: body.jobAddress?.trim() || null,
-        jobSummary: body.jobSummary?.trim() || null,
-        stage,
-        stageNote: body.stageNote?.trim() || null,
-        scheduledFor,
-        events: { create: { stage, note: body.stageNote?.trim() || null } },
-      },
-    })
+    const stageNote = cleanText(body.stageNote)
+    const fields = {
+      jobRef: cleanText(body.jobRef),
+      externalId: cleanText(body.externalId),
+      customerName: cleanText(body.customerName),
+      jobAddress: cleanText(body.jobAddress),
+      jobSummary: cleanText(body.jobSummary),
+      stage,
+      stageNote,
+      scheduledFor,
+      events: { create: { stage, note: stageNote } },
+    }
+
+    // `code` is unique and generateCode() is random, so a collision is possible
+    // even if it is vanishingly unlikely. Without this, that collision surfaces
+    // as a P2002 in the catch below, which dbReason() reports as a database
+    // fault — for something a second attempt fixes. Retry, then give up
+    // honestly rather than pretending the database is broken.
+    let tracker = null
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        tracker = await prisma.tradeStatus.create({ data: { ...fields, code: generateCode() } })
+        break
+      } catch (error) {
+        const collided = error?.code === 'P2002' && String(error?.meta?.target ?? '').includes('code')
+        if (!collided) throw error
+      }
+    }
+    if (!tracker) return NextResponse.json({ error: 'code_collision' }, { status: 503 })
+
     return NextResponse.json({ tracker }, { status: 201 })
   } catch (error) {
     console.error('tracker create failed:', error)

@@ -20,9 +20,10 @@ export async function GET(request, { params }) {
     })
     if (!row || !row.isActive) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 
-    prisma.tradeStatus
-      .update({ where: { id: row.id }, data: { viewCount: { increment: 1 }, lastViewedAt: new Date() } })
-      .catch(() => {})   // a counter must never break the customer's page
+    // No view counted here. StatusTracker polls this route every 30 seconds,
+    // so counting a view per response meant a customer who left the tab open
+    // logged 120 "views" an hour and the number meant nothing. The page itself
+    // counts the visit; this route only answers the poll.
 
     return NextResponse.json({ status: publicShape(row) }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {

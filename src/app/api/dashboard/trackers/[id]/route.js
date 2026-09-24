@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
+import { cleanText } from '@/lib/clean-text'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,11 +22,18 @@ export async function PATCH(request, { params }) {
       data.stage = body.stage
       // Setting off is the moment worth stamping: the one the customer is
       // waiting on, and a record of what happened rather than a promise.
-      data.arrivingAt = body.stage === 'ON_MY_WAY' ? new Date() : null
+      //
+      // Only ever stamped on the way INTO On my way, and only cleared by going
+      // back to Booked in. This used to read `: null` for every other stage,
+      // which wiped the time the moment he arrived — so "Set off at 14:20"
+      // vanished from the customer's page at exactly the point it became the
+      // interesting part of the record.
+      if (body.stage === 'ON_MY_WAY') data.arrivingAt = new Date()
+      else if (body.stage === 'BOOKED') data.arrivingAt = null
     }
 
     for (const f of ['jobRef', 'customerName', 'jobAddress', 'jobSummary', 'stageNote']) {
-      if (body[f] !== undefined) data[f] = body[f]?.trim() || null
+      if (body[f] !== undefined) data[f] = cleanText(body[f])
     }
 
     if (body.scheduledFor !== undefined) {
@@ -41,7 +49,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'nothing_to_update' }, { status: 400 })
     }
     if (data.stage) {
-      data.events = { create: { stage: data.stage, note: data.stageNote ?? body.stageNote ?? null } }
+      data.events = { create: { stage: data.stage, note: data.stageNote ?? cleanText(body.stageNote) } }
     }
 
     const tracker = await prisma.tradeStatus.update({ where: { id }, data })
