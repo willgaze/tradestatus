@@ -86,6 +86,11 @@ VERCEL_SCOPE="${VERCEL_SCOPE:-willgazes-projects}"
 SCOPE_ARGS=(--scope "$VERCEL_SCOPE")
 
 say "Creating the Vercel project '$PROJECT'"
+# `vercel project add` creates the project with no framework preset, so the
+# first deploy builds it as a static site and dies with "No Output Directory
+# named public". vercel.json at the repo root pins framework: nextjs, which is
+# what actually fixes it — kept in the repo rather than set on the project, so
+# a fresh clone cannot hit this again.
 # `link --yes` is documented to create a missing project, but it does it
 # silently and from the directory name, so a failure here surfaces as a
 # confusing link error three steps later. Create it up front and say so.
