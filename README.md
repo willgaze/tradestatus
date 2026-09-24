@@ -1,5 +1,7 @@
 # My Trade Status
 
+**Live at https://tradestatus.vercel.app**
+
 Live job tracking for trades. The customer opens one link and sees where their
 job actually is.
 
@@ -36,6 +38,21 @@ bash scripts/setup.sh
 
 It prints the dashboard URL and a generated password at the end. The secrets
 are generated on your machine, so they never appear in git or in a chat log.
+
+Re-running it is safe: it reuses the existing Neon project and Vercel project
+rather than creating second ones, and re-reads the connection string from Neon
+— so it is also how you push a rotated database password to Vercel.
+
+### Deploys
+
+`main` is connected to Vercel, so a push deploys to production and any other
+branch gets a preview.
+
+**Send customers the short URL only.** `tradestatus.vercel.app` is open, but
+the generated per-deployment URLs (`tradestatus-<hash>-willgazes-projects...`)
+sit behind Vercel's login — the deployment protection covers everything except
+the production alias. A customer sent the long one lands on a Vercel sign-in
+page.
 
 ### By hand instead
 
