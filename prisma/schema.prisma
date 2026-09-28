@@ -50,3 +50,17 @@ model TradeStatusEvent {
 
   @@index([tradeStatusId, createdAt])
 }
+
+/// A device Will has enrolled — his phone's Face ID, his laptop's Touch ID.
+/// Storing only a public key: there is nothing here worth stealing, which is
+/// the point of the whole scheme. A password database is a target; this is not.
+model Passkey {
+  id            String   @id @default(cuid())
+  credentialId  String   @unique              // base64url, as the authenticator gave it
+  publicKey     Bytes
+  counter       BigInt   @default(0)          // replay guard; must never go backwards
+  transports    String?                       // e.g. "internal,hybrid" — lets the browser hint
+  label         String?                       // "Will's iPhone", so a lost device can be found
+  createdAt     DateTime @default(now())
+  lastUsedAt    DateTime?
+}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { STAGES, stageOf } from '@/lib/trade-status'
+import Passkeys from './Passkeys'
 import { DB_REASONS } from '@/lib/db-errors'
 
 // The API answers a failure with a reason code rather than a status number,
@@ -229,6 +230,8 @@ export default function Console() {
           ))}
         </ul>
       )}
+
+      <Passkeys />
     </main>
   )
 }

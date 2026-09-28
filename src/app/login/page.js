@@ -1,39 +1,80 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const [supported, setSupported] = useState(false)
+  // The password is the spare key, not the front door. It is hidden until
+  // asked for, so the normal way in is the only thing on screen.
+  const [showPassword, setShowPassword] = useState(false)
+  const [password, setPassword] = useState('')
 
-  const submit = async (e) => {
+  useEffect(() => setSupported(browserSupportsWebAuthn()), [])
+
+  const done = () => { router.push('/dashboard'); router.refresh() }
+
+  const signInWithPasskey = async () => {
+    setBusy(true); setError(null)
+    try {
+      const o = await fetch('/api/auth/passkey/login/options', { method: 'POST' })
+      if (!o.ok) throw new Error('Could not start sign-in.')
+      const { options } = await o.json()
+
+      const response = await startAuthentication({ optionsJSON: options })
+
+      const v = await fetch('/api/auth/passkey/login/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ response }),
+      })
+      if (!v.ok) {
+        const body = await v.json().catch(() => ({}))
+        throw new Error(
+          body.error === 'unknown_device'
+            ? 'This device is not set up yet. Sign in with your password, then add it.'
+            : 'That did not work. Try again.',
+        )
+      }
+      done()
+    } catch (err) {
+      // A cancelled prompt and "no passkey on this device" both arrive as
+      // NotAllowedError and the browser will not distinguish them. Silence
+      // leaves someone tapping a button that appears dead, so offer the way
+      // forward that works in both cases rather than calling it an error.
+      if (err?.name === 'NotAllowedError' || err?.name === 'AbortError') {
+        setError('Nothing to sign in with on this device yet — use your password, then set it up.')
+        setShowPassword(true)
+      } else {
+        setError(err.message || 'That did not work.')
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const signInWithPassword = async (e) => {
     e.preventDefault()
-    setBusy(true)
-    setError(null)
+    setBusy(true); setError(null)
     try {
       const r = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ password }),
       })
       if (!r.ok) {
         const body = await r.json().catch(() => ({}))
-        // Never say which half was wrong — that tells someone guessing whether
-        // they have found a real address.
         throw new Error(
-          body.error === 'too_many_attempts'
-            ? 'Too many tries. Wait ten minutes.'
-            : r.status === 401
-              ? 'Email or password is wrong.'
-              : 'Login is not configured yet.',
+          body.error === 'too_many_attempts' ? 'Too many tries. Wait ten minutes.'
+            : r.status === 401 ? 'Wrong password.'
+            : 'Login is not configured yet.',
         )
       }
-      router.push('/dashboard')
-      router.refresh()
+      done()
     } catch (err) {
       setError(err.message)
     } finally {
@@ -45,32 +86,38 @@ export default function LoginPage() {
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
       <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">My Trade Status</p>
       <h1 className="mt-2 text-2xl font-bold">Sign in</h1>
-      <form onSubmit={submit} className="mt-6 space-y-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          autoComplete="username"
-          inputMode="email"
-          autoCapitalize="none"
-          autoCorrect="off"
-          className="min-h-[48px] w-full rounded-xl border border-slate-300 px-4 py-3 text-base"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          autoComplete="current-password"
-          className="min-h-[48px] w-full rounded-xl border border-slate-300 px-4 py-3 text-base"
-        />
-        <button type="submit" disabled={busy}
-                className="min-h-[48px] w-full rounded-xl bg-brand-600 px-4 py-3 font-semibold text-white disabled:opacity-60">
-          {busy ? 'Signing in…' : 'Sign in'}
+
+      {supported && (
+        <button type="button" onClick={signInWithPasskey} disabled={busy}
+                className="mt-6 flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-base font-semibold text-white disabled:opacity-60">
+          {busy ? 'One moment…' : 'Sign in with Face ID or Touch ID'}
         </button>
-        {error && <p className="rounded-lg bg-red-50 p-3 text-red-800">{error}</p>}
-      </form>
+      )}
+
+      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-red-800">{error}</p>}
+
+      {!showPassword ? (
+        <button type="button" onClick={() => setShowPassword(true)}
+                className="mx-auto mt-6 min-h-[44px] text-sm text-slate-500 underline">
+          {supported ? 'Use my password instead' : 'Sign in with your password'}
+        </button>
+      ) : (
+        <form onSubmit={signInWithPassword} className="mt-6 space-y-3">
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                 placeholder="Password" autoComplete="current-password" autoFocus
+                 className="min-h-[48px] w-full rounded-xl border border-slate-300 px-4 py-3 text-base" />
+          <button type="submit" disabled={busy}
+                  className="min-h-[48px] w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold disabled:opacity-60">
+            {busy ? 'Signing in…' : 'Sign in with password'}
+          </button>
+        </form>
+      )}
+
+      {supported && (
+        <p className="mt-8 text-center text-sm text-slate-400">
+          Add a device from the dashboard once you are in.
+        </p>
+      )}
     </main>
   )
 }
