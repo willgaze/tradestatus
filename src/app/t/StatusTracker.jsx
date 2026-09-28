@@ -46,12 +46,9 @@ export default function StatusTracker({ initialStatus }) {
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-10">
-      <div className="flex items-baseline justify-between">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">
-          My Trade Status
-        </p>
-        <p className="text-sm text-slate-500">{TRADE_NAME}</p>
-      </div>
+      <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">
+        {TRADE_NAME}
+      </p>
 
       <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
         {status.customerName ? `Hello ${status.customerName}` : 'Your job'}
@@ -164,6 +161,9 @@ export default function StatusTracker({ initialStatus }) {
       )}
 
       <p className="mt-6 text-center text-sm text-slate-400">This page updates itself.</p>
+      <p className="mt-2 text-center text-xs text-slate-400">
+        Job tracking by <span className="font-medium">My Trade Status</span>
+      </p>
     </main>
   )
 }
