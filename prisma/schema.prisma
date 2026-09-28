@@ -83,3 +83,26 @@ model Passkey {
   createdAt     DateTime @default(now())
   lastUsedAt    DateTime?
 }
+
+/// The trade, set up once. Everything a customer wants to know before they
+/// open the door, so it does not get retyped on every job.
+///
+/// One row. There is one operator, and multi-tenancy is a different product.
+model TradeProfile {
+  id            String   @id @default("singleton")
+  engineerName  String?                      // "Will" — a first name is enough
+  engineerPhoto String?                      // a URL; the face at the door
+  aboutLine     String?                      // "G3 qualified, 22 years"
+
+  vehicleReg    String?                      // looked up, then cached below
+  vehicleMake   String?                      // "Ford"
+  vehicleModel  String?                      // "Transit Custom"
+  vehicleColour String?                      // "White"
+  vehiclePhoto  String?                      // the actual van, sign-written
+
+  // Free tier shows My Trade Status on the card. Paid shows the trade's own.
+  brandLogo     String?
+  brandColour   String?
+
+  updatedAt     DateTime @updatedAt
+}

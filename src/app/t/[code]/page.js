@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
+import { publicProfile } from '@/lib/profile'
 import { TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import StatusTracker from '../StatusTracker'
 
@@ -11,6 +12,7 @@ export default async function TrackPage({ params }) {
   const { code } = await params
 
   let status = null
+  let profile = null
   let unavailable = false
   try {
     const row = await prisma.tradeStatus.findUnique({
@@ -19,6 +21,7 @@ export default async function TrackPage({ params }) {
     })
     if (row?.isActive) {
       status = publicShape(row)
+      if (status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE') profile = await publicProfile()
       // One visit, one count — this runs per page load (force-dynamic) rather
       // than per poll. Deliberately not awaited: a counter must never hold up
       // or break the customer's page.
@@ -53,5 +56,5 @@ export default async function TrackPage({ params }) {
     )
   }
 
-  return <StatusTracker initialStatus={status} />
+  return <StatusTracker initialStatus={status} initialProfile={profile} />
 }

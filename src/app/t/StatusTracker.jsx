@@ -22,15 +22,17 @@ const dayAndTime = (iso) =>
 const day = (iso) =>
   new Date(iso).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
-export default function StatusTracker({ initialStatus }) {
+export default function StatusTracker({ initialStatus, initialProfile }) {
   const [status, setStatus] = useState(initialStatus)
+  const [profile, setProfile] = useState(initialProfile || null)
   const [pulse, setPulse] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
       const r = await fetch(`/api/status/${initialStatus.code}`, { cache: 'no-store' })
       if (!r.ok) return
-      const { status: next } = await r.json()
+      const { status: next, profile: nextProfile } = await r.json()
+      setProfile(nextProfile || null)
       setStatus((prev) => {
         // Flash the card only when the stage actually moves, not on every poll.
         if (next.stage !== prev.stage) { setPulse(true); setTimeout(() => setPulse(false), 700) }
@@ -136,6 +138,52 @@ export default function StatusTracker({ initialStatus }) {
           </div>
         </div>
       </section>
+
+      {/* who is at the door — only once they are actually on the way */}
+      {profile && (profile.engineerName || profile.vehicle) && (
+        <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '150ms' }}>
+          <h2 className="text-[15px] font-semibold muted">Who to expect</h2>
+          <div className="mt-4 flex items-center gap-4">
+            {profile.engineerPhoto ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'}
+                   className="h-16 w-16 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-brand-50 text-[24px] dark:bg-white/5">
+                👋
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="text-[20px] font-semibold">{profile.engineerName || 'Your engineer'}</p>
+              {profile.aboutLine && <p className="text-[15px] muted">{profile.aboutLine}</p>}
+            </div>
+          </div>
+
+          {(profile.vehicle || profile.vehicleReg) && (
+            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-black/[.035] p-4 dark:bg-white/[.05]">
+              {profile.vehiclePhoto ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={profile.vehiclePhoto} alt={profile.vehicle || 'The van'}
+                     className="h-16 w-24 shrink-0 rounded-xl object-cover" />
+              ) : (
+                <span className="grid h-16 w-24 shrink-0 place-items-center rounded-xl bg-black/[.05] text-[26px] dark:bg-white/[.06]">
+                  🚐
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="text-[13px] muted">Look out for</p>
+                {profile.vehicle && <p className="text-[17px] font-semibold">{profile.vehicle}</p>}
+                {profile.vehicleReg && (
+                  /* Set like a plate, because that is how it will be read from a window */
+                  <p className="mt-1 inline-block rounded-md bg-[#f5d32a] px-2 py-0.5 font-mono text-[15px] font-bold tracking-wide text-black">
+                    {profile.vehicleReg}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* the details */}
       <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '120ms' }}>
