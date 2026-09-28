@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -17,9 +18,20 @@ export default function LoginPage() {
       const r = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       })
-      if (!r.ok) throw new Error(r.status === 401 ? 'Wrong password.' : 'Login is not configured yet.')
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}))
+        // Never say which half was wrong — that tells someone guessing whether
+        // they have found a real address.
+        throw new Error(
+          body.error === 'too_many_attempts'
+            ? 'Too many tries. Wait ten minutes.'
+            : r.status === 401
+              ? 'Email or password is wrong.'
+              : 'Login is not configured yet.',
+        )
+      }
       router.push('/dashboard')
       router.refresh()
     } catch (err) {
@@ -35,15 +47,26 @@ export default function LoginPage() {
       <h1 className="mt-2 text-2xl font-bold">Sign in</h1>
       <form onSubmit={submit} className="mt-6 space-y-3">
         <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          autoComplete="username"
+          inputMode="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          className="min-h-[48px] w-full rounded-xl border border-slate-300 px-4 py-3 text-base"
+        />
+        <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           autoComplete="current-password"
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base"
+          className="min-h-[48px] w-full rounded-xl border border-slate-300 px-4 py-3 text-base"
         />
         <button type="submit" disabled={busy}
-                className="w-full rounded-xl bg-brand-600 px-4 py-3 font-semibold text-white disabled:opacity-60">
+                className="min-h-[48px] w-full rounded-xl bg-brand-600 px-4 py-3 font-semibold text-white disabled:opacity-60">
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
         {error && <p className="rounded-lg bg-red-50 p-3 text-red-800">{error}</p>}

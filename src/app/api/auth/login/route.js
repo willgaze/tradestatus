@@ -50,6 +50,10 @@ export async function POST(request) {
     return NextResponse.json({ error: 'not_configured' }, { status: 503 })
   }
 
+  // OPERATOR_EMAIL is optional. Unset, the password alone signs you in, so an
+  // install that predates this still works. Set, both must match.
+  const expectedEmail = (process.env.OPERATOR_EMAIL || '').trim().toLowerCase()
+
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     request.headers.get('x-real-ip') ||
@@ -59,10 +63,18 @@ export async function POST(request) {
     return NextResponse.json({ error: 'too_many_attempts' }, { status: 429, headers: { 'Retry-After': '600' } })
   }
 
-  const { password } = await request.json().catch(() => ({}))
-  if (typeof password !== 'string' || !samePassword(password, expected)) {
+  const { email, password } = await request.json().catch(() => ({}))
+
+  // Both halves are checked before either result is returned, and the answer is
+  // the same either way: a different message for a wrong email would tell
+  // someone guessing when they had found a real address.
+  const emailOk =
+    !expectedEmail || (typeof email === 'string' && email.trim().toLowerCase() === expectedEmail)
+  const passwordOk = typeof password === 'string' && samePassword(password, expected)
+
+  if (!emailOk || !passwordOk) {
     recordAttempt(ip)
-    return NextResponse.json({ error: 'wrong_password' }, { status: 401 })
+    return NextResponse.json({ error: 'wrong_credentials' }, { status: 401 })
   }
 
   // Clear the bucket on success, so a few fat-fingered attempts followed by the
