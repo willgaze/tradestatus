@@ -40,6 +40,7 @@ export async function POST(request) {
       jobRef: cleanText(body.jobRef),
       externalId: cleanText(body.externalId),
       customerName: cleanText(body.customerName),
+      customerPhone: cleanText(body.customerPhone, 32),
       jobAddress: cleanText(body.jobAddress),
       jobSummary: cleanText(body.jobSummary),
       stage,

@@ -19,6 +19,7 @@ model TradeStatus {
   jobRef        String?                      // the trade's own job number
   externalId    String?                      // e.g. a ServiceM8 job UUID
   customerName  String?
+  customerPhone String?                      // so the dashboard can open a text, prefilled
   jobAddress    String?
   jobSummary    String?                      // "Unvented cylinder swap"
   stage         String    @default("BOOKED") // BOOKED | ON_MY_WAY | ON_SITE | PAUSED | DONE

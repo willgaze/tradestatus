@@ -86,6 +86,33 @@ export default function Console() {
   const [origin, setOrigin] = useState('')
   useEffect(() => setOrigin(window.location.origin), [])
 
+  // "Mrs Hale".split(' ')[0] is "Mrs", and "Hi Mrs —" is worse than no name at
+  // all. If the first word is a title, keep the whole thing.
+  const TITLES = /^(mr|mrs|ms|miss|mx|dr|prof|rev|sir|lady|lord)\.?$/i
+  const greetingName = (full) => {
+    if (!full) return ''
+    const parts = full.trim().split(/\s+/)
+    return TITLES.test(parts[0]) ? parts.slice(0, 2).join(' ') : parts[0]
+  }
+
+  // One tap: open the phone's own Messages app with the recipient and the whole
+  // message already written, so the job is send rather than copy, switch app,
+  // paste, and think of something to type while standing in the rain.
+  //
+  // `sms:<number>?&body=` is the spelling that works on both: iOS wants the
+  // separator to be `&`, Android wants `?`, and `?&` satisfies each of them.
+  // With no number stored it still opens Messages with the text ready and lets
+  // him pick the contact.
+  const smsHref = (t) => {
+    const link = `${origin}/t/${t.code}`
+    const who = greetingName(t.customerName)
+    const name = who ? ` ${who}` : ''
+    const body =
+      `Hi${name} — you can see where your job is up to here: ${link} ` +
+      `It updates through the day so you are not left guessing.`
+    return `sms:${(t.customerPhone || '').replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(body)}`
+  }
+
   const copyLink = async (code) => {
     const link = `${window.location.origin}/t/${code}`
     try {
@@ -121,6 +148,7 @@ export default function Console() {
 
       <form onSubmit={create} className="mt-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-2">
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
+        {field('customerPhone', 'Their mobile', '07700 900123', 'tel')}
         {field('jobSummary', 'Job', 'Unvented cylinder swap')}
         {field('jobAddress', 'Address', 'Church Lane, Burbage SN8')}
         {field('jobRef', 'Your job number', '2718')}
@@ -164,9 +192,13 @@ export default function Console() {
                 <p className="mt-1 select-all break-all font-mono text-sm text-slate-800">
                   {origin}/t/{t.code}
                 </p>
+                <a href={smsHref(t)}
+                   className="mt-3 flex min-h-[52px] w-full items-center justify-center rounded-xl bg-brand-600 px-4 text-base font-semibold text-white">
+                  Text {greetingName(t.customerName) || 'the customer'} this link
+                </a>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button type="button" onClick={() => copyLink(t.code)}
-                          className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+                          className="min-h-[44px] rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
                     {copied === t.code ? '✓ Copied' : 'Copy link'}
                   </button>
                   <a href={`/t/${t.code}`} target="_blank" rel="noreferrer"

@@ -32,7 +32,7 @@ export async function PATCH(request, { params }) {
       else if (body.stage === 'BOOKED') data.arrivingAt = null
     }
 
-    for (const f of ['jobRef', 'customerName', 'jobAddress', 'jobSummary', 'stageNote']) {
+    for (const f of ['jobRef', 'customerName', 'customerPhone', 'jobAddress', 'jobSummary', 'stageNote']) {
       if (body[f] !== undefined) data[f] = cleanText(body[f])
     }
 
