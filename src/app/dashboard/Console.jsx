@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
+import WalletPreview from './WalletPreview'
 import { DB_REASONS } from '@/lib/db-errors'
 
 // The API answers a failure with a reason code rather than a status number,
@@ -30,6 +31,7 @@ export default function Console() {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(null)
+  const [showCard, setShowCard] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -208,6 +210,20 @@ export default function Console() {
                   </a>
                 </div>
               </div>
+
+              <button type="button" onClick={() => setShowCard(showCard === t.id ? null : t.id)}
+                      className="mt-3 min-h-[44px] w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold">
+                {showCard === t.id ? 'Hide the wallet card' : 'Preview the wallet card'}
+              </button>
+
+              {showCard === t.id && (
+                <div className="mt-3 rounded-2xl bg-slate-900 p-4">
+                  <WalletPreview tracker={t} />
+                  <p className="mt-3 text-center text-xs text-slate-400">
+                    Not live yet — needs an Apple signing certificate.
+                  </p>
+                </div>
+              )}
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {t.isActive && (
