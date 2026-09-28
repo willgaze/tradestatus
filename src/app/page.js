@@ -1,3 +1,5 @@
+import Mark from '@/components/Mark'
+
 export const metadata = { title: 'My Trade Status', robots: { index: false, follow: false } }
 
 // The product's own front door. Deliberately carries no trade's name, phone or
@@ -11,9 +13,7 @@ export const metadata = { title: 'My Trade Status', robots: { index: false, foll
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-6 py-16 text-center">
-      <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">
-        My Trade Status
-      </p>
+      <Mark className="mx-auto h-16 w-auto" id="home" />
       <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Open the link you were sent</h1>
       <p className="mt-4 text-lg text-slate-600">
         When your job is booked, your tradesperson sends you a tracking link by text or email.

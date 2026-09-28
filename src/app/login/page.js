@@ -1,5 +1,7 @@
 'use client'
 
+import Mark from '@/components/Mark'
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
@@ -84,8 +86,8 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
-      <p className="text-xs font-semibold uppercase tracking-widest text-brand-600">My Trade Status</p>
-      <h1 className="mt-2 text-2xl font-bold">Sign in</h1>
+      <Mark className="mx-auto h-14 w-auto" id="login" />
+      <h1 className="mt-6 text-center text-[28px] font-bold tracking-[-0.02em]">Sign in</h1>
 
       {supported && (
         <button type="button" onClick={signInWithPasskey} disabled={busy}

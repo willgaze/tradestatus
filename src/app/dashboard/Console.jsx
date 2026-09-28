@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
 import WalletPreview from './WalletPreview'
+import Mark from '@/components/Mark'
 import { DB_REASONS } from '@/lib/db-errors'
 
 // The API answers a failure with a reason code rather than a status number,
@@ -134,13 +135,14 @@ export default function Console() {
   )
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-8">
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold">Jobs</h1>
+    <main className="mx-auto max-w-3xl px-5 pb-16 pt-safe">
+      <div className="flex items-center justify-between pt-2">
+        <Mark className="h-7 w-auto" id="dash" />
         <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
-                className="inline-flex min-h-[44px] items-center px-2 text-sm text-slate-500 underline">Sign out</button>
+                className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
       </div>
-      <p className="mt-1 text-slate-600">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
+      <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">Jobs</h1>
+      <p className="mt-1.5 text-[16px] muted">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
 
       {error && (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">

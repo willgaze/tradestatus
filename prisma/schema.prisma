@@ -25,6 +25,14 @@ model TradeStatus {
   stage         String    @default("BOOKED") // BOOKED | ON_MY_WAY | ON_SITE | PAUSED | DONE
   stageNote     String?
   scheduledFor  DateTime?
+
+  // What the CUSTOMER tells the trade, from their own page. The first
+  // two-way thing in this product: until now the link only ever reported.
+  doorToUse     String?                      // FRONT | BACK | SIDE
+  petsOnSite    Boolean  @default(false)     // "friendly pooch guarding the house"
+  what3words    String?                      // for a farm track with no number
+  accessNotes   String?                      // parking, gate code, ring twice, baby asleep
+  notesUpdatedAt DateTime?
   arrivingAt    DateTime?                    // when they set off — a record, never a promise
   isActive      Boolean   @default(true)
   viewCount     Int       @default(0)

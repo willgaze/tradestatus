@@ -1,169 +1,221 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { STAGES, STAGE_ORDER, stageOf } from '@/lib/trade-status'
+import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
+import AccessNotes from './AccessNotes'
+import Mark from '@/components/Mark'
 
-const timeOnly = (iso) =>
+const TONE = {
+  booked: { dot: 'bg-stage-booked', text: 'text-stage-booked', soft: 'bg-slate-500/10' },
+  onway:  { dot: 'bg-stage-onway',  text: 'text-stage-onway',  soft: 'bg-amber-500/10' },
+  onsite: { dot: 'bg-stage-onsite', text: 'text-stage-onsite', soft: 'bg-blue-500/10' },
+  paused: { dot: 'bg-stage-paused', text: 'text-stage-paused', soft: 'bg-orange-600/10' },
+  done:   { dot: 'bg-stage-done',   text: 'text-stage-done',   soft: 'bg-green-600/10' },
+}
+
+const time = (iso) =>
   new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-
 const dayAndTime = (iso) =>
-  new Date(iso).toLocaleString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
-  })
-
-const dayOnly = (iso) =>
+  new Date(iso).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+const day = (iso) =>
   new Date(iso).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
 export default function StatusTracker({ initialStatus }) {
   const [status, setStatus] = useState(initialStatus)
+  const [pulse, setPulse] = useState(false)
 
   const refresh = useCallback(async () => {
     try {
       const r = await fetch(`/api/status/${initialStatus.code}`, { cache: 'no-store' })
       if (!r.ok) return
-      const data = await r.json()
-      if (data?.status) setStatus(data.status)
-    } catch {
-      // A failed poll leaves the customer with the status they already have,
-      // which is the right answer on a phone with two bars of signal.
-    }
+      const { status: next } = await r.json()
+      setStatus((prev) => {
+        // Flash the card only when the stage actually moves, not on every poll.
+        if (next.stage !== prev.stage) { setPulse(true); setTimeout(() => setPulse(false), 700) }
+        return next
+      })
+    } catch { /* a failed poll is not worth telling anyone about */ }
   }, [initialStatus.code])
 
   useEffect(() => {
     const timer = setInterval(refresh, 30000)
-    const onVisible = () => document.visibilityState === 'visible' && refresh()
-    document.addEventListener('visibilitychange', onVisible)
+    const onFocus = () => refresh()
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onFocus)
     return () => {
       clearInterval(timer)
-      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
     }
   }, [refresh])
 
-  const current = stageOf(status.stage)
-  const isPaused = status.stage === 'PAUSED'
-  const isDone = status.stage === 'DONE'
+  const stage = stageOf(status.stage)
+  const tone = TONE[stage.tone] || TONE.booked
+  const step = STAGE_ORDER.indexOf(stage.key)
+  const isLive = stage.key === 'ON_MY_WAY' || stage.key === 'ON_SITE'
+  const icsUrl = `/api/status/${status.code}/calendar`
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-10">
-      <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">
-        {TRADE_NAME}
-      </p>
+    <main className="mx-auto max-w-xl px-5 pb-16 pt-safe">
+      {/* who is coming — the only thing the customer cares about first */}
+      <header className="animate-rise pt-2">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-600">
+          {TRADE_NAME}
+        </p>
+        <h1 className="mt-2 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">
+          {status.customerName ? `Hello ${status.customerName}` : 'Your job'}
+        </h1>
+        {status.jobSummary && <p className="mt-1.5 text-[17px] muted">{status.jobSummary}</p>}
+      </header>
 
-      <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
-        {status.customerName ? `Hello ${status.customerName}` : 'Your job'}
-      </h1>
-      {status.jobSummary && <p className="mt-1 text-lg text-slate-600">{status.jobSummary}</p>}
-
-      {/* The one thing they opened this for */}
+      {/* the glance */}
       <section
-        className={`mt-7 rounded-2xl border p-6 ${
-          isPaused ? 'border-amber-300 bg-amber-50'
-          : isDone ? 'border-green-300 bg-green-50'
-          : 'border-brand-200 bg-white'
+        className={`surface animate-rise mt-6 rounded-4xl p-6 shadow-card transition-transform duration-300 ${
+          pulse ? 'scale-[1.02]' : 'scale-100'
         }`}
+        style={{ animationDelay: '60ms' }}
       >
         <div className="flex items-start gap-4">
-          <span className="text-4xl" aria-hidden="true">{current.icon}</span>
-          <div>
-            <p className="text-2xl font-bold">{current.label}</p>
-            <p className="mt-1 text-slate-700">{current.customerLine}</p>
+          <span className="relative mt-1.5 flex h-3.5 w-3.5 shrink-0">
+            {isLive && <span className={`absolute inline-flex h-full w-full rounded-full ${tone.dot} animate-ring`} />}
+            <span className={`relative inline-flex h-3.5 w-3.5 rounded-full ${tone.dot}`} />
+          </span>
+          <div className="min-w-0">
+            <p className={`text-[15px] font-semibold ${tone.text}`}>{stage.label}</p>
+            <p className="mt-1 text-[22px] font-semibold leading-snug tracking-[-0.01em]">
+              {stage.customerLine}
+            </p>
             {status.stageNote && (
-              <p className="mt-3 rounded-lg bg-white/80 p-3 text-slate-800">{status.stageNote}</p>
+              <p className={`mt-4 rounded-2xl px-4 py-3 text-[16px] ${tone.soft}`}>{status.stageNote}</p>
             )}
-            {status.stage === 'ON_MY_WAY' && status.arrivingAt && (
-              <p className="mt-3 text-sm text-slate-500">Set off at {timeOnly(status.arrivingAt)}.</p>
+            {status.arrivingAt && stage.key !== 'BOOKED' && (
+              <p className="mt-3 text-[15px] muted">Set off at {time(status.arrivingAt)}.</p>
             )}
+          </div>
+        </div>
+
+        {/* progress */}
+        <div className="mt-7">
+          <div className="flex items-center">
+            {STAGE_ORDER.map((s, i) => (
+              <div key={s} className={`flex items-center ${i ? 'flex-1' : ''}`}>
+                {i > 0 && (
+                  <div className="mx-1 h-[3px] flex-1 overflow-hidden rounded-full bg-black/[.07] dark:bg-white/10">
+                    <div className={`h-full rounded-full transition-all duration-700 ${i <= step ? tone.dot : ''}`}
+                         style={{ width: i <= step ? '100%' : '0%' }} />
+                  </div>
+                )}
+                <span className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors duration-500 ${
+                  i <= step ? tone.dot : 'bg-black/[.12] dark:bg-white/15'}`} />
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 flex justify-between text-[12px] muted">
+            {STAGE_ORDER.map((s, i) => (
+              <span key={s} className={i === step ? 'font-semibold text-[color:var(--mts-text)]' : ''}>
+                {stageOf(s).label}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      <ol className="mt-7 grid grid-cols-4 gap-2" aria-label="Job progress">
-        {STAGE_ORDER.map((key) => {
-          const step = STAGES[key]
-          const reached = current.step >= step.step && !(isPaused && step.key === 'ON_SITE')
-          return (
-            <li key={key} className="text-center">
-              <div
-                className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold ${
-                  reached ? 'border-brand-600 bg-brand-600 text-white'
-                          : 'border-slate-300 bg-white text-slate-400'
-                }`}
-              >
-                {step.step}
-              </div>
-              <p className={`mt-2 text-xs sm:text-sm ${
-                status.stage === key ? 'font-bold text-slate-900' : 'text-slate-500'
-              }`}>
-                {step.label}
-              </p>
-            </li>
-          )
-        })}
-      </ol>
-
-      <dl className="mt-7 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:grid-cols-2">
+      {/* the details */}
+      <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '120ms' }}>
         {status.scheduledFor && (
-          <div>
-            <dt className="text-sm text-slate-500">Booked for</dt>
-            <dd className="font-semibold">{dayOnly(status.scheduledFor)}</dd>
-          </div>
+          <Row label="Booked for" value={day(status.scheduledFor)} />
         )}
-        {status.jobAddress && (
-          <div>
-            <dt className="text-sm text-slate-500">Address</dt>
-            <dd className="font-semibold">{status.jobAddress}</dd>
-          </div>
-        )}
-        {status.jobRef && (
-          <div>
-            <dt className="text-sm text-slate-500">Job reference</dt>
-            <dd className="font-semibold">{status.jobRef}</dd>
-          </div>
-        )}
-        <div>
-          <dt className="text-sm text-slate-500">Last updated</dt>
-          <dd className="font-semibold">{status.updatedAt ? dayAndTime(status.updatedAt) : '—'}</dd>
-        </div>
-      </dl>
+        {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
+        {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
+        {status.updatedAt && <Row label="Last updated" value={dayAndTime(status.updatedAt)} last />}
+      </section>
 
-      {status.events?.length > 1 && (
-        <section className="mt-7 rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="text-lg font-bold">What has happened so far</h2>
-          <ul className="mt-4 space-y-3">
-            {[...status.events].reverse().map((e) => (
-              <li key={`${e.stage}-${e.at}`} className="flex gap-3">
-                <span aria-hidden="true">{stageOf(e.stage).icon}</span>
-                <div>
-                  <p className="font-semibold">{stageOf(e.stage).label}</p>
-                  <p className="text-sm text-slate-500">{dayAndTime(e.at)}</p>
-                  {e.note && <p className="mt-1 text-slate-700">{e.note}</p>}
-                </div>
-              </li>
-            ))}
-          </ul>
+      {/* calendar */}
+      {status.scheduledFor && (
+        <section className="animate-rise mt-4" style={{ animationDelay: '160ms' }}>
+          <a href={icsUrl}
+             className="surface flex min-h-[60px] w-full items-center gap-4 rounded-4xl px-5 shadow-card active:scale-[.99] transition-transform">
+            <CalendarGlyph date={new Date(status.scheduledFor)} />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[17px] font-semibold">Put it in my calendar</span>
+              <span className="block text-[14px] muted">All day — no arrival time promised</span>
+            </span>
+            <span className="muted text-[22px] leading-none">›</span>
+          </a>
         </section>
       )}
 
+      {/* what the customer tells the trade */}
+      <AccessNotes status={status} onSaved={(notes) => setStatus((s) => ({ ...s, ...notes }))} />
+
+      {/* what has happened */}
+      {status.events?.length > 0 && (
+        <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '220ms' }}>
+          <h2 className="text-[17px] font-semibold">What has happened</h2>
+          <ol className="mt-4 space-y-4">
+            {[...status.events].reverse().map((e, i) => {
+              const s = stageOf(e.stage)
+              const t = TONE[s.tone] || TONE.booked
+              return (
+                <li key={`${e.stage}-${e.at}-${i}`} className="flex gap-3.5">
+                  <span className="relative flex flex-col items-center">
+                    <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${t.dot}`} />
+                    {i < status.events.length - 1 && <span className="mt-1 w-px flex-1 bg-black/[.09] dark:bg-white/10" />}
+                  </span>
+                  <span className="min-w-0 pb-1">
+                    <span className="block text-[16px] font-semibold">{s.label}</span>
+                    <span className="block text-[14px] muted">{dayAndTime(e.at)}</span>
+                    {e.note && <span className="mt-1 block text-[15px]">{e.note}</span>}
+                  </span>
+                </li>
+              )
+            })}
+          </ol>
+        </section>
+      )}
+
+      {/* contact */}
       {TRADE_PHONE && (
-        <section className="mt-7 rounded-2xl bg-brand-700 p-6 text-white">
-          <h2 className="text-lg font-bold">Need to change something?</h2>
-          <p className="mt-1 text-white/90">
-            Call or message {TRADE_NAME} directly — it is the same person doing the work.
+        <section className="animate-rise mt-4 overflow-hidden rounded-4xl bg-brand-700 p-6 text-white shadow-lift"
+                 style={{ animationDelay: '260ms' }}>
+          <h2 className="text-[19px] font-semibold">Need to change something?</h2>
+          <p className="mt-1.5 text-[16px] text-white/85">
+            Call or message {TRADE_NAME} — it is the same person doing the work.
           </p>
-          <a
-            href={`tel:${TRADE_PHONE_TEL}`}
-            className="mt-4 inline-block rounded-xl bg-white px-5 py-3 font-semibold text-brand-700"
-          >
+          <a href={`tel:${TRADE_PHONE_TEL}`}
+             className="mt-5 flex min-h-[54px] items-center justify-center rounded-2xl bg-white text-[17px] font-semibold text-brand-700 active:scale-[.99] transition-transform">
             Call {TRADE_PHONE}
           </a>
         </section>
       )}
 
-      <p className="mt-6 text-center text-sm text-slate-400">This page updates itself.</p>
-      <p className="mt-2 text-center text-xs text-slate-400">
-        Job tracking by <span className="font-medium">My Trade Status</span>
-      </p>
+      <p className="mt-8 text-center text-[13px] muted">This page updates itself.</p>
+      <span className="mt-3 flex items-center justify-center gap-2 pb-safe opacity-60">
+        <Mark className="h-4 w-auto" id="foot" />
+        <span className="text-[12px] muted">Job tracking by My Trade Status</span>
+      </span>
     </main>
+  )
+}
+
+function Row({ label, value, last }) {
+  return (
+    <div className={`px-6 py-4 ${last ? '' : 'border-b hairline'}`}>
+      <p className="text-[13px] muted">{label}</p>
+      <p className="mt-0.5 text-[17px] font-semibold">{value}</p>
+    </div>
+  )
+}
+
+// A little tear-off calendar, so the date is readable before the words are.
+function CalendarGlyph({ date }) {
+  return (
+    <span className="grid h-11 w-11 shrink-0 grid-rows-[14px_1fr] overflow-hidden rounded-xl border hairline">
+      <span className="bg-brand-600" />
+      <span className="grid place-items-center text-[17px] font-bold leading-none">
+        {date.getDate()}
+      </span>
+    </span>
   )
 }

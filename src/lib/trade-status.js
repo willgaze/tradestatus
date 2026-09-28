@@ -10,6 +10,7 @@ export const STAGES = {
   BOOKED: {
     key: 'BOOKED',
     label: 'Booked in',
+    tone: 'booked',
     customerLine: 'Your job is in the diary.',
     icon: '📅',
     step: 1,
@@ -17,6 +18,7 @@ export const STAGES = {
   ON_MY_WAY: {
     key: 'ON_MY_WAY',
     label: 'On my way',
+    tone: 'onway',
     customerLine: 'They have set off and are heading to you.',
     icon: '🚐',
     step: 2,
@@ -24,6 +26,7 @@ export const STAGES = {
   ON_SITE: {
     key: 'ON_SITE',
     label: 'On site',
+    tone: 'onsite',
     customerLine: 'They are with you and work is under way.',
     icon: '🔧',
     step: 3,
@@ -31,6 +34,7 @@ export const STAGES = {
   PAUSED: {
     key: 'PAUSED',
     label: 'Paused',
+    tone: 'paused',
     customerLine: 'Work is on hold — the note below says why.',
     icon: '⏸️',
     step: 3,
@@ -38,6 +42,7 @@ export const STAGES = {
   DONE: {
     key: 'DONE',
     label: 'Job done',
+    tone: 'done',
     customerLine: 'Work is finished and the site is tidy.',
     icon: '✅',
     step: 4,
@@ -85,6 +90,11 @@ export function publicShape(row) {
     scheduledFor: row.scheduledFor ? row.scheduledFor.toISOString() : null,
     arrivingAt: row.arrivingAt ? row.arrivingAt.toISOString() : null,
     updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
+    // What the customer told the trade. Theirs to read back and change.
+    doorToUse: row.doorToUse || null,
+    petsOnSite: Boolean(row.petsOnSite),
+    what3words: row.what3words || null,
+    accessNotes: row.accessNotes || null,
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,

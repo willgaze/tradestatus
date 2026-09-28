@@ -3,10 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --mts-bg: #f6f9fd;
+  --mts-bg: #f4f7fb;
+  --mts-surface: #ffffff;
+  --mts-text: #0f1b2a;
+  --mts-muted: #5b6b7f;
+  --mts-line: rgba(16, 32, 52, 0.07);
 }
+
+/* Follows the phone. Someone checking a job at seven on a winter morning
+   should not get a white flash in a dark hallway. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mts-bg: #0b1119;
+    --mts-surface: #161f2b;
+    --mts-text: #eef3f9;
+    --mts-muted: #93a4b8;
+    --mts-line: rgba(255, 255, 255, 0.09);
+  }
+}
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   background: var(--mts-bg);
+  color: var(--mts-text);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Safe areas, so nothing sits under the notch or the home indicator when the
+   app is installed and running without browser chrome. */
+.pt-safe { padding-top: max(1.25rem, env(safe-area-inset-top)); }
+.pb-safe { padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
+
+.surface { background: var(--mts-surface); }
+.muted   { color: var(--mts-muted); }
+.hairline { border-color: var(--mts-line); }
+
+/* Respect the accessibility setting rather than animating over it. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
 }
