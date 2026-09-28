@@ -95,7 +95,7 @@ export default function Console() {
       {label}
       <input type={type} value={form[key]} placeholder={placeholder}
              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-             className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-base" />
+             className="mt-1 min-h-[44px] w-full rounded-xl border border-slate-300 px-3 py-2 text-base" />
     </label>
   )
 
@@ -104,7 +104,7 @@ export default function Console() {
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold">Jobs</h1>
         <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
-                className="text-sm text-slate-500 underline">Sign out</button>
+                className="inline-flex min-h-[44px] items-center px-2 text-sm text-slate-500 underline">Sign out</button>
       </div>
       <p className="mt-1 text-slate-600">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
 
@@ -136,7 +136,7 @@ export default function Console() {
           {trackers.map((t) => (
             <li key={t.id} className={`rounded-2xl border p-4 ${t.isActive ? 'border-slate-200 bg-white' : 'border-slate-200 bg-slate-50 opacity-70'}`}>
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <div>
+                <div className="min-w-0 flex-1 break-words">
                   <p className="font-bold">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="text-sm text-slate-600">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
                 </div>
@@ -146,7 +146,7 @@ export default function Console() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {STAGE_BUTTONS.map((s) => (
                   <button key={s} type="button" onClick={() => patch(t.id, { stage: s })}
-                          className={`rounded-xl px-4 py-3 text-sm font-semibold ${
+                          className={`min-h-[48px] flex-1 rounded-xl px-4 py-3 text-base font-semibold ${
                             t.stage === s ? 'bg-brand-600 text-white' : 'border border-slate-300 bg-white text-slate-800'}`}>
                     {STAGES[s].label}
                   </button>
@@ -155,16 +155,16 @@ export default function Console() {
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <button type="button" onClick={() => copyLink(t.code)}
-                        className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold">
+                        className="min-h-[44px] rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
                   {copied === t.code ? 'Link copied' : 'Copy customer link'}
                 </button>
                 <a href={`/t/${t.code}`} target="_blank" rel="noreferrer"
-                   className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold">
+                   className="inline-flex min-h-[44px] items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
                   View as customer
                 </a>
                 {t.isActive && (
                   <button type="button" onClick={() => revoke(t.id)}
-                          className="rounded-xl border border-red-300 bg-white px-3 py-2 text-sm font-semibold text-red-700">
+                          className="min-h-[44px] rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700">
                     Switch link off
                   </button>
                 )}
@@ -176,7 +176,7 @@ export default function Console() {
                 <input type="text" defaultValue={t.stageNote || ''}
                        placeholder="Waiting on the cylinder from the merchant — back Thursday morning"
                        onBlur={(e) => e.target.value !== (t.stageNote || '') && patch(t.id, { stageNote: e.target.value })}
-                       className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-base" />
+                       className="mt-1 min-h-[44px] w-full rounded-xl border border-slate-300 px-3 py-2 text-base" />
               </label>
             </li>
           ))}
