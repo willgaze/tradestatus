@@ -25,6 +25,14 @@ export default function Home() {
       <p className="mt-10 text-sm text-slate-400">
         Live job tracking for trades.
       </p>
+
+      {/* The way in for the trade. Small, because a customer landing here by
+          mistyping a link has no use for it — but present, because without it
+          this page is a dead end for the person who owns the thing. */}
+      <a href="/dashboard"
+         className="mx-auto mt-6 inline-flex min-h-[44px] items-center text-sm font-medium text-brand-600 underline">
+        Tradesperson? Sign in
+      </a>
     </main>
   )
 }
