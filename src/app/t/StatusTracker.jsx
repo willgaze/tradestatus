@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
+import Presence from './Presence'
 import Mark from '@/components/Mark'
 import { windowLabel, positionLabel } from '@/lib/calendar'
 
@@ -210,6 +211,11 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
             <span className="muted text-[22px] leading-none">›</span>
           </a>
         </section>
+      )}
+
+      {/* the question that saves a wasted trip */}
+      {status.stage !== 'DONE' && (
+        <Presence status={status} onSaved={(n) => setStatus((s) => ({ ...s, ...n }))} />
       )}
 
       {/* what the customer tells the trade */}

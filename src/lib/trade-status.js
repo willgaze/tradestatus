@@ -100,6 +100,9 @@ export function publicShape(row) {
     petsOnSite: Boolean(row.petsOnSite),
     what3words: row.what3words || null,
     accessNotes: row.accessNotes || null,
+    presence: row.presence || null,
+    presenceNote: row.presenceNote || null,
+    presenceAt: row.presenceAt ? row.presenceAt.toISOString() : null,
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,

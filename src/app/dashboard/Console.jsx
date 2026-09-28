@@ -6,6 +6,7 @@ import Passkeys from './Passkeys'
 import WalletPreview from './WalletPreview'
 import Mark from '@/components/Mark'
 import Profile from './Profile'
+import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { DB_REASONS } from '@/lib/db-errors'
 
 // The API answers a failure with a reason code rather than a status number,
@@ -184,6 +185,22 @@ export default function Console() {
         <ul className="mt-6 space-y-4">
           {trackers.map((t) => (
             <li key={t.id} className={`rounded-2xl border p-4 ${t.isActive ? 'border-slate-200 bg-white' : 'border-slate-200 bg-slate-50 opacity-70'}`}>
+              {presenceOf(t.presence) && presenceIsFresh(t.presenceAt) && (
+                <div className={`mb-3 flex items-start gap-3 rounded-2xl px-4 py-3 ${
+                  t.presence === 'OUT'
+                    ? 'bg-stage-paused/12 text-stage-paused'
+                    : 'bg-stage-done/10 text-stage-done'}`}>
+                  <span className="text-[18px] leading-none">{presenceOf(t.presence).icon}</span>
+                  <span className="min-w-0">
+                    <span className="block text-[15px] font-bold">{presenceOf(t.presence).forTrade}</span>
+                    {t.presenceNote && <span className="block text-[14px]">{t.presenceNote}</span>}
+                    <span className="block text-[13px] opacity-75">
+                      they said so {presenceAgeLabel(t.presenceAt)}
+                    </span>
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div className="min-w-0 flex-1 break-words">
                   <p className="font-bold">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>

@@ -44,6 +44,13 @@ model TradeStatus {
   what3words    String?                      // for a farm track with no number
   accessNotes   String?                      // parking, gate code, ring twice, baby asleep
   notesUpdatedAt DateTime?
+
+  // Will someone be in? The question every trade and every courier asks
+  // blind, and the one the customer can answer in two seconds. Costs a
+  // wasted visit when it goes unasked.
+  presence      String?                      // IN | OUT | BACK_SOON | SOMEONE_ELSE
+  presenceNote  String?                      // "bottom of the garden, ring twice"
+  presenceAt    DateTime?                    // stale after a while; say when it was said
   arrivingAt    DateTime?                    // when they set off — a record, never a promise
   isActive      Boolean   @default(true)
   viewCount     Int       @default(0)

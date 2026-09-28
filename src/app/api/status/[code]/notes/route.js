@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cleanText } from '@/lib/clean-text'
+import { isValidPresence } from '@/lib/presence'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,6 +39,15 @@ export async function PUT(request, { params }) {
         what3words: cleanText(body.what3words, 60),
         accessNotes: cleanText(body.accessNotes, 400),
         notesUpdatedAt: new Date(),
+        // Presence is stamped separately: it goes stale in hours, while "use
+        // the back gate" is true until the gate moves.
+        ...(body.presence !== undefined
+          ? {
+              presence: isValidPresence(body.presence) ? body.presence : null,
+              presenceNote: cleanText(body.presenceNote, 200),
+              presenceAt: body.presence ? new Date() : null,
+            }
+          : {}),
       },
     })
 
@@ -47,6 +57,9 @@ export async function PUT(request, { params }) {
         petsOnSite: updated.petsOnSite,
         what3words: updated.what3words,
         accessNotes: updated.accessNotes,
+        presence: updated.presence,
+        presenceNote: updated.presenceNote,
+        presenceAt: updated.presenceAt,
       },
     })
   } catch (error) {
