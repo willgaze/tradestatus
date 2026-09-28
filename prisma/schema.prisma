@@ -26,6 +26,17 @@ model TradeStatus {
   stageNote     String?
   scheduledFor  DateTime?
 
+  // An arrival window, not an arrival time. Optional, and meant to be
+  // narrowed as the day goes: "sometime Tuesday" in the morning becomes
+  // "between 2 and 4" once the first job is done. Absent, the customer is
+  // told the day and nothing more, which is the honest default.
+  windowStart   DateTime?
+  windowEnd     DateTime?
+
+  // Where this job sits in that day's run. 1 is first. Lets the page say
+  // "you are second today" — a fact about order, never a time."
+  position      Int?
+
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.
   doorToUse     String?                      // FRONT | BACK | SIDE

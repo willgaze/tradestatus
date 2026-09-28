@@ -117,6 +117,17 @@ export default function Console() {
     return `sms:${(t.customerPhone || '').replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(body)}`
   }
 
+  // A time input gives "14:30" with no date. Hang it off the job's own booked
+  // day so the window lands on the right date, and fall back to today for a
+  // job with no date set yet.
+  const timeOnDay = (t, hhmm) => {
+    if (!hhmm) return null
+    const base = t.scheduledFor ? new Date(t.scheduledFor) : new Date()
+    const [h, m] = hhmm.split(':').map(Number)
+    base.setHours(h, m, 0, 0)
+    return base.toISOString()
+  }
+
   const copyLink = async (code) => {
     const link = `${window.location.origin}/t/${code}`
     try {
@@ -212,6 +223,31 @@ export default function Console() {
                   </a>
                 </div>
               </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <label className="block text-[13px] muted">
+                  Window from
+                  <input type="time"
+                         defaultValue={t.windowStart ? new Date(t.windowStart).toTimeString().slice(0, 5) : ''}
+                         onBlur={(e) => patch(t.id, { windowStart: timeOnDay(t, e.target.value) })}
+                         className="surface mt-1 min-h-[44px] w-full rounded-xl border px-3 text-[16px] hairline text-[color:var(--mts-text)]" />
+                </label>
+                <label className="block text-[13px] muted">
+                  until
+                  <input type="time"
+                         defaultValue={t.windowEnd ? new Date(t.windowEnd).toTimeString().slice(0, 5) : ''}
+                         onBlur={(e) => patch(t.id, { windowEnd: timeOnDay(t, e.target.value) })}
+                         className="surface mt-1 min-h-[44px] w-full rounded-xl border px-3 text-[16px] hairline text-[color:var(--mts-text)]" />
+                </label>
+              </div>
+              <label className="mt-2 block text-[13px] muted">
+                Where in today&apos;s run
+                <input type="number" min="1" inputMode="numeric"
+                       defaultValue={t.position ?? ''}
+                       placeholder="2 — tells them &quot;you are second today&quot;"
+                       onBlur={(e) => patch(t.id, { position: e.target.value === '' ? null : e.target.value })}
+                       className="surface mt-1 min-h-[44px] w-full rounded-xl border px-3 text-[16px] hairline text-[color:var(--mts-text)]" />
+              </label>
 
               <button type="button" onClick={() => setShowCard(showCard === t.id ? null : t.id)}
                       className="mt-3 min-h-[44px] w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold">

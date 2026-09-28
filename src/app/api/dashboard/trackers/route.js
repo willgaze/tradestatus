@@ -46,6 +46,9 @@ export async function POST(request) {
       stage,
       stageNote,
       scheduledFor,
+      windowStart: body.windowStart ? new Date(body.windowStart) : null,
+      windowEnd: body.windowEnd ? new Date(body.windowEnd) : null,
+      position: body.position ? Math.max(1, Math.round(Number(body.position))) : null,
       events: { create: { stage, note: stageNote } },
     }
 

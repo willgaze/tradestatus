@@ -10,6 +10,8 @@ import { TRADE_NAME, TRADE_PHONE } from '@/lib/trade'
  */
 
 const pad = (n) => String(n).padStart(2, '0')
+const stampOf = (d) =>
+  `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`
 const ymd = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`
 
 // RFC 5545: lines fold at 75 octets, and commas, semicolons and backslashes
@@ -45,9 +47,14 @@ export function buildIcs(status, trackUrl) {
   const start = new Date(status.scheduledFor)
   if (Number.isNaN(start.getTime())) return null
 
-  // An all-day VEVENT ends on the following day: DTEND is exclusive.
-  const end = new Date(start)
-  end.setUTCDate(end.getUTCDate() + 1)
+  // With a window, this is a real block in the day and goes in as one. Without,
+  // it stays all-day — DTEND is exclusive for an all-day VEVENT, so it lands on
+  // the following date.
+  const timed = Boolean(status.windowStart)
+  const from = timed ? new Date(status.windowStart) : start
+  const end = timed
+    ? new Date(status.windowEnd || new Date(from.getTime() + 2 * 60 * 60 * 1000))
+    : (() => { const e = new Date(start); e.setUTCDate(e.getUTCDate() + 1); return e })()
 
   const stamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
 
@@ -60,8 +67,9 @@ export function buildIcs(status, trackUrl) {
     'BEGIN:VEVENT',
     `UID:${status.code}@mytradestatus`,
     `DTSTAMP:${stamp}`,
-    `DTSTART;VALUE=DATE:${ymd(start)}`,
-    `DTEND;VALUE=DATE:${ymd(end)}`,
+    ...(timed
+      ? [`DTSTART:${stampOf(from)}`, `DTEND:${stampOf(end)}`]
+      : [`DTSTART;VALUE=DATE:${ymd(from)}`, `DTEND;VALUE=DATE:${ymd(end)}`]),
     fold(`SUMMARY:${esc(calendarSummary(status))}`),
     ...(status.jobAddress ? [fold(`LOCATION:${esc(status.jobAddress)}`)] : []),
     fold(`DESCRIPTION:${esc(calendarDescription(status, trackUrl))}`),
@@ -84,15 +92,40 @@ export function googleCalendarUrl(status, trackUrl) {
   if (!status.scheduledFor) return null
   const start = new Date(status.scheduledFor)
   if (Number.isNaN(start.getTime())) return null
-  const end = new Date(start)
-  end.setUTCDate(end.getUTCDate() + 1)
+  const timed = Boolean(status.windowStart)
+  const from = timed ? new Date(status.windowStart) : start
+  const end = timed
+    ? new Date(status.windowEnd || new Date(from.getTime() + 2 * 60 * 60 * 1000))
+    : (() => { const e = new Date(start); e.setUTCDate(e.getUTCDate() + 1); return e })()
 
   const q = new URLSearchParams({
     action: 'TEMPLATE',
     text: calendarSummary(status),
-    dates: `${ymd(start)}/${ymd(end)}`,
+    dates: timed ? `${stampOf(from)}/${stampOf(end)}` : `${ymd(from)}/${ymd(end)}`,
     details: calendarDescription(status, trackUrl),
     location: status.jobAddress || '',
   })
   return `https://calendar.google.com/calendar/render?${q.toString()}`
+}
+
+/**
+ * The window, said the way a person would.
+ * No window at all returns null, and the caller falls back to the day — the
+ * product would rather say less than promise more.
+ */
+export function windowLabel(status) {
+  if (!status.windowStart) return null
+  const t = (iso) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  return status.windowEnd
+    ? `Between ${t(status.windowStart)} and ${t(status.windowEnd)}`
+    : `From ${t(status.windowStart)}`
+}
+
+/** "You are second today" — ordinal, because "position 2" is not English. */
+export function positionLabel(position) {
+  if (!position || position < 1) return null
+  if (position === 1) return 'You are first today'
+  const n = position % 100
+  const suffix = n >= 11 && n <= 13 ? 'th' : { 1: 'st', 2: 'nd', 3: 'rd' }[position % 10] || 'th'
+  return `You are ${position}${suffix} today`
 }

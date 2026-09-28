@@ -5,6 +5,7 @@ import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Mark from '@/components/Mark'
+import { windowLabel, positionLabel } from '@/lib/calendar'
 
 const TONE = {
   booked: { dot: 'bg-stage-booked', text: 'text-stage-booked', soft: 'bg-slate-500/10' },
@@ -92,6 +93,21 @@ export default function StatusTracker({ initialStatus }) {
             {status.arrivingAt && stage.key !== 'BOOKED' && (
               <p className="mt-3 text-[15px] muted">Set off at {time(status.arrivingAt)}.</p>
             )}
+
+            {(windowLabel(status) || positionLabel(status.position)) && stage.key !== 'DONE' && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {windowLabel(status) && (
+                  <span className={`rounded-full px-3.5 py-1.5 text-[14px] font-semibold ${tone.soft} ${tone.text}`}>
+                    {windowLabel(status)}
+                  </span>
+                )}
+                {positionLabel(status.position) && (
+                  <span className="rounded-full bg-black/[.05] px-3.5 py-1.5 text-[14px] font-semibold dark:bg-white/[.07]">
+                    {positionLabel(status.position)}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -124,7 +140,9 @@ export default function StatusTracker({ initialStatus }) {
       {/* the details */}
       <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '120ms' }}>
         {status.scheduledFor && (
-          <Row label="Booked for" value={day(status.scheduledFor)} />
+          <Row label="Booked for"
+               value={day(status.scheduledFor)}
+               hint={windowLabel(status) || 'No arrival time is promised'} />
         )}
         {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
         {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
@@ -139,7 +157,7 @@ export default function StatusTracker({ initialStatus }) {
             <CalendarGlyph date={new Date(status.scheduledFor)} />
             <span className="min-w-0 flex-1">
               <span className="block text-[17px] font-semibold">Put it in my calendar</span>
-              <span className="block text-[14px] muted">All day — no arrival time promised</span>
+              <span className="block text-[14px] muted">{windowLabel(status) || "All day — no arrival time promised"}</span>
             </span>
             <span className="muted text-[22px] leading-none">›</span>
           </a>
@@ -199,11 +217,12 @@ export default function StatusTracker({ initialStatus }) {
   )
 }
 
-function Row({ label, value, last }) {
+function Row({ label, value, hint, last }) {
   return (
     <div className={`px-6 py-4 ${last ? '' : 'border-b hairline'}`}>
       <p className="text-[13px] muted">{label}</p>
       <p className="mt-0.5 text-[17px] font-semibold">{value}</p>
+      {hint && <p className="mt-0.5 text-[14px] muted">{hint}</p>}
     </div>
   )
 }

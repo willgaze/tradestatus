@@ -91,6 +91,11 @@ export function publicShape(row) {
     arrivingAt: row.arrivingAt ? row.arrivingAt.toISOString() : null,
     updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
     // What the customer told the trade. Theirs to read back and change.
+    windowStart: row.windowStart ? row.windowStart.toISOString() : null,
+    windowEnd: row.windowEnd ? row.windowEnd.toISOString() : null,
+    // Order only, never the total: "second today" is reassuring, but how many
+    // jobs the trade has on is their business, not the customer's.
+    position: row.position ?? null,
     doorToUse: row.doorToUse || null,
     petsOnSite: Boolean(row.petsOnSite),
     what3words: row.what3words || null,

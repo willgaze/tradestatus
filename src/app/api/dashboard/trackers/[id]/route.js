@@ -36,6 +36,26 @@ export async function PATCH(request, { params }) {
       if (body[f] !== undefined) data[f] = cleanText(body[f])
     }
 
+    // The window is meant to be narrowed through the day as jobs finish, so
+    // both ends are independently settable and either can be cleared.
+    for (const f of ['windowStart', 'windowEnd']) {
+      if (body[f] !== undefined) {
+        const when = body[f] ? new Date(body[f]) : null
+        if (when && Number.isNaN(when.getTime())) {
+          return NextResponse.json({ error: 'bad_window' }, { status: 400 })
+        }
+        data[f] = when
+      }
+    }
+    if (data.windowStart && data.windowEnd && data.windowEnd <= data.windowStart) {
+      return NextResponse.json({ error: 'window_backwards' }, { status: 400 })
+    }
+
+    if (body.position !== undefined) {
+      const n = Number(body.position)
+      data.position = body.position === null || Number.isNaN(n) ? null : Math.max(1, Math.round(n))
+    }
+
     if (body.scheduledFor !== undefined) {
       const when = body.scheduledFor ? new Date(body.scheduledFor) : null
       if (when && Number.isNaN(when.getTime())) {
