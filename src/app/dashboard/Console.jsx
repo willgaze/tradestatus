@@ -82,6 +82,10 @@ export default function Console() {
     }
   }
 
+  // Read after mount: window does not exist during the server render.
+  const [origin, setOrigin] = useState('')
+  useEffect(() => setOrigin(window.location.origin), [])
+
   const copyLink = async (code) => {
     const link = `${window.location.origin}/t/${code}`
     try {
@@ -153,15 +157,26 @@ export default function Console() {
                 ))}
               </div>
 
+              <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
+                  Send this to the customer
+                </p>
+                <p className="mt-1 select-all break-all font-mono text-sm text-slate-800">
+                  {origin}/t/{t.code}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => copyLink(t.code)}
+                          className="min-h-[44px] rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+                    {copied === t.code ? '✓ Copied' : 'Copy link'}
+                  </button>
+                  <a href={`/t/${t.code}`} target="_blank" rel="noreferrer"
+                     className="inline-flex min-h-[44px] items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
+                    Open it
+                  </a>
+                </div>
+              </div>
+
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => copyLink(t.code)}
-                        className="min-h-[44px] rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
-                  {copied === t.code ? 'Link copied' : 'Copy customer link'}
-                </button>
-                <a href={`/t/${t.code}`} target="_blank" rel="noreferrer"
-                   className="inline-flex min-h-[44px] items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">
-                  View as customer
-                </a>
                 {t.isActive && (
                   <button type="button" onClick={() => revoke(t.id)}
                           className="min-h-[44px] rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-700">
