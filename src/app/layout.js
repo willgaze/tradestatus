@@ -1,4 +1,5 @@
 import './globals.css'
+import { theme } from '@/lib/version'
 
 export const metadata = {
   title: 'My Trade Status',
@@ -12,7 +13,7 @@ export const metadata = {
 }
 
 export const viewport = {
-  themeColor: '#255a95',
+  themeColor: theme().accent,
   // A tap on a control must not zoom the page, but pinch-zoom stays available —
   // never take that away from someone reading an address in bad light.
   width: 'device-width',
@@ -22,9 +23,10 @@ export const viewport = {
 // No site header, no marketing nav, no footer. A customer opening this has one
 // question and is usually standing in a hallway with the water off.
 export default function RootLayout({ children }) {
+  const t = theme()
   return (
-    <html lang="en-GB">
-      <body className="min-h-screen antialiased text-slate-900">{children}</body>
+    <html lang="en-GB" style={{ '--mts-bg': t.bg, '--mts-accent': t.accent, '--mts-deep': t.deep }}>
+      <body className="min-h-screen antialiased">{children}</body>
     </html>
   )
 }

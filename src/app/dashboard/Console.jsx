@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
 import Mark from '@/components/Mark'
+import BuildStamp from '@/components/BuildStamp'
+import Changelog from './Changelog'
 import Profile from './Profile'
 import WalletShowcase from './WalletShowcase'
 import Roadmap from './Roadmap'
@@ -170,7 +172,7 @@ export default function Console() {
         {field('jobSummary', 'Job', 'Unvented cylinder swap')}
         {field('jobAddress', 'Address', 'Church Lane, Burbage SN8')}
         {field('jobRef', 'Your job number', '2718')}
-        {field('scheduledFor', 'Booked for', '', 'date')}
+        {field('scheduledFor', 'Booked for (day/month/year)', '', 'date')}
         <div className="flex items-end">
           <button type="submit" disabled={saving}
                   className="min-h-[54px] w-full rounded-2xl bg-brand-600 text-[17px] font-semibold text-white transition-transform active:scale-[.99] disabled:opacity-60">
@@ -293,6 +295,8 @@ export default function Console() {
       <Profile />
       <Passkeys />
       <Roadmap />
+      <Changelog />
+      <div className="mt-8 flex justify-center"><BuildStamp /></div>
     </main>
   )
 }

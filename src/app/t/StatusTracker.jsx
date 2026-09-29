@@ -6,6 +6,7 @@ import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
 import Mark from '@/components/Mark'
+import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
 
 const TONE = {
@@ -267,6 +268,7 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
         <Mark className="h-4 w-auto" id="foot" />
         <span className="text-[12px] muted">Job tracking by My Trade Status</span>
       </span>
+      <span className="mt-2 flex justify-center pb-safe"><BuildStamp /></span>
     </main>
   )
 }
