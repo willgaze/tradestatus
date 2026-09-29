@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --mts-bg: #f4f7fb;
+  /* The theme supplies both; the media query below chooses. Never set
+     --mts-bg inline on <html>: an inline value beats this file and pins the
+     page light in dark mode, which is exactly what happened once. */
+  --mts-bg: var(--theme-bg, #f4f7fb);
   --mts-surface: #ffffff;
   --mts-text: #0f1b2a;
   --mts-muted: #5b6b7f;
@@ -14,7 +17,7 @@
    should not get a white flash in a dark hallway. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --mts-bg: #0b1119;
+    --mts-bg: var(--theme-bg-dark, #0b1119);
     --mts-surface: #161f2b;
     --mts-text: #eef3f9;
     --mts-muted: #93a4b8;

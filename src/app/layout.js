@@ -25,7 +25,8 @@ export const viewport = {
 export default function RootLayout({ children }) {
   const t = theme()
   return (
-    <html lang="en-GB" style={{ '--mts-bg': t.bg, '--mts-accent': t.accent, '--mts-deep': t.deep }}>
+    <html lang="en-GB"
+          style={{ '--theme-bg': t.bg, '--theme-bg-dark': t.bgDark, '--mts-accent': t.accent, '--mts-deep': t.deep }}>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   )

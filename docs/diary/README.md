@@ -20,4 +20,5 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.3.1](./v1.3.1/) | 2026-09-29 | Harbour — dark-mode background fixed |
 | [v1.3.0](./v1.3.0/) | 2026-09-29 | Harbour |
