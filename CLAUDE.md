@@ -145,3 +145,39 @@ repository does not have:
 
 Until those exist, the honest position is that this is a link, not a card. Do
 not describe it as a wallet pass anywhere customer-facing.
+
+## The nightly build
+
+A Routine fires overnight and builds the next version. The rules it works to —
+break these and the app gets worse every night, slowly, in ways nobody notices
+until it is bad.
+
+**Bump the version and advance the theme.** `src/lib/version.js` holds
+`VERSION`, `BUILD_DATE`, `THEME_INDEX` and `CHANGELOG`. Move the index on by
+one so the app visibly changes colour, add a changelog entry naming what
+actually changed, and set the build date.
+
+**Never invent a colour.** `THEMES` is a curated list of background/accent
+pairs. Add one if the list is running short, checking white text on the accent
+and dark text on the background for contrast. Generating one at runtime to be
+"a colour not used before" produces mud and unreadable text within a week.
+
+**Capture the diary before finishing.** `scripts/capture-diary.mjs` writes
+`docs/diary/v<version>/`. Nothing in there is ever overwritten, tidied or
+deleted: it is the record of what the app looked like on a given day, and it is
+wanted for marketing.
+
+**Improve one real thing, not five speculative ones.** A nightly build that
+churns the interface is worse than one that fixes a defect. Look at what is
+actually wrong — read `docs/diary/` against the current build, run the app,
+check the roadmap votes in `FeatureInterest` — then do one thing properly and
+say what it was.
+
+**Never claim something works when it does not.** The roadmap in
+`src/lib/roadmap.js` marks each item `live`, `ready` or `idea`. Moving an item
+to `live` means it is live.
+
+**The rules in the rest of this file still apply at 3am.** No promised arrival
+times. Nothing hard-coded that belongs in an env var. Every operator route
+guards itself. Build and verify before pushing; `main` deploys on push, so a
+broken push is a broken product until someone notices.
