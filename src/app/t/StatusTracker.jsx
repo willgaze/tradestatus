@@ -5,6 +5,8 @@ import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
+import Disclosure from '@/components/Disclosure'
+import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
@@ -28,6 +30,9 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
   const [pulse, setPulse] = useState(false)
+  // Which rows are open. Nothing is, at rest: the page is a glance and a list.
+  const [openRow, setOpenRow] = useState(null)
+  const toggle = (k) => setOpenRow((o) => (o === k ? null : k))
 
   const refresh = useCallback(async () => {
     try {
@@ -141,126 +146,135 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
         </div>
       </section>
 
-      {/* who is at the door — only once they are actually on the way */}
-      {profile && (profile.engineerName || profile.vehicle) && (
-        <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '150ms' }}>
-          <h2 className="text-[15px] font-semibold muted">Who to expect</h2>
-          <div className="mt-4 flex items-center gap-4">
-            {profile.engineerPhoto ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'}
-                   className="h-16 w-16 shrink-0 rounded-full object-cover" />
-            ) : (
-              <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-brand-50 text-[24px] dark:bg-white/5">
-                👋
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="text-[20px] font-semibold">{profile.engineerName || 'Your engineer'}</p>
-              {profile.aboutLine && <p className="text-[15px] muted">{profile.aboutLine}</p>}
-            </div>
-          </div>
+      {/* the rows. Closed, each says the one thing worth knowing. */}
+      <div className="mt-4 space-y-3">
 
-          {(profile.vehicle || profile.vehicleReg) && (
-            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-black/[.035] p-4 dark:bg-white/[.05]">
-              {profile.vehiclePhoto ? (
+        {profile && (profile.engineerName || profile.vehicle) && (
+          <Disclosure icon="👋" title="Who to expect" delay="120ms"
+                      summary={[profile.engineerName, profile.vehicle].filter(Boolean).join(' · ')}
+                      open={openRow === 'who'} onToggle={() => toggle('who')}>
+            <div className="flex items-center gap-4">
+              {profile.engineerPhoto ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={profile.vehiclePhoto} alt={profile.vehicle || 'The van'}
-                     className="h-16 w-24 shrink-0 rounded-xl object-cover" />
+                <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'}
+                     className="h-16 w-16 shrink-0 rounded-full object-cover" />
               ) : (
-                <span className="grid h-16 w-24 shrink-0 place-items-center rounded-xl bg-black/[.05] text-[26px] dark:bg-white/[.06]">
-                  🚐
-                </span>
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-brand-50 text-[24px] dark:bg-white/5">👋</span>
               )}
               <div className="min-w-0">
-                <p className="text-[13px] muted">Look out for</p>
-                {profile.vehicle && <p className="text-[17px] font-semibold">{profile.vehicle}</p>}
-                {profile.vehicleReg && (
-                  /* Set like a plate, because that is how it will be read from a window */
-                  <p className="mt-1 inline-block rounded-md bg-[#f5d32a] px-2 py-0.5 font-mono text-[15px] font-bold tracking-wide text-black">
-                    {profile.vehicleReg}
-                  </p>
-                )}
+                <p className="text-[19px] font-semibold">{profile.engineerName || 'Your engineer'}</p>
+                {profile.aboutLine && <p className="text-[14px] muted">{profile.aboutLine}</p>}
               </div>
             </div>
-          )}
-        </section>
-      )}
-
-      {/* the details */}
-      <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '120ms' }}>
-        {status.scheduledFor && (
-          <Row label="Booked for"
-               value={day(status.scheduledFor)}
-               hint={windowLabel(status) || 'No arrival time is promised'} />
+            {(profile.vehicle || profile.vehicleReg) && (
+              <div className="mt-4 flex items-center gap-4 rounded-2xl bg-black/[.035] p-4 dark:bg-white/[.05]">
+                {profile.vehiclePhoto ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={profile.vehiclePhoto} alt={profile.vehicle || 'The van'}
+                       className="h-16 w-24 shrink-0 rounded-xl object-cover" />
+                ) : (
+                  <span className="grid h-16 w-24 shrink-0 place-items-center rounded-xl bg-black/[.05] text-[26px] dark:bg-white/[.06]">🚐</span>
+                )}
+                <div className="min-w-0">
+                  <p className="text-[13px] muted">Look out for</p>
+                  {profile.vehicle && <p className="text-[16px] font-semibold">{profile.vehicle}</p>}
+                  {profile.vehicleReg && (
+                    <p className="mt-1 inline-block rounded-md bg-[#f5d32a] px-2 py-0.5 font-mono text-[15px] font-bold tracking-wide text-black">
+                      {profile.vehicleReg}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </Disclosure>
         )}
-        {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
-        {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
-        {status.updatedAt && <Row label="Last updated" value={dayAndTime(status.updatedAt)} last />}
-      </section>
 
-      {/* calendar */}
-      {status.scheduledFor && (
-        <section className="animate-rise mt-4" style={{ animationDelay: '160ms' }}>
-          <a href={icsUrl}
-             className="surface flex min-h-[60px] w-full items-center gap-4 rounded-4xl px-5 shadow-card active:scale-[.99] transition-transform">
-            <CalendarGlyph date={new Date(status.scheduledFor)} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-[17px] font-semibold">Put it in my calendar</span>
-              <span className="block text-[14px] muted">{windowLabel(status) || "All day — no arrival time promised"}</span>
-            </span>
-            <span className="muted text-[22px] leading-none">›</span>
-          </a>
-        </section>
-      )}
+        {status.stage !== 'DONE' && (() => {
+          const cur = presenceOf(status.presence)
+          const fresh = presenceIsFresh(status.presenceAt)
+          const answered = cur && fresh
+          return (
+            <Disclosure icon="🏠" title="Will someone be in?" delay="150ms" accent={!answered}
+                        summary={answered
+                          ? `You said: ${cur.short}${status.presenceNote ? ` — ${status.presenceNote}` : ''} · ${presenceAgeLabel(status.presenceAt)}`
+                          : 'Tap to answer — saves them a wasted trip'}
+                        open={openRow === 'in'} onToggle={() => toggle('in')}>
+              <Presence status={status} onSaved={(n) => setStatus((s) => ({ ...s, ...n }))} />
+            </Disclosure>
+          )
+        })()}
 
-      {/* the question that saves a wasted trip */}
-      {status.stage !== 'DONE' && (
-        <Presence status={status} onSaved={(n) => setStatus((s) => ({ ...s, ...n }))} />
-      )}
+        <Disclosure icon="📍" title="The job" delay="180ms"
+                    summary={[
+                      status.scheduledFor && day(status.scheduledFor),
+                      status.jobAddress,
+                    ].filter(Boolean).join(' · ')}
+                    open={openRow === 'job'} onToggle={() => toggle('job')}>
+          <dl className="space-y-3.5">
+            {status.scheduledFor && (
+              <Row label="Booked for" value={day(status.scheduledFor)}
+                   hint={windowLabel(status) || 'No arrival time is promised'} />
+            )}
+            {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
+            {status.jobSummary && <Row label="Work" value={status.jobSummary} />}
+            {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
+            {status.updatedAt && <Row label="Last updated" value={dayAndTime(status.updatedAt)} />}
+          </dl>
+          {status.scheduledFor && (
+            <a href={icsUrl}
+               className="mt-5 flex min-h-[52px] items-center gap-3 rounded-2xl bg-black/[.04] px-4 dark:bg-white/[.06]">
+              <CalendarGlyph date={new Date(status.scheduledFor)} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[16px] font-semibold">Put it in my calendar</span>
+                <span className="block text-[13px] muted">{windowLabel(status) || 'All day — no arrival time promised'}</span>
+              </span>
+              <span className="muted text-[20px]">›</span>
+            </a>
+          )}
+        </Disclosure>
 
-      {/* what the customer tells the trade */}
-      <AccessNotes status={status} onSaved={(notes) => setStatus((s) => ({ ...s, ...notes }))} />
+        <Disclosure icon="🔑" title="Help them find you" delay="210ms"
+                    summary={(status.doorToUse || status.petsOnSite || status.what3words || status.accessNotes)
+                      ? 'Saved — tap to change'
+                      : 'Which door, parking, the dog'}
+                    open={openRow === 'find'} onToggle={() => toggle('find')}>
+          <AccessNotes status={status} onSaved={(notes) => setStatus((s) => ({ ...s, ...notes }))} />
+        </Disclosure>
 
-      {/* what has happened */}
-      {status.events?.length > 0 && (
-        <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '220ms' }}>
-          <h2 className="text-[17px] font-semibold">What has happened</h2>
-          <ol className="mt-4 space-y-4">
-            {[...status.events].reverse().map((e, i) => {
-              const s = stageOf(e.stage)
-              const t = TONE[s.tone] || TONE.booked
-              return (
-                <li key={`${e.stage}-${e.at}-${i}`} className="flex gap-3.5">
-                  <span className="relative flex flex-col items-center">
-                    <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${t.dot}`} />
-                    {i < status.events.length - 1 && <span className="mt-1 w-px flex-1 bg-black/[.09] dark:bg-white/10" />}
-                  </span>
-                  <span className="min-w-0 pb-1">
-                    <span className="block text-[16px] font-semibold">{s.label}</span>
-                    <span className="block text-[14px] muted">{dayAndTime(e.at)}</span>
-                    {e.note && <span className="mt-1 block text-[15px]">{e.note}</span>}
-                  </span>
-                </li>
-              )
-            })}
-          </ol>
-        </section>
-      )}
+        {status.events?.length > 0 && (
+          <Disclosure icon="🕒" title="What has happened" delay="240ms"
+                      summary={`${status.events.length} update${status.events.length === 1 ? '' : 's'} · last ${time(status.events[status.events.length - 1].at)}`}
+                      open={openRow === 'log'} onToggle={() => toggle('log')}>
+            <ol className="space-y-4">
+              {[...status.events].reverse().map((e, i) => {
+                const s2 = stageOf(e.stage)
+                const t = TONE[s2.tone] || TONE.booked
+                return (
+                  <li key={`${e.stage}-${e.at}-${i}`} className="flex gap-3.5">
+                    <span className="relative flex flex-col items-center">
+                      <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${t.dot}`} />
+                      {i < status.events.length - 1 && <span className="mt-1 w-px flex-1 bg-black/[.09] dark:bg-white/10" />}
+                    </span>
+                    <span className="min-w-0 pb-1">
+                      <span className="block text-[16px] font-semibold">{s2.label}</span>
+                      <span className="block text-[14px] muted">{dayAndTime(e.at)}</span>
+                      {e.note && <span className="mt-1 block text-[15px]">{e.note}</span>}
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
+          </Disclosure>
+        )}
+      </div>
 
-      {/* contact */}
+      {/* the one action that is never hidden */}
       {TRADE_PHONE && (
-        <section className="animate-rise mt-4 overflow-hidden rounded-4xl bg-brand-700 p-6 text-white shadow-lift"
-                 style={{ animationDelay: '260ms' }}>
-          <h2 className="text-[19px] font-semibold">Need to change something?</h2>
-          <p className="mt-1.5 text-[16px] text-white/85">
-            Call or message {TRADE_NAME} — it is the same person doing the work.
-          </p>
-          <a href={`tel:${TRADE_PHONE_TEL}`}
-             className="mt-5 flex min-h-[54px] items-center justify-center rounded-2xl bg-white text-[17px] font-semibold text-brand-700 active:scale-[.99] transition-transform">
-            Call {TRADE_PHONE}
-          </a>
-        </section>
+        <a href={`tel:${TRADE_PHONE_TEL}`}
+           className="animate-rise mt-5 flex min-h-[58px] items-center justify-center gap-2 rounded-4xl bg-brand-700 text-[17px] font-semibold text-white shadow-lift transition-transform active:scale-[.99]"
+           style={{ animationDelay: '270ms' }}>
+          Call {TRADE_NAME.split(' ')[0]} · {TRADE_PHONE}
+        </a>
       )}
 
       <p className="mt-8 text-center text-[13px] muted">This page updates itself.</p>
@@ -273,12 +287,12 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
   )
 }
 
-function Row({ label, value, hint, last }) {
+function Row({ label, value, hint }) {
   return (
-    <div className={`px-6 py-4 ${last ? '' : 'border-b hairline'}`}>
-      <p className="text-[13px] muted">{label}</p>
-      <p className="mt-0.5 text-[17px] font-semibold">{value}</p>
-      {hint && <p className="mt-0.5 text-[14px] muted">{hint}</p>}
+    <div>
+      <dt className="text-[13px] muted">{label}</dt>
+      <dd className="mt-0.5 text-[16px] font-semibold">{value}</dd>
+      {hint && <dd className="mt-0.5 text-[13px] muted">{hint}</dd>}
     </div>
   )
 }

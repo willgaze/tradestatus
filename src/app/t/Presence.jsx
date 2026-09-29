@@ -45,15 +45,8 @@ export default function Presence({ status, onSaved }) {
   }
 
   return (
-    <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '180ms' }}>
-      <h2 className="text-[19px] font-semibold">Will someone be in?</h2>
-      <p className="mt-1 text-[15px] muted">
-        {current && fresh
-          ? 'They can see your answer. Change it any time.'
-          : 'Saves them a wasted trip — and you a second appointment.'}
-      </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-2.5">
+    <div>
+      <div className="grid grid-cols-2 gap-2.5">
         {PRESENCE_ORDER.map((k) => {
           const p = PRESENCE[k]
           const on = current?.key === k && fresh
@@ -93,6 +86,6 @@ export default function Presence({ status, onSaved }) {
           </button>
         </div>
       )}
-    </section>
+    </div>
   )
 }

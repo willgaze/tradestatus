@@ -20,7 +20,6 @@ const DOORS = [
  * People will type one in if you let them, and this is a link sent by text.
  */
 export default function AccessNotes({ status, onSaved }) {
-  const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [door, setDoor] = useState(status.doorToUse || null)
@@ -42,7 +41,6 @@ export default function AccessNotes({ status, onSaved }) {
         const { notes: fresh } = await r.json()
         onSaved?.(fresh)
         setSaved(true); setTimeout(() => setSaved(false), 2500)
-        setOpen(false)
       }
     } finally {
       setSaving(false)
@@ -50,27 +48,7 @@ export default function AccessNotes({ status, onSaved }) {
   }
 
   return (
-    <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '200ms' }}>
-      <button type="button" onClick={() => setOpen((o) => !o)}
-              className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-[20px] dark:bg-white/5">
-          🔑
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[17px] font-semibold">Help them find you</span>
-          <span className="block text-[14px] muted">
-            {anything ? 'Saved — tap to change' : 'Which door, parking, the dog'}
-          </span>
-        </span>
-        <span className={`muted text-[20px] leading-none transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
-      </button>
-
-      {saved && !open && (
-        <p className="px-6 pb-5 text-[14px] text-stage-done">Sent. They will see it before they set off.</p>
-      )}
-
-      {open && (
-        <div className="space-y-6 border-t hairline px-6 py-6">
+        <div className="space-y-6">
           <div>
             <p className="text-[15px] font-semibold">Which door?</p>
             <div className="mt-2.5 flex gap-2">
@@ -132,7 +110,5 @@ export default function AccessNotes({ status, onSaved }) {
             {saving ? 'Sending…' : 'Send this to them'}
           </button>
         </div>
-      )}
-    </section>
   )
 }
