@@ -113,3 +113,13 @@ model TradeProfile {
 
   updatedAt     DateTime @updatedAt
 }
+
+/// Interest in something not built yet. A roadmap is worth more when it
+/// records what was actually wanted than when it records what sounded good
+/// at midnight.
+model FeatureInterest {
+  key       String   @id          // slug of the feature
+  wanted    Boolean  @default(false)
+  note      String?               // "only if it does X"
+  updatedAt DateTime @updatedAt
+}
