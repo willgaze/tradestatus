@@ -10,10 +10,10 @@ export default function Changelog() {
   const t = THEMES[THEME_INDEX % THEMES.length]
 
   return (
-    <section className="surface mt-4 rounded-4xl shadow-card">
+    <section className="glass mt-4 r-outer">
       <button type="button" onClick={() => setOpen((o) => !o)}
               className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-[15px] font-bold text-white"
+        <span className="grid h-11 w-11 shrink-0 place-items-center r-inner text-[15px] font-bold text-white"
               style={{ background: t.accent }}>
           {VERSION.split('.').slice(0, 2).join('.')}
         </span>

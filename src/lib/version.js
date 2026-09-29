@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.4.0'
+export const VERSION = '1.5.0'
 export const BUILD_DATE = '2026-09-29'
 
 export const THEMES = [
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.5.0', date: '2026-09-29', notes: [
+    'Dashboard brought onto the same iOS material as the customer page — glass cards, capsule buttons, proper fields',
+    'what3words and a dropped pin open the map in one tap, both sides. A Navigate button on every job',
+    'Photos of the house and the door, set on the first visit so the next one is easy. Your logo on the page',
+    'DVLA lookup now says exactly what it needs when the key is missing, with the link to get it',
+  ] },
   { version: '1.4.0', date: '2026-09-29', notes: [
     'The whole app redrawn to the current iOS look — translucent cards, the system font, proper dark mode',
     'Every emoji replaced with a drawn icon. They rendered in whatever style the phone shipped and made a finished page look unfinished',

@@ -83,7 +83,7 @@ export default function Passkeys() {
       </p>
 
       <button type="button" onClick={addDevice} disabled={busy}
-              className="mt-3 min-h-[48px] w-full rounded-xl bg-brand-600 px-4 text-base font-semibold text-white disabled:opacity-60">
+              className="mt-3 min-h-[48px] w-full r-inner accent-fill px-4 text-base font-semibold disabled:opacity-60">
         {busy ? 'One moment…' : 'Set up this device'}
       </button>
 
@@ -92,7 +92,7 @@ export default function Passkeys() {
       {keys.length > 0 && (
         <ul className="mt-4 space-y-2">
           {keys.map((k) => (
-            <li key={k.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3">
+            <li key={k.id} className="flex items-center justify-between gap-3 r-inner border border-slate-200 p-3">
               <div className="min-w-0">
                 <p className="truncate font-medium">{k.label || 'Device'}</p>
                 <p className="text-xs text-slate-500">
@@ -102,7 +102,7 @@ export default function Passkeys() {
                 </p>
               </div>
               <button type="button" onClick={() => remove(k.id)}
-                      className="min-h-[44px] shrink-0 rounded-xl border border-red-300 px-3 text-sm font-semibold text-red-700">
+                      className="min-h-[44px] shrink-0 r-inner border border-red-300 px-3 text-sm font-semibold text-red-700">
                 Remove
               </button>
             </li>

@@ -4,6 +4,7 @@ import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
+import { normaliseW3w, normaliseMapPin, normalisePhotoUrl } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,13 @@ export async function PATCH(request, { params }) {
     for (const f of ['jobRef', 'customerName', 'customerPhone', 'jobAddress', 'jobSummary', 'stageNote']) {
       if (body[f] !== undefined) data[f] = cleanText(body[f])
     }
+    // Finding the door. Photos are set from here, by the trade, on the first
+    // visit — a URL for now, a camera button once there is somewhere to put
+    // the file. The customer's public route deliberately cannot set these.
+    if (body.housePhoto !== undefined) data.housePhoto = normalisePhotoUrl(body.housePhoto)
+    if (body.doorPhoto !== undefined) data.doorPhoto = normalisePhotoUrl(body.doorPhoto)
+    if (body.mapPin !== undefined) data.mapPin = normaliseMapPin(body.mapPin)
+    if (body.what3words !== undefined) data.what3words = normaliseW3w(body.what3words)
 
     // The window is meant to be narrowed through the day as jobs finish, so
     // both ends are independently settable and either can be cleared.

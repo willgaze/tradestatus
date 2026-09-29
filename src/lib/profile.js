@@ -40,9 +40,24 @@ export async function publicProfile() {
       vehicleReg: formatPlate(p.vehicleReg),
       vehicle: vehicle || null,
       vehiclePhoto: p.vehiclePhoto || null,
+      brandLogo: p.brandLogo || null,
     }
   } catch {
     // Never let a missing profile break the page the customer came for.
+    return null
+  }
+}
+
+/**
+ * The trade's mark, for the top of the customer's page. Unlike the profile
+ * this is not gated on the stage: a logo is a name, and the name is already
+ * on the page from the moment the link opens.
+ */
+export async function publicBrand() {
+  try {
+    const p = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } })
+    return p?.brandLogo ? { logo: p.brandLogo } : null
+  } catch {
     return null
   }
 }

@@ -2,7 +2,7 @@
 import { TickIcon } from '@/components/icons'
 import { timeOnly } from '@/lib/when'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME } from '@/lib/trade'
 
@@ -29,9 +29,16 @@ const VIEWS = [
 
 export default function WalletShowcase({ tracker }) {
   const [view, setView] = useState('stack')
+  // The card wears the trade's logo once one is set, so the preview is honest
+  // about what the paid tier looks like.
+  const [logo, setLogo] = useState(null)
+  useEffect(() => {
+    fetch('/api/dashboard/profile').then((r) => (r.ok ? r.json() : null))
+      .then((j) => setLogo(j?.profile?.brandLogo || null)).catch(() => {})
+  }, [])
 
   return (
-    <section className="surface mt-8 overflow-hidden rounded-4xl shadow-card">
+    <section className="glass mt-8 overflow-hidden r-outer">
       <div className="px-6 pt-6">
         <h2 className="text-[19px] font-semibold">The wallet card</h2>
         <p className="mt-1 text-[15px] muted">
@@ -41,7 +48,7 @@ export default function WalletShowcase({ tracker }) {
         <div className="mt-4 flex gap-1.5 rounded-2xl bg-black/[.05] p-1 dark:bg-white/[.06]">
           {VIEWS.map((v) => (
             <button key={v.id} type="button" onClick={() => setView(v.id)}
-                    className={`min-h-[40px] flex-1 rounded-xl text-[14px] font-semibold transition-all ${
+                    className={`min-h-[40px] flex-1 r-inner text-[14px] font-semibold transition-all ${
                       view === v.id ? 'surface shadow-sm' : 'muted'}`}>
               {v.label}
             </button>
@@ -50,9 +57,9 @@ export default function WalletShowcase({ tracker }) {
       </div>
 
       <div className="mt-5 bg-black px-5 py-8">
-        {view === 'stack' && <StackView tracker={tracker} />}
-        {view === 'popped' && <PoppedView tracker={tracker} />}
-        {view === 'alone' && <div className="mx-auto max-w-[300px]"><PassCard tracker={tracker} /></div>}
+        {view === 'stack' && <StackView tracker={tracker} logo={logo} />}
+        {view === 'popped' && <PoppedView tracker={tracker} logo={logo} />}
+        {view === 'alone' && <div className="mx-auto max-w-[300px]"><PassCard tracker={tracker} logo={logo} /></div>}
       </div>
     </section>
   )
@@ -62,7 +69,7 @@ export default function WalletShowcase({ tracker }) {
    Flow layout with negative margins rather than absolute offsets: the pass
    sets its own height, so nothing can slice through it when its content
    changes length. */
-function StackView({ tracker }) {
+function StackView({ tracker, logo }) {
   return (
     <div className="mx-auto max-w-[300px]">
       <div>
@@ -70,7 +77,7 @@ function StackView({ tracker }) {
           <Sliver key={n.name} card={n} className={i ? '-mt-[22px]' : ''} />
         ))}
         <div className="relative z-10 -mt-[22px] drop-shadow-[0_-4px_14px_rgba(0,0,0,.5)]">
-          <PassCard tracker={tracker} />
+          <PassCard tracker={tracker} logo={logo} />
         </div>
         {NEIGHBOURS.slice(2).map((n, i) => (
           <Sliver key={n.name} card={n} className={`relative -mt-[18px] ${i ? '-mt-[22px]' : ''}`} />
@@ -84,7 +91,7 @@ function StackView({ tracker }) {
 }
 
 /* Lifted out, the rest dimmed behind it. */
-function PoppedView({ tracker }) {
+function PoppedView({ tracker, logo }) {
   return (
     <div className="mx-auto max-w-[300px]">
       <div className="scale-[.94] opacity-35 blur-[2px]">
@@ -92,7 +99,7 @@ function PoppedView({ tracker }) {
         <Sliver card={NEIGHBOURS[1]} className="-mt-[22px]" />
       </div>
       <div className="relative z-10 -mt-[26px] drop-shadow-[0_26px_50px_rgba(0,0,0,.7)]">
-        <PassCard tracker={tracker} big />
+        <PassCard tracker={tracker} logo={logo} big />
       </div>
       <p className="mt-5 text-center text-[13px] text-white/45">
         Tapped open — the view they get straight off the lock screen
@@ -112,7 +119,7 @@ function Sliver({ card, className = '' }) {
 }
 
 /* The card itself. Field layout mirrors buildPassJson in src/lib/passkit.js. */
-function PassCard({ tracker, big }) {
+function PassCard({ tracker, logo, big }) {
   const stage = stageOf(tracker?.stage || 'ON_MY_WAY')
   const step = STAGE_ORDER.indexOf(stage.key)
 
@@ -120,9 +127,14 @@ function PassCard({ tracker, big }) {
     <div className="overflow-hidden rounded-[22px] bg-[#1f3b57] text-white shadow-2xl">
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
         <div className="flex min-w-0 items-start gap-2">
-          <span className="mt-[1px] grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#f0a202] text-[#1f3b57]">
+{logo ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={logo} alt="" className="h-6 w-auto max-w-[110px] shrink-0 object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+          ) : (
+                    <span className="mt-[1px] grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#f0a202] text-[#1f3b57]">
             <TickIcon size={14} />
           </span>
+          )}
           <span className="text-[12px] font-bold uppercase leading-[1.25] tracking-wide">{TRADE_NAME}</span>
         </div>
         {tracker?.jobRef && (

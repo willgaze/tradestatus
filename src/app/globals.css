@@ -40,6 +40,11 @@ body {
 .pb-safe { padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
 
 .surface { background: var(--mts-surface); }
+/* The dashboard's own controls take the night's theme, so a green build has
+   green buttons rather than blue ones under a green page. Stage tints (the
+   customer page) are deliberately NOT this: they must keep their meaning. */
+.accent-fill { background: var(--mts-accent); color: #fff; }
+.accent-text { color: var(--mts-accent); }
 .muted   { color: var(--mts-muted); }
 .hairline { border-color: var(--mts-line); }
 
@@ -296,7 +301,9 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 2.875rem;
-    border-radius: 12px;
+    /* Capsule, like every other control. 12px here was the last square corner
+       on the trade's most-used button and read as an older iOS. */
+    border-radius: 999px;
     padding: 0.5rem 0.25rem;
     font-size: 0.875rem;
     font-weight: 600;

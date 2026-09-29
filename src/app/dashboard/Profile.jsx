@@ -17,6 +17,7 @@ export default function Profile() {
   const [saved, setSaved] = useState(false)
   const [looking, setLooking] = useState(false)
   const [lookupNote, setLookupNote] = useState(null)
+  const [needsKey, setNeedsKey] = useState(false)
 
   const load = useCallback(async () => {
     const r = await fetch('/api/dashboard/profile')
@@ -28,7 +29,7 @@ export default function Profile() {
 
   const lookup = async () => {
     if (!p.vehicleReg) return
-    setLooking(true); setLookupNote(null)
+    setLooking(true); setLookupNote(null); setNeedsKey(false)
     try {
       const r = await fetch('/api/dashboard/vehicle-lookup', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -39,7 +40,7 @@ export default function Profile() {
         setP((x) => ({ ...x, vehicleMake: v.make || x.vehicleMake, vehicleColour: v.colour || x.vehicleColour }))
         setLookupNote(`Found it — ${[v.colour, v.make].filter(Boolean).join(' ')}. Add the model yourself.`)
       } else if (v.error === 'not_configured') {
-        setLookupNote('No DVLA key set up yet — type the make and colour below.')
+        setNeedsKey(true)
       } else if (v.error === 'not_found') {
         setLookupNote('DVLA does not know that plate. Type the make and colour below.')
       } else {
@@ -61,10 +62,10 @@ export default function Profile() {
   const ready = p.engineerName || p.vehicleReg
 
   return (
-    <section className="surface mt-8 rounded-4xl shadow-card">
+    <section className="glass r-outer mt-8">
       <button type="button" onClick={() => setOpen((o) => !o)}
               className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+        <span className="grid h-11 w-11 shrink-0 place-items-center r-inner"
               style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
           <VanIcon size={21} />
         </span>
@@ -101,13 +102,31 @@ export default function Profile() {
             <div className="mt-2 flex gap-2">
               <input value={p.vehicleReg || ''} onChange={set('vehicleReg')}
                      placeholder="AB12 CDE" autoCapitalize="characters" autoCorrect="off"
-                     className="min-h-[50px] flex-1 rounded-2xl bg-[#f5d32a] px-4 text-center font-mono text-[18px] font-bold tracking-wider text-black placeholder:text-black/35" />
+                     className="r-inner min-h-[50px] flex-1 bg-[#f5d32a] px-4 text-center font-mono text-[18px] font-bold tracking-wider text-black placeholder:text-black/35" />
               <button type="button" onClick={lookup} disabled={looking || !p.vehicleReg}
-                      className="min-h-[50px] shrink-0 rounded-2xl bg-brand-600 px-4 text-[15px] font-semibold text-white disabled:opacity-50">
+                      className="btn accent-fill !min-h-[50px] shrink-0 !px-4 !text-[15px]">
                 {looking ? '…' : 'Look up'}
               </button>
             </div>
             {lookupNote && <p className="mt-2 text-[14px] muted">{lookupNote}</p>}
+            {needsKey && (
+              <div className="r-inner mt-3 px-4 py-3.5 text-[14px]"
+                   style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
+                <p className="font-semibold">The lookup is built but has no key yet.</p>
+                <p className="mt-1">
+                  DVLA give one out free, to a named person, in about five minutes:
+                </p>
+                <a href="https://developer-portal.driver-vehicle-licensing.api.gov.uk/apis/vehicle-enquiry-service"
+                   target="_blank" rel="noreferrer"
+                   className="btn btn-tinted mt-2.5 !min-h-[42px] !px-4 !text-[14px]">
+                  Get a DVLA key ›
+                </a>
+                <p className="mt-2.5 muted">
+                  Then add it in Vercel as <code className="font-mono">DVLA_API_KEY</code> and redeploy.
+                  Until then, type the make and colour below — it is ten seconds, once.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -121,9 +140,15 @@ export default function Profile() {
                  value={p.engineerPhoto || ''} onChange={set('engineerPhoto')} placeholder="https://…" />
           <Field label="Photo of the van" hint="Sign-written is best — they spot it from the window"
                  value={p.vehiclePhoto || ''} onChange={set('vehiclePhoto')} placeholder="https://…" />
+          <Field label="Your logo" hint="Shown at the top of the customer's page instead of your name in plain text"
+                 value={p.brandLogo || ''} onChange={set('brandLogo')} placeholder="https://…" />
+          {p.brandLogo && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={p.brandLogo} alt="Your logo" className="h-10 w-auto max-w-[220px] object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+          )}
 
           <button type="button" onClick={save} disabled={saving}
-                  className="min-h-[54px] w-full rounded-2xl bg-brand-600 text-[17px] font-semibold text-white disabled:opacity-60">
+                  className="btn accent-fill w-full">
             {saving ? 'Saving…' : 'Save — every job from now on'}
           </button>
         </div>
@@ -138,7 +163,7 @@ function Field({ label, hint, ...rest }) {
       <span className="text-[15px] font-semibold">{label}</span>
       {hint && <span className="mt-0.5 block text-[14px] muted">{hint}</span>}
       <input {...rest} type="text"
-             className="surface mt-2 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+             className="field mt-2" />
     </label>
   )
 }

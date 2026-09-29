@@ -218,6 +218,8 @@ pairs. Add one if the list is running short, checking white text on the accent
 and dark text on the background for contrast. Generating one at runtime to be
 "a colour not used before" produces mud and unreadable text within a week.
 
+**Capture the diary before finishing — against `next start`, never `next dev`.** The dev server paints its own badge over the page and v1.4.0's diary has it in every shot. The script now refuses a dev server; build, then start, then capture.
+
 **Capture the diary before finishing.** `scripts/capture-diary.mjs` writes
 `docs/diary/v<version>/`. Nothing in there is ever overwritten, tidied or
 deleted: it is the record of what the app looked like on a given day, and it is

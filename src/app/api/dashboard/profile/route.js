@@ -34,6 +34,7 @@ export async function PUT(request) {
       vehicleModel: cleanText(b.vehicleModel, 40),
       vehicleColour: cleanText(b.vehicleColour, 30),
       vehiclePhoto: cleanText(b.vehiclePhoto, 500),
+      brandLogo: cleanText(b.brandLogo, 500),
     }
     const profile = await prisma.tradeProfile.upsert({
       where: { id: ID }, create: { id: ID, ...data }, update: data,

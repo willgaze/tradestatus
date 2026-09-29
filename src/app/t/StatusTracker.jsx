@@ -10,16 +10,18 @@ import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
+import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
-import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon } from '@/components/icons'
+import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon } from '@/components/icons'
 
 // Dates come from src/lib/when.js and never from toLocaleString(): this page
 // renders on the server and again on the phone, and the two ship different
 // locale data, which tore the page down mid-hydration.
 
-export default function StatusTracker({ initialStatus, initialProfile }) {
+export default function StatusTracker({ initialStatus, initialProfile, initialBrand }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
+  const [brand, setBrand] = useState(initialBrand || null)
   const [pulse, setPulse] = useState(false)
   // Which rows are open. Nothing is, at rest: the page is a glance and a list.
   const [openRow, setOpenRow] = useState(null)
@@ -30,8 +32,9 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
     try {
       const r = await fetch(`/api/status/${initialStatus.code}`, { cache: 'no-store' })
       if (!r.ok) return
-      const { status: next, profile: nextProfile } = await r.json()
+      const { status: next, profile: nextProfile, brand: nextBrand } = await r.json()
       setProfile(nextProfile || null)
+      setBrand(nextBrand || null)
       setStatus((prev) => {
         // Flash the card only when the stage actually moves, not on every poll.
         if (next.stage !== prev.stage) { setPulse(true); setTimeout(() => setPulse(false), 700) }
@@ -88,7 +91,15 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
     <main className="relative z-10 mx-auto max-w-xl px-4 pb-16 pt-safe">
       {/* who is coming — the only thing the customer cares about first */}
       <header className="animate-rise">
-        <p className="text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>{TRADE_NAME}</p>
+        {brand?.logo ? (
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={brand.logo} alt={TRADE_NAME} className="h-9 w-9 rounded-[10px] object-cover bg-white/60" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            <p className="text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>{TRADE_NAME}</p>
+          </div>
+        ) : (
+          <p className="text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>{TRADE_NAME}</p>
+        )}
         <h1 className="mt-2 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">
           {status.customerName ? `Hello ${status.customerName}` : 'Your job'}
         </h1>
@@ -179,7 +190,7 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
               {profile.engineerPhoto ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'}
-                     className="h-16 w-16 shrink-0 rounded-full object-cover" />
+                     className="h-16 w-16 shrink-0 rounded-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
               ) : (
                 <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full"
                       style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
@@ -197,7 +208,7 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
                 {profile.vehiclePhoto ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img src={profile.vehiclePhoto} alt={profile.vehicle || 'The van'}
-                       className="h-16 w-24 shrink-0 rounded-xl object-cover" />
+                       className="h-16 w-24 shrink-0 rounded-xl object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                 ) : (
                   <span className="grid h-16 w-24 shrink-0 place-items-center rounded-xl"
                         style={{ color: 'var(--tint)', background: 'rgb(var(--glass-line) / 0.08)' }}>
@@ -245,6 +256,42 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
                    hint={windowLabel(status) || 'No arrival time is promised'} />
             )}
             {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
+            {(status.jobAddress || status.what3words || status.mapPin) && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {status.jobAddress && (
+                  <a href={mapsSearchUrl(status.jobAddress)} target="_blank" rel="noreferrer"
+                     className="btn btn-tinted !min-h-[40px] !px-3.5 !text-[14px]">
+                    <CompassIcon size={15} /> Open in Maps
+                  </a>
+                )}
+                {status.what3words && (
+                  <a href={w3wUrl(status.what3words)} target="_blank" rel="noreferrer"
+                     className="btn btn-grey !min-h-[40px] !px-3.5 !text-[14px]">
+                    ///{status.what3words}
+                  </a>
+                )}
+                {status.mapPin && (
+                  <a href={status.mapPin} target="_blank" rel="noreferrer"
+                     className="btn btn-grey !min-h-[40px] !px-3.5 !text-[14px]">
+                    <PinIcon size={15} /> Your pin
+                  </a>
+                )}
+              </div>
+            )}
+            {(status.housePhoto || status.doorPhoto) && (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {[[status.housePhoto, 'The house from the road'], [status.doorPhoto, 'The door to come to']]
+                  .filter(([src]) => src)
+                  .map(([src, label]) => (
+                    <figure key={label} className="min-w-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt={label} className="r-inner aspect-[4/3] w-full object-cover"
+                           onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }} />
+                      <figcaption className="mt-1 text-[13px] muted">{label}</figcaption>
+                    </figure>
+                  ))}
+              </div>
+            )}
             {status.jobSummary && <Row label="Work" value={status.jobSummary} />}
             {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
             {status.updatedAt && <Row label="Last updated" value={dayAndTime(status.updatedAt)} />}

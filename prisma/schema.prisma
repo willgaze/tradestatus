@@ -44,6 +44,12 @@ model TradeStatus {
   what3words    String?                      // for a farm track with no number
   accessNotes   String?                      // parking, gate code, ring twice, baby asleep
   notesUpdatedAt DateTime?
+  // Finding the door. A what3words square for a track with no number, a
+  // dropped pin the customer pasted, and — set by the trade on the first
+  // visit so the next one is easy — the house from the road and the door.
+  mapPin        String?                      // a Google Maps share link
+  housePhoto    String?                      // URL for now; camera upload needs storage
+  doorPhoto     String?
 
   // Will someone be in? The question every trade and every courier asks
   // blind, and the one the customer can answer in two seconds. Costs a

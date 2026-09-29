@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
-import { publicProfile } from '@/lib/profile'
+import { publicProfile, publicBrand } from '@/lib/profile'
 
 // Public on purpose — the customer has no account and never will. The code is
 // the credential, so it is unguessable and revocable, and this hands back only
@@ -28,9 +28,9 @@ export async function GET(request, { params }) {
 
     const status = publicShape(row)
     const arriving = status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE'
-    const profile = arriving ? await publicProfile() : null
+    const [profile, brand] = await Promise.all([arriving ? publicProfile() : null, publicBrand()])
 
-    return NextResponse.json({ status, profile }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ status, profile, brand }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('status lookup failed:', error)
     return NextResponse.json({ error: 'unavailable' }, { status: 503 })

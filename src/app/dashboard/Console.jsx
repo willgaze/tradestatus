@@ -10,8 +10,9 @@ import Profile from './Profile'
 import WalletShowcase from './WalletShowcase'
 import Roadmap from './Roadmap'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
+import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import { DB_REASONS } from '@/lib/db-errors'
-import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon } from '@/components/icons'
+import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon } from '@/components/icons'
 
 // The API answers a failure with a reason code rather than a status number,
 // because "503" tells the one person who can fix this nothing. Whoever is
@@ -257,6 +258,38 @@ export default function Console() {
                 ))}
               </div>
 
+              {/* Getting there — and what they told you about the door. This
+                  used to live only on the customer's page, which meant the
+                  trade never saw "gate sticks, use the back door". */}
+              {(t.jobAddress || t.mapPin || t.what3words) && (
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  <a href={mapsDirectionsUrl({ mapPin: t.mapPin, address: t.jobAddress })} target="_blank" rel="noreferrer"
+                     className="btn btn-tinted !min-h-[44px] !px-4 !text-[14px]">
+                    <CompassIcon size={16} /> Navigate
+                  </a>
+                  {t.what3words && (
+                    <a href={w3wUrl(t.what3words)} target="_blank" rel="noreferrer"
+                       className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">///{t.what3words}</a>
+                  )}
+                  {t.mapPin && (
+                    <a href={t.mapPin} target="_blank" rel="noreferrer"
+                       className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]"><PinIcon size={15} /> Their pin</a>
+                  )}
+                </div>
+              )}
+              {(t.doorToUse || t.petsOnSite || t.accessNotes) && (
+                <div className="r-inner mt-3 flex items-start gap-3 px-4 py-3" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
+                  <KeyIcon size={18} className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }} />
+                  <span className="min-w-0 text-[14px]">
+                    <span className="block font-semibold">
+                      {[t.doorToUse && `${t.doorToUse.charAt(0)}${t.doorToUse.slice(1).toLowerCase()} door`,
+                        t.petsOnSite && 'There is a dog'].filter(Boolean).join(' · ') || 'From the customer'}
+                    </span>
+                    {t.accessNotes && <span className="block">{t.accessNotes}</span>}
+                  </span>
+                </div>
+              )}
+
               <div className="r-inner mt-4 p-4" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                 <p className="text-[13px] font-semibold muted">Send this to the customer</p>
                 <p className="mt-1.5 select-all break-all font-mono text-[14px]">
@@ -319,6 +352,21 @@ export default function Console() {
                   </button>
                 )}
                 <span className="text-[14px] muted">{t.viewCount || 0} view{t.viewCount === 1 ? '' : 's'}</span>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {[['housePhoto', 'House from the road'], ['doorPhoto', 'The door to come to']].map(([k, label]) => (
+                  <label key={k} className="block text-[13px] muted">
+                    {label}
+                    {t[k] && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={t[k]} alt={label} className="r-inner mt-1.5 aspect-[4/3] w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                    )}
+                    <input type="url" defaultValue={t[k] || ''} placeholder="Photo link…" inputMode="url"
+                           onBlur={(e) => e.target.value !== (t[k] || '') && patch(t.id, { [k]: e.target.value })}
+                           className="field mt-1.5 !min-h-[44px] !text-[14px]" />
+                  </label>
+                ))}
               </div>
 
               <label className="mt-4 block text-[14px] font-medium muted">

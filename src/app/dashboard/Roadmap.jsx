@@ -40,10 +40,10 @@ export default function Roadmap() {
   const wantedCount = Object.values(interest).filter((i) => i?.wanted).length
 
   return (
-    <section className="surface mt-4 rounded-4xl shadow-card">
+    <section className="glass mt-4 r-outer">
       <button type="button" onClick={() => setOpen((o) => !o)}
               className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+        <span className="grid h-11 w-11 shrink-0 place-items-center r-inner"
               style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
           <CompassIcon size={21} />
         </span>
@@ -88,7 +88,7 @@ export default function Roadmap() {
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <button type="button"
                                   onClick={() => save(item.key, !mine?.wanted, mine?.note)}
-                                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 text-[14px] font-semibold transition-colors"
+                                  className="inline-flex min-h-[40px] items-center gap-1.5 r-inner px-3.5 text-[14px] font-semibold transition-colors"
                                   style={mine?.wanted
                                     ? { background: 'var(--stage-done)', color: '#fff' }
                                     : { background: 'rgb(var(--glass-line) / 0.1)' }}>
@@ -110,10 +110,10 @@ export default function Roadmap() {
                         <div className="mt-2.5">
                           <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} rows={2} maxLength={300}
                                     placeholder="Only worth it if it also…"
-                                    className="surface w-full rounded-xl border px-3 py-2 text-[15px] hairline" />
+                                    className="surface w-full r-inner border px-3 py-2 text-[15px] hairline" />
                           <button type="button"
                                   onClick={() => { save(item.key, mine?.wanted ?? true, noteText); setNoteFor(null) }}
-                                  className="mt-2 min-h-[40px] rounded-xl bg-brand-600 px-4 text-[14px] font-semibold text-white">
+                                  className="mt-2 min-h-[40px] r-inner accent-fill px-4 text-[14px] font-semibold">
                             Save note
                           </button>
                         </div>

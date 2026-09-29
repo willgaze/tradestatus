@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cleanText } from '@/lib/clean-text'
 import { isValidPresence } from '@/lib/presence'
+import { normaliseW3w, normaliseMapPin } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +37,10 @@ export async function PUT(request, { params }) {
         doorToUse: DOORS.includes(door) ? door : null,
         petsOnSite: Boolean(body.petsOnSite),
         // ///filled.count.soap — keep the words, drop anything else.
-        what3words: cleanText(body.what3words, 60),
+        // Three real words or nothing — a typo stored here sends a van to the
+        // wrong field. Same for the pin: Google's hosts only.
+        what3words: normaliseW3w(body.what3words),
+        mapPin: normaliseMapPin(body.mapPin),
         accessNotes: cleanText(body.accessNotes, 400),
         notesUpdatedAt: new Date(),
         // Presence is stamped separately: it goes stale in hours, while "use
@@ -57,6 +61,9 @@ export async function PUT(request, { params }) {
         petsOnSite: updated.petsOnSite,
         what3words: updated.what3words,
         accessNotes: updated.accessNotes,
+        mapPin: updated.mapPin,
+        housePhoto: updated.housePhoto,
+        doorPhoto: updated.doorPhoto,
         presence: updated.presence,
         presenceNote: updated.presenceNote,
         presenceAt: updated.presenceAt,

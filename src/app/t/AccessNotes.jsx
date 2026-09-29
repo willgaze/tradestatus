@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { normaliseW3w, normaliseMapPin, w3wUrl } from '@/lib/places'
 
 const DOORS = [
   { key: 'FRONT', label: 'Front' },
@@ -25,9 +26,10 @@ export default function AccessNotes({ status, onSaved }) {
   const [door, setDoor] = useState(status.doorToUse || null)
   const [pets, setPets] = useState(Boolean(status.petsOnSite))
   const [w3w, setW3w] = useState(status.what3words || '')
+  const [pin, setPin] = useState(status.mapPin || '')
   const [notes, setNotes] = useState(status.accessNotes || '')
 
-  const anything = door || pets || w3w || notes
+  const anything = door || pets || w3w || pin || notes
 
   const save = async () => {
     setSaving(true); setSaved(false)
@@ -35,7 +37,7 @@ export default function AccessNotes({ status, onSaved }) {
       const r = await fetch(`/api/status/${status.code}/notes`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doorToUse: door, petsOnSite: pets, what3words: w3w, accessNotes: notes }),
+        body: JSON.stringify({ doorToUse: door, petsOnSite: pets, what3words: w3w, mapPin: pin, accessNotes: notes }),
       })
       if (r.ok) {
         const { notes: fresh } = await r.json()
@@ -87,6 +89,33 @@ export default function AccessNotes({ status, onSaved }) {
             <input type="text" value={w3w} onChange={(e) => setW3w(e.target.value)}
                    placeholder="///filled.count.soap" autoCapitalize="none" autoCorrect="off"
                    className="field mt-2" />
+            {normaliseW3w(w3w) && (
+              <a href={w3wUrl(normaliseW3w(w3w))} target="_blank" rel="noreferrer"
+                 className="mt-2 inline-flex min-h-[40px] items-center text-[15px] font-medium" style={{ color: 'var(--tint)' }}>
+                Check it opens on the right square ›
+              </a>
+            )}
+          </label>
+
+          <label className="block">
+            <span className="text-[15px] font-semibold">Or drop a pin</span>
+            <span className="mt-0.5 block text-[14px] muted">
+              In Google Maps: press and hold on your door, Share, paste the link here
+            </span>
+            <input type="url" value={pin} onChange={(e) => setPin(e.target.value)}
+                   placeholder="https://maps.app.goo.gl/…" autoCapitalize="none" autoCorrect="off" inputMode="url"
+                   className="field mt-2" />
+            {pin && !normaliseMapPin(pin) && (
+              <span className="mt-2 block text-[14px]" style={{ color: 'var(--stage-paused)' }}>
+                That is not a Google Maps link — it needs to start https://maps.app.goo.gl or https://www.google.com/maps
+              </span>
+            )}
+            {normaliseMapPin(pin) && (
+              <a href={normaliseMapPin(pin)} target="_blank" rel="noreferrer"
+                 className="mt-2 inline-flex min-h-[40px] items-center text-[15px] font-medium" style={{ color: 'var(--tint)' }}>
+                Check the pin ›
+              </a>
+            )}
           </label>
 
           <label className="block">

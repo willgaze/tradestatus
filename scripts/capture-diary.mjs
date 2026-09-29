@@ -15,6 +15,7 @@
  * the history, which is the one thing it exists for.
  */
 import { chromium } from 'playwright'
+import sharp from 'sharp'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { VERSION, BUILD_DATE, theme, CHANGELOG } from '../src/lib/version.js'
 
@@ -31,6 +32,10 @@ const SHOTS = [
   { name: 'login',          path: () => '/login',     scheme: 'light', full: false, auth: false },
   { name: 'landing',        path: () => '/',          scheme: 'light', full: false, auth: false },
 ]
+
+// Playwright only writes PNG or JPEG; sharp (already here as a Next.js dependency)
+// turns the PNG buffer into the WebP the diary keeps.
+const toWebp = (png, file) => sharp(png).webp({ quality: 82 }).toFile(file)
 
 const run = async () => {
   if (!CODE) throw new Error('Set DEMO_CODE to a tracking code that exists on this server.')
@@ -65,7 +70,7 @@ const run = async () => {
                                ['On its own', 'wallet-alone']]) {
       await page.getByRole('button', { name: tab, exact: true }).click()
       await page.waitForTimeout(500)
-      await card.screenshot({ path: `${OUT}${name}.webp`, type: 'webp', quality: 82 })
+      await toWebp(await card.screenshot({ type: 'png' }), `${OUT}${name}.webp`)
       done.push(name)
       console.log('  captured', name)
     }
@@ -82,8 +87,13 @@ const run = async () => {
     const page = await ctx.newPage()
     await page.goto(BASE + shot.path(), { waitUntil: 'networkidle' })
     await page.waitForTimeout(900)
+    // The dev server draws its own badge over the page. v1.4.0's diary was
+    // captured with it in every shot. Refuse rather than record it.
+    if (await page.locator('nextjs-portal').count()) {
+      throw new Error(`${BASE} is a dev server (Next's badge is on the page). Capture against \`next start\`.`)
+    }
     const file = `${OUT}${shot.name}.webp`
-    await page.screenshot({ path: file, fullPage: shot.full, type: 'webp', quality: 82 })
+    await toWebp(await page.screenshot({ fullPage: shot.full, type: 'png' }), file)
     done.push(shot.name)
     console.log('  captured', shot.name)
     await ctx.close()
