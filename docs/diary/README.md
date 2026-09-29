@@ -20,5 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.4.0](./v1.4.0/) | 2026-09-29 | Moss — redrawn to the iOS look, every emoji replaced with a drawn icon |
+| [v1.3.3](./v1.3.3/) | 2026-09-29 | Harbour — customer page pruned to a glance and rows |
 | [v1.3.1](./v1.3.1/) | 2026-09-29 | Harbour — dark-mode background fixed |
 | [v1.3.0](./v1.3.0/) | 2026-09-29 | Harbour |

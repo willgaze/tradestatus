@@ -39,21 +39,14 @@ export default function Presence({ status, onSaved }) {
   }
 
   return (
-    <section className="glass r-outer animate-rise mt-4 p-5" style={{ animationDelay: '180ms' }}>
-      <h2 className="text-[19px] font-semibold">Will someone be in?</h2>
-      <p className="mt-1 text-[15px] muted">
-        {current && fresh
-          ? 'They can see your answer. Change it any time.'
-          : 'Saves them a wasted trip — and you a second appointment.'}
-      </p>
-
-      <div className="mt-4 grid grid-cols-2 gap-2.5">
+    <div>
+      <div className="grid grid-cols-2 gap-2.5">
         {PRESENCE_ORDER.map((k) => {
           const p = PRESENCE[k]
           const on = current?.key === k && fresh
           return (
-            // Each answer wears its own tone when chosen, so a glance at the
-            // card says which one is set without reading it.
+            // Each answer wears its own tone once chosen, so a glance says
+            // which one is set without reading it.
             <button key={k} type="button" onClick={() => send(k)} disabled={saving === k}
                     aria-pressed={on}
                     className={`tone-${p.tone} r-inner flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 text-[15px] font-semibold transition-colors disabled:opacity-60`}
@@ -87,14 +80,13 @@ export default function Presence({ status, onSaved }) {
         <div className="mt-4">
           <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} autoFocus
                  placeholder="Bottom of the garden — ring twice"
-                 className="r-inner min-h-[50px] w-full px-4 text-[17px]"
-                 style={{ background: 'rgb(var(--glass-line) / 0.08)', color: 'var(--mts-text)' }} />
+                 className="field" />
           <button type="button" onClick={() => send(current?.key || 'IN', note)}
                   className="btn btn-filled mt-2.5 w-full">
             Send it
           </button>
         </div>
       )}
-    </section>
+    </div>
   )
 }

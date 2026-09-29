@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { KeyIcon, ChevronIcon } from '@/components/icons'
 
 const DOORS = [
   { key: 'FRONT', label: 'Front' },
@@ -21,7 +20,6 @@ const DOORS = [
  * People will type one in if you let them, and this is a link sent by text.
  */
 export default function AccessNotes({ status, onSaved }) {
-  const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [door, setDoor] = useState(status.doorToUse || null)
@@ -43,7 +41,6 @@ export default function AccessNotes({ status, onSaved }) {
         const { notes: fresh } = await r.json()
         onSaved?.(fresh)
         setSaved(true); setTimeout(() => setSaved(false), 2500)
-        setOpen(false)
       }
     } finally {
       setSaving(false)
@@ -51,33 +48,7 @@ export default function AccessNotes({ status, onSaved }) {
   }
 
   return (
-    <section className="glass r-outer animate-rise mt-4" style={{ animationDelay: '200ms' }}>
-      <button type="button" onClick={() => setOpen((o) => !o)}
-              aria-expanded={open}
-              className="flex min-h-[64px] w-full items-center gap-4 px-5 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
-              style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
-          <KeyIcon size={21} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[17px] font-semibold">Help them find you</span>
-          <span className="block text-[14px] muted">
-            {anything ? 'Saved — tap to change' : 'Which door, parking, the dog'}
-          </span>
-        </span>
-        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
-                     className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
-      </button>
-
-      {saved && !open && (
-        <p className="px-5 pb-5 text-[14px]" style={{ color: 'var(--stage-done)' }}>
-          Sent. They will see it before they set off.
-        </p>
-      )}
-
-      {open && (
-        <div className="space-y-6 px-5 py-6"
-             style={{ boxShadow: 'inset 0 1px 0 0 rgb(var(--glass-line) / var(--glass-line-alpha))' }}>
+        <div className="space-y-6">
           <div>
             <p className="text-[15px] font-semibold">Which door?</p>
             <div className="mt-2.5 flex gap-2">
@@ -115,8 +86,7 @@ export default function AccessNotes({ status, onSaved }) {
             </span>
             <input type="text" value={w3w} onChange={(e) => setW3w(e.target.value)}
                    placeholder="///filled.count.soap" autoCapitalize="none" autoCorrect="off"
-                   className="r-inner mt-2 min-h-[50px] w-full px-4 text-[17px]"
-                   style={{ background: 'rgb(var(--glass-line) / 0.08)', color: 'var(--mts-text)' }} />
+                   className="field mt-2" />
           </label>
 
           <label className="block">
@@ -126,8 +96,7 @@ export default function AccessNotes({ status, onSaved }) {
             </span>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={400}
                       placeholder="Park on the verge past the postbox. Gate sticks — lift it."
-                      className="r-inner mt-2 w-full px-4 py-3 text-[17px]"
-                      style={{ background: 'rgb(var(--glass-line) / 0.08)', color: 'var(--mts-text)' }} />
+                      className="field mt-2" />
             <span className="mt-1 block text-right text-[12px] muted">{notes.length}/400</span>
           </label>
 
@@ -137,11 +106,10 @@ export default function AccessNotes({ status, onSaved }) {
             text message — tell them the code on the phone instead.
           </p>
 
-          <button type="button" onClick={save} disabled={saving} className="btn btn-filled w-full">
+          <button type="button" onClick={save} disabled={saving}
+                  className="btn btn-filled w-full">
             {saving ? 'Sending…' : 'Send this to them'}
           </button>
         </div>
-      )}
-    </section>
   )
 }

@@ -54,6 +54,9 @@ export const CHANGELOG = [
     'Each stage now has its own colour and keeps it: blue booked, indigo on the way, amber paused, green done',
     'Fixed: dates were formatted differently by the server and the phone, which tore the page apart as it loaded',
   ] },
+  { version: '1.3.3', date: '2026-09-29', notes: [
+    'Customer page pruned: status up top, then rows that open on tap. The call button never hides.',
+  ] },
   { version: '1.3.2', date: '2026-09-29', notes: [
     'WhatsApp the customer their link in one tap, beside the text button',
   ] },

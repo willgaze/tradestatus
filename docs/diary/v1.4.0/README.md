@@ -3,7 +3,9 @@
 **2026-09-29** · background `#f3f8f4` · accent `#2c6e49`
 
 The whole app redrawn to the current iOS look: translucent layered cards over a
-stage-tinted wash, the system font, inset grouped lists, proper dark mode.
+stage-tinted wash, the system font, concentric radii, proper dark mode. Built on
+top of v1.3.3's shape — the status card open at the top, then rows that open on
+tap — which came from Will saying the page had a lot going on.
 
 Every emoji is gone. They rendered in whatever style the customer's phone
 happened to ship, at a weight and colour nobody chose, and a cartoon van beside
@@ -35,6 +37,10 @@ next nightly run.
 
 ![customer-light](./customer-light.webp)
 
+### customer-open
+
+![customer-open](./customer-open.webp)
+
 ### customer-dark
 
 ![customer-dark](./customer-dark.webp)
@@ -50,6 +56,10 @@ next nightly run.
 ### dashboard
 
 ![dashboard](./dashboard.webp)
+
+### customer-done
+
+![customer-done](./customer-done.webp)
 
 ### dashboard-dark
 

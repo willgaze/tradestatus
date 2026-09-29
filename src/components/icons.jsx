@@ -163,6 +163,13 @@ export const CompassIcon = (p) => (
   </Svg>
 )
 
+export const ClockIcon = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.2V12l3.2 2" />
+  </Svg>
+)
+
 export const ChevronIcon = (p) => (
   <Svg {...p}>
     <path d="m9.5 5.5 7 6.5-7 6.5" />

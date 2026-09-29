@@ -216,7 +216,10 @@ body {
     padding: 0.875rem 1.5rem;
     font-size: 1.0625rem;
     font-weight: 600;
-    line-height: 1;
+    /* Not 1: a long label — a trade's whole name plus a phone number — does
+       wrap on a narrow phone, and at line-height 1 the two lines touch. */
+    line-height: 1.25;
+    text-align: center;
     transition: transform 220ms var(--spring), opacity 220ms var(--spring);
   }
 
