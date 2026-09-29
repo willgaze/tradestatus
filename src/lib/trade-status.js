@@ -5,46 +5,58 @@
 // than one trade, and the tradesperson's name comes from NEXT_PUBLIC_TRADE_NAME
 // at the top of the page, never from copy baked into a shared constant. "On my way" is a fact. "With you in 20 minutes" is a
 // promise one plumber cannot keep, and the site does not make it anywhere.
+//
+// `short` is the same stage in fewer characters, for the five-across control
+// on the trade's own screen: at phone width the full labels wrapped to three
+// lines each and the row stopped reading as one control. The customer is never
+// shown `short` — they get the whole thing, because they have the room.
+//
+// `tone` does two jobs and is the only name a stage carries for either: it
+// picks the colour (--stage-<tone> in globals.css) and the drawing (StageIcon
+// in src/components/icons.jsx). It used to carry an emoji as well, which
+// rendered in whatever style the customer's phone shipped and made a finished
+// page look like a placeholder. This file is imported by the API routes, so it
+// holds no JSX and no CSS — only the name.
 
 export const STAGES = {
   BOOKED: {
     key: 'BOOKED',
     label: 'Booked in',
+    short: 'Booked',
     tone: 'booked',
     customerLine: 'Your job is in the diary.',
-    icon: '📅',
     step: 1,
   },
   ON_MY_WAY: {
     key: 'ON_MY_WAY',
     label: 'On my way',
+    short: 'On way',
     tone: 'onway',
     customerLine: 'They have set off and are heading to you.',
-    icon: '🚐',
     step: 2,
   },
   ON_SITE: {
     key: 'ON_SITE',
     label: 'On site',
+    short: 'On site',
     tone: 'onsite',
     customerLine: 'They are with you and work is under way.',
-    icon: '🔧',
     step: 3,
   },
   PAUSED: {
     key: 'PAUSED',
     label: 'Paused',
+    short: 'Paused',
     tone: 'paused',
     customerLine: 'Work is on hold — the note below says why.',
-    icon: '⏸️',
     step: 3,
   },
   DONE: {
     key: 'DONE',
     label: 'Job done',
+    short: 'Done',
     tone: 'done',
     customerLine: 'Work is finished and the site is tidy.',
-    icon: '✅',
     step: 4,
   },
 }

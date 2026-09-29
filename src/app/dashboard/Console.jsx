@@ -11,6 +11,7 @@ import WalletShowcase from './WalletShowcase'
 import Roadmap from './Roadmap'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { DB_REASONS } from '@/lib/db-errors'
+import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon } from '@/components/icons'
 
 // The API answers a failure with a reason code rather than a status number,
 // because "503" tells the one person who can fix this nothing. Whoever is
@@ -28,7 +29,10 @@ async function failure(response, fallback) {
 // Built for a phone held in one hand on a driveway: the stage buttons are the
 // whole point, and they are the biggest thing on the row.
 const STAGE_BUTTONS = ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']
-const EMPTY = { customerName: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
+// customerPhone belongs here even though nothing sets it initially: the form
+// renders an input bound to form.customerPhone, and a value of undefined makes
+// React treat it as uncontrolled and then complain the moment it is typed in.
+const EMPTY = { customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
 
 export default function Console() {
   const [trackers, setTrackers] = useState([])
@@ -168,12 +172,14 @@ export default function Console() {
       {label}
       <input type={type} value={form[key]} placeholder={placeholder}
              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-             className="surface mt-1.5 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+             className="field mt-1.5" />
     </label>
   )
 
   return (
-    <main className="mx-auto max-w-3xl px-5 pb-16 pt-safe">
+    <div className="relative min-h-screen" style={{ '--tint': 'var(--mts-accent)' }}>
+      <div className="stage-wash" aria-hidden="true" />
+      <main className="relative z-10 mx-auto max-w-3xl px-4 pb-16 pt-safe">
       <div className="flex items-center justify-between pt-2">
         <Mark className="h-7 w-auto" id="dash" />
         <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
@@ -183,13 +189,14 @@ export default function Console() {
       <p className="mt-1.5 text-[16px] muted">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
 
       {error && (
-        <div className="mt-5 rounded-3xl bg-stage-paused/10 p-5 text-stage-paused">
+        <div className="r-outer mt-5 p-5"
+             style={{ background: 'color-mix(in srgb, #ff3b30 12%, transparent)', color: '#ff3b30' }}>
           <p className="font-semibold">{error.title}</p>
           {error.fix && <p className="mt-1 text-sm">{error.fix}</p>}
         </div>
       )}
 
-      <form onSubmit={create} className="surface mt-6 grid gap-4 rounded-4xl p-6 shadow-card sm:grid-cols-2">
+      <form onSubmit={create} className="glass r-outer mt-6 grid gap-4 p-5 sm:grid-cols-2">
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
         {field('customerPhone', 'Their mobile', '07700 900123', 'tel')}
         {field('jobSummary', 'Job', 'Unvented cylinder swap')}
@@ -198,7 +205,7 @@ export default function Console() {
         {field('scheduledFor', 'Booked for (day/month/year)', '', 'date')}
         <div className="flex items-end">
           <button type="submit" disabled={saving}
-                  className="min-h-[54px] w-full rounded-2xl bg-brand-600 text-[17px] font-semibold text-white transition-transform active:scale-[.99] disabled:opacity-60">
+                  className="btn btn-filled w-full">
             {saving ? 'Creating…' : 'Create tracking link'}
           </button>
         </div>
@@ -209,13 +216,15 @@ export default function Console() {
        : (
         <ul className="mt-6 space-y-4">
           {trackers.map((t) => (
-            <li key={t.id} className={`surface rounded-4xl p-5 shadow-card ${t.isActive ? '' : 'opacity-55'}`}>
+            <li key={t.id}
+                className={`glass r-outer tone-${stageOf(t.stage).tone} p-4 ${t.isActive ? '' : 'opacity-55'}`}>
               {presenceOf(t.presence) && presenceIsFresh(t.presenceAt) && (
-                <div className={`mb-3 flex items-start gap-3 rounded-2xl px-4 py-3 ${
-                  t.presence === 'OUT'
-                    ? 'bg-stage-paused/12 text-stage-paused'
-                    : 'bg-stage-done/10 text-stage-done'}`}>
-                  <span className="text-[18px] leading-none">{presenceOf(t.presence).icon}</span>
+                <div className="r-inner mb-3 flex items-start gap-3 px-4 py-3"
+                     style={{
+                       background: `color-mix(in srgb, var(--stage-${t.presence === 'OUT' ? 'paused' : 'done'}) 13%, transparent)`,
+                       color: `var(--stage-${t.presence === 'OUT' ? 'paused' : 'done'})`,
+                     }}>
+                  <PresenceIcon presence={t.presence} size={19} className="mt-0.5 shrink-0" />
                   <span className="min-w-0">
                     <span className="block text-[15px] font-bold">{presenceOf(t.presence).forTrade}</span>
                     {t.presenceNote && <span className="block text-[14px]">{t.presenceNote}</span>}
@@ -231,44 +240,48 @@ export default function Console() {
                   <p className="text-[19px] font-semibold tracking-[-0.01em]">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="mt-0.5 text-[15px] muted">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
                 </div>
-                <p className="shrink-0 text-[14px] font-semibold">{stageOf(t.stage).icon} {stageOf(t.stage).label}</p>
+                <p className="inline-flex shrink-0 items-center gap-1.5 text-[14px] font-semibold"
+                   style={{ color: 'var(--tint)' }}>
+                  <StageIcon tone={stageOf(t.stage).tone} size={17} />
+                  {stageOf(t.stage).label}
+                </p>
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3.5 grid grid-cols-5 gap-1.5">
                 {STAGE_BUTTONS.map((s) => (
                   <button key={s} type="button" onClick={() => patch(t.id, { stage: s })}
-                          className={`min-h-[48px] flex-1 rounded-xl px-4 py-3 text-base font-semibold ${
-                            t.stage === s ? 'bg-brand-600 text-white shadow-sm' : 'bg-black/[.04] dark:bg-white/[.06]'}`}>
-                    {STAGES[s].label}
+                          aria-pressed={t.stage === s} aria-label={STAGES[s].label}
+                          className={`tone-${STAGES[s].tone} segment ${t.stage === s ? 'segment-on' : 'segment-off'}`}>
+                    {STAGES[s].short}
                   </button>
                 ))}
               </div>
 
-              <div className="mt-4 rounded-3xl bg-brand-50 p-4 dark:bg-brand-900/25">
-                <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
-                  Send this to the customer
-                </p>
+              <div className="r-inner mt-4 p-4" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
+                <p className="text-[13px] font-semibold muted">Send this to the customer</p>
                 <p className="mt-1.5 select-all break-all font-mono text-[14px]">
                   {origin}/t/{t.code}
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <a href={smsHref(t)}
-                     className="flex min-h-[54px] items-center justify-center rounded-2xl bg-brand-600 px-3 text-center text-[16px] font-semibold leading-tight text-white transition-transform active:scale-[.99]">
+                     className="btn !text-[16px]"
+                     style={{ background: 'var(--mts-accent)', color: '#fff' }}>
+                    <MessageIcon size={18} />
                     Text {greetingName(t.customerName) || 'them'}
                   </a>
                   <a href={waHref(t)} target="_blank" rel="noreferrer"
-                     className="flex min-h-[54px] items-center justify-center rounded-2xl bg-[#25D366] px-3 text-center text-[16px] font-semibold leading-tight text-[#062e18] transition-transform active:scale-[.99]">
+                     className="btn !text-[16px]" style={{ background: '#25D366', color: '#062e18' }}>
                     WhatsApp {greetingName(t.customerName) || 'them'}
                   </a>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button type="button" onClick={() => copyLink(t.code)}
-                          className="surface min-h-[44px] rounded-2xl border px-4 text-[14px] font-semibold hairline">
-                    {copied === t.code ? '✓ Copied' : 'Copy link'}
+                          className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">
+                    <CopyIcon size={16} /> {copied === t.code ? 'Copied' : 'Copy link'}
                   </button>
                   <a href={`/t/${t.code}`} target="_blank" rel="noreferrer"
-                     className="surface inline-flex min-h-[44px] items-center rounded-2xl border px-4 text-[14px] font-semibold hairline">
-                    Open it
+                     className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">
+                    <EyeIcon size={16} /> Open it
                   </a>
                 </div>
               </div>
@@ -279,14 +292,14 @@ export default function Console() {
                   <input type="time"
                          defaultValue={t.windowStart ? new Date(t.windowStart).toTimeString().slice(0, 5) : ''}
                          onBlur={(e) => patch(t.id, { windowStart: timeOnDay(t, e.target.value) })}
-                         className="surface mt-1.5 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+                         className="field mt-1.5" />
                 </label>
                 <label className="block text-[13px] muted">
                   until
                   <input type="time"
                          defaultValue={t.windowEnd ? new Date(t.windowEnd).toTimeString().slice(0, 5) : ''}
                          onBlur={(e) => patch(t.id, { windowEnd: timeOnDay(t, e.target.value) })}
-                         className="surface mt-1.5 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+                         className="field mt-1.5" />
                 </label>
               </div>
               <label className="mt-2 block text-[13px] muted">
@@ -295,14 +308,14 @@ export default function Console() {
                        defaultValue={t.position ?? ''}
                        placeholder="2 — tells them &quot;you are second today&quot;"
                        onBlur={(e) => patch(t.id, { position: e.target.value === '' ? null : e.target.value })}
-                       className="surface mt-1.5 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+                       className="field mt-1.5" />
               </label>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {t.isActive && (
                   <button type="button" onClick={() => revoke(t.id)}
-                          className="min-h-[44px] rounded-2xl bg-stage-paused/10 px-4 text-[14px] font-semibold text-stage-paused">
-                    Switch link off
+                          className="btn btn-danger !min-h-[44px] !px-4 !text-[14px]">
+                    <LinkOffIcon size={16} /> Switch link off
                   </button>
                 )}
                 <span className="text-[14px] muted">{t.viewCount || 0} view{t.viewCount === 1 ? '' : 's'}</span>
@@ -313,7 +326,7 @@ export default function Console() {
                 <input type="text" defaultValue={t.stageNote || ''}
                        placeholder="Waiting on the cylinder from the merchant — back Thursday morning"
                        onBlur={(e) => e.target.value !== (t.stageNote || '') && patch(t.id, { stageNote: e.target.value })}
-                       className="surface mt-1.5 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+                       className="field mt-1.5" />
               </label>
             </li>
           ))}
@@ -326,6 +339,7 @@ export default function Console() {
       <Roadmap />
       <Changelog />
       <div className="mt-8 flex justify-center"><BuildStamp /></div>
-    </main>
+      </main>
+    </div>
   )
 }

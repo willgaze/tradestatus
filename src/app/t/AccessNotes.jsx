@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { KeyIcon, ChevronIcon } from '@/components/icons'
 
 const DOORS = [
   { key: 'FRONT', label: 'Front' },
@@ -50,11 +51,13 @@ export default function AccessNotes({ status, onSaved }) {
   }
 
   return (
-    <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '200ms' }}>
+    <section className="glass r-outer animate-rise mt-4" style={{ animationDelay: '200ms' }}>
       <button type="button" onClick={() => setOpen((o) => !o)}
-              className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-[20px] dark:bg-white/5">
-          🔑
+              aria-expanded={open}
+              className="flex min-h-[64px] w-full items-center gap-4 px-5 text-left">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+              style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
+          <KeyIcon size={21} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[17px] font-semibold">Help them find you</span>
@@ -62,26 +65,30 @@ export default function AccessNotes({ status, onSaved }) {
             {anything ? 'Saved — tap to change' : 'Which door, parking, the dog'}
           </span>
         </span>
-        <span className={`muted text-[20px] leading-none transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
+        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
+                     className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
 
       {saved && !open && (
-        <p className="px-6 pb-5 text-[14px] text-stage-done">Sent. They will see it before they set off.</p>
+        <p className="px-5 pb-5 text-[14px]" style={{ color: 'var(--stage-done)' }}>
+          Sent. They will see it before they set off.
+        </p>
       )}
 
       {open && (
-        <div className="space-y-6 border-t hairline px-6 py-6">
+        <div className="space-y-6 px-5 py-6"
+             style={{ boxShadow: 'inset 0 1px 0 0 rgb(var(--glass-line) / var(--glass-line-alpha))' }}>
           <div>
             <p className="text-[15px] font-semibold">Which door?</p>
             <div className="mt-2.5 flex gap-2">
               {DOORS.map((d) => (
                 <button key={d.key} type="button"
                         onClick={() => setDoor(door === d.key ? null : d.key)}
-                        className={`min-h-[46px] flex-1 rounded-2xl text-[16px] font-semibold transition-colors ${
-                          door === d.key
-                            ? 'bg-brand-600 text-white'
-                            : 'bg-black/[.04] text-[color:var(--mts-text)] dark:bg-white/[.06]'
-                        }`}>
+                        aria-pressed={door === d.key}
+                        className="r-inner min-h-[48px] flex-1 text-[16px] font-semibold transition-colors"
+                        style={door === d.key
+                          ? { background: 'var(--tint)', color: '#fff' }
+                          : { background: 'rgb(var(--glass-line) / 0.08)' }}>
                   {d.label}
                 </button>
               ))}
@@ -90,8 +97,8 @@ export default function AccessNotes({ status, onSaved }) {
 
           <button type="button" onClick={() => setPets((p) => !p)}
                   className="flex min-h-[52px] w-full items-center gap-3 text-left">
-            <span className={`grid h-7 w-12 shrink-0 items-center rounded-full px-1 transition-colors ${
-              pets ? 'bg-stage-done' : 'bg-black/[.12] dark:bg-white/20'}`}>
+            <span className="grid h-7 w-12 shrink-0 items-center rounded-full px-1 transition-colors"
+                  style={{ background: pets ? 'var(--stage-done)' : 'rgb(var(--glass-line) / 0.22)' }}>
               <span className={`h-5 w-5 rounded-full bg-white shadow transition-transform ${
                 pets ? 'translate-x-5' : 'translate-x-0'}`} />
             </span>
@@ -108,7 +115,8 @@ export default function AccessNotes({ status, onSaved }) {
             </span>
             <input type="text" value={w3w} onChange={(e) => setW3w(e.target.value)}
                    placeholder="///filled.count.soap" autoCapitalize="none" autoCorrect="off"
-                   className="surface mt-2 min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+                   className="r-inner mt-2 min-h-[50px] w-full px-4 text-[17px]"
+                   style={{ background: 'rgb(var(--glass-line) / 0.08)', color: 'var(--mts-text)' }} />
           </label>
 
           <label className="block">
@@ -118,17 +126,18 @@ export default function AccessNotes({ status, onSaved }) {
             </span>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} maxLength={400}
                       placeholder="Park on the verge past the postbox. Gate sticks — lift it."
-                      className="surface mt-2 w-full rounded-2xl border px-4 py-3 text-[16px] hairline" />
+                      className="r-inner mt-2 w-full px-4 py-3 text-[17px]"
+                      style={{ background: 'rgb(var(--glass-line) / 0.08)', color: 'var(--mts-text)' }} />
             <span className="mt-1 block text-right text-[12px] muted">{notes.length}/400</span>
           </label>
 
-          <p className="rounded-2xl bg-amber-500/10 px-4 py-3 text-[14px]">
+          <p className="r-inner px-4 py-3 text-[14px]"
+             style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
             Please do not put a key safe code here. This page opens from a link in a
             text message — tell them the code on the phone instead.
           </p>
 
-          <button type="button" onClick={save} disabled={saving}
-                  className="min-h-[54px] w-full rounded-2xl bg-brand-600 text-[17px] font-semibold text-white disabled:opacity-60">
+          <button type="button" onClick={save} disabled={saving} className="btn btn-filled w-full">
             {saving ? 'Sending…' : 'Send this to them'}
           </button>
         </div>

@@ -51,3 +51,280 @@ body {
     transition-duration: .001ms !important;
   }
 }
+
+/* =========================================================================
+   The iOS layer.
+   
+   Added on top of the --mts-* tokens above rather than replacing them, so
+   every screen that has not been restyled yet keeps working unchanged.
+
+   TWO COLOUR SYSTEMS, EACH WITH ONE JOB. Getting these mixed up is how the
+   page stops meaning anything:
+
+     THEMES (src/lib/version.js)  rotate every night. They own the page
+                                  background and the chrome — the landing page,
+                                  the sign-in, the dashboard furniture. Their
+                                  job is to make a new build visible.
+
+     STAGE TINTS (below)          never rotate. They own the five stages, and
+                                  only those. Their job is to mean something:
+                                  a customer who has used this twice knows
+                                  amber before they have read a word. A meaning
+                                  that changes colour every night is not a
+                                  meaning.
+
+   CURATED, NOT INVENTED — the same rule THEMES works to. These are the iOS
+   system colours, which Apple contrast-checks for white-on-tint and for both
+   appearances. Do not generate one, and do not reach for a sixth without
+   checking it the same way.
+
+   Booked and On site share systemBlue deliberately: they are two steps apart
+   on the rail and never on screen together, and the pair that MUST stay apart
+   at arm's length — On my way against Paused — are now indigo against amber
+   rather than the amber against burnt-orange they used to be, which read as
+   the same colour on a phone in daylight.
+   ========================================================================= */
+
+:root {
+  --stage-booked: #007aff;
+  --stage-onway:  #5856d6;
+  --stage-onsite: #007aff;
+  --stage-paused: #ff9500;
+  --stage-done:   #34c759;
+
+  /* The material. A veil low enough to let the stage wash through, a blur to
+     bend it, and a hairline. */
+  --glass-rgb: 255 255 255;
+  --glass-veil: 0.72;
+  --glass-line: 60 60 67;
+  --glass-line-alpha: 0.13;
+  --glass-top: 255 255 255;
+  --glass-top-alpha: 0.22;
+
+  --label-2: var(--mts-muted);
+  --label-3: rgba(60, 60, 67, 0.32);
+
+  /* Concentric: an inner corner is always tighter than the one it sits in. */
+  --r-outer: 26px;
+  --r-inner: 18px;
+
+  --spring: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --tint: var(--stage-booked);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Brighter on black, as the platform does — the light-appearance blue is
+       muddy against a dark background. */
+    --stage-booked: #0a84ff;
+    --stage-onway:  #5e5ce6;
+    --stage-onsite: #0a84ff;
+    --stage-paused: #ff9f0a;
+    --stage-done:   #30d158;
+
+    --glass-rgb: 28 28 30;
+    --glass-veil: 0.64;
+    --glass-line: 84 84 88;
+    --glass-line-alpha: 0.34;
+    --glass-top-alpha: 0.07;
+
+    --label-3: rgba(235, 235, 245, 0.32);
+  }
+}
+
+/* A stage sets the tint once, here, and the card, the icon well, the rail and
+   the buttons beneath it all read it. */
+.tone-booked { --tint: var(--stage-booked); }
+.tone-onway  { --tint: var(--stage-onway); }
+.tone-onsite { --tint: var(--stage-onsite); }
+.tone-paused { --tint: var(--stage-paused); }
+.tone-done   { --tint: var(--stage-done); }
+
+/* The stage colour washes down from the top of the page: the first thing read
+   at arm's length, before any word on the screen. */
+.stage-wash {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 46vh;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    color-mix(in srgb, var(--tint) 28%, transparent) 0%,
+    transparent 72%
+  );
+  transition: background 700ms var(--spring);
+}
+
+@layer components {
+  .glass {
+    position: relative;
+    background: rgb(var(--glass-rgb) / var(--glass-veil));
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgb(var(--glass-line) / var(--glass-line-alpha));
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--glass-top) / var(--glass-top-alpha)),
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 12px 32px -12px rgb(0 0 0 / 0.16);
+  }
+
+  .r-outer { border-radius: var(--r-outer); }
+  .r-inner { border-radius: var(--r-inner); }
+
+  /* The tinted well a stage icon sits in. */
+  .icon-well {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: var(--r-inner);
+    color: var(--tint);
+    background: color-mix(in srgb, var(--tint) 15%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tint) 22%, transparent);
+  }
+
+  /* Inset grouped list, the shape iOS uses for facts: label left, value right,
+     a hairline between rows and never under the last one. */
+  .ios-list { overflow: hidden; border-radius: var(--r-outer); }
+
+  .ios-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3rem;
+    padding: 0.875rem 1.125rem;
+  }
+
+  .ios-row + .ios-row {
+    box-shadow: inset 0 1px 0 0 rgb(var(--glass-line) / var(--glass-line-alpha));
+  }
+
+  .ios-row-label { color: var(--label-2); font-size: 0.9375rem; }
+  .ios-row-value { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    border-radius: 999px;
+    padding: 0.875rem 1.5rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: transform 220ms var(--spring), opacity 220ms var(--spring);
+  }
+
+  /* A driveway tap that does nothing for 300ms gets tapped four times, so the
+     finger gets an answer before the network does. */
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.45; }
+
+  .btn-filled {
+    background: var(--tint);
+    color: #fff;
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--tint) 70%, transparent);
+  }
+
+  .btn-tinted { background: color-mix(in srgb, var(--tint) 14%, transparent); color: var(--tint); }
+  .btn-grey   { background: rgb(var(--glass-line) / 0.1); color: var(--mts-text); }
+  .btn-danger { background: color-mix(in srgb, #ff3b30 13%, transparent); color: #ff3b30; }
+
+  /* Progress rail. The track is inset by half a dot at each end so it starts
+     under the centre of the first dot rather than beside it. */
+  .rail-track {
+    position: absolute;
+    left: 0.406rem;
+    right: 0.406rem;
+    top: 0.3125rem;
+    height: 3px;
+    border-radius: 999px;
+    background: rgb(var(--glass-line) / 0.22);
+  }
+
+  .rail-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--tint);
+    transition: width 900ms var(--spring);
+  }
+
+  .rail-dot {
+    position: relative;
+    z-index: 1;
+    width: 0.8125rem;
+    height: 0.8125rem;
+    border-radius: 999px;
+    background: var(--mts-bg);
+    box-shadow: 0 0 0 3px rgb(var(--glass-line) / 0.22);
+    transition: box-shadow 500ms var(--spring), background 500ms var(--spring);
+  }
+
+  .rail-dot-done { background: var(--tint); box-shadow: 0 0 0 3px var(--tint); }
+
+  /* The live ring on the stage the job is actually at. It breathes so the page
+     reads as current. It is NOT a timer and measures nothing — no animation
+     here may ever imply an arrival time. */
+  .rail-dot-live {
+    background: var(--tint);
+    animation: breathe 2.6s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% { box-shadow: 0 0 0 3px var(--tint), 0 0 0 4px color-mix(in srgb, var(--tint) 34%, transparent); }
+    50%      { box-shadow: 0 0 0 3px var(--tint), 0 0 0 11px color-mix(in srgb, var(--tint) 0%, transparent); }
+  }
+}
+
+@layer components {
+  /* Segmented control, five across on a phone. Sized for the shortest label
+     that still says what it does, and every segment the same height whatever
+     is in it. */
+  .segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.875rem;
+    border-radius: 12px;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    transition: transform 220ms var(--spring), background 220ms var(--spring);
+  }
+
+  .segment:active { transform: scale(0.95); }
+
+  .segment-on {
+    background: var(--tint);
+    color: #fff;
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--tint) 70%, transparent);
+  }
+
+  .segment-off { background: rgb(var(--glass-line) / 0.09); color: var(--mts-text); }
+
+  .field {
+    width: 100%;
+    min-height: 3.125rem;
+    border-radius: var(--r-inner);
+    background: rgb(var(--glass-line) / 0.08);
+    border: 1px solid transparent;
+    padding: 0.75rem 0.9375rem;
+    /* 17px: iOS does not zoom the viewport on focus at this size or above. */
+    font-size: 1.0625rem;
+    color: var(--mts-text);
+    transition: border-color 200ms var(--spring), background 200ms var(--spring);
+  }
+
+  .field::placeholder { color: var(--label-3); }
+  .field:focus { outline: none; border-color: var(--tint); }
+}

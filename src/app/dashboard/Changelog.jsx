@@ -1,4 +1,5 @@
 'use client'
+import { ChevronIcon } from '@/components/icons'
 
 import { useState } from 'react'
 import { CHANGELOG, VERSION, THEMES, THEME_INDEX } from '@/lib/version'
@@ -20,7 +21,8 @@ export default function Changelog() {
           <span className="block text-[17px] font-semibold">Version {VERSION}</span>
           <span className="block text-[14px] muted">{t.name} — what changed and when</span>
         </span>
-        <span className={`muted text-[20px] leading-none transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
+        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
+                     className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
 
       {open && (

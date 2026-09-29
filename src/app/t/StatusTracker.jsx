@@ -1,33 +1,23 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
+import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
+import { StageIcon, PhoneIcon, PinIcon, ChevronIcon, WaveIcon, VanIcon } from '@/components/icons'
 import { windowLabel, positionLabel } from '@/lib/calendar'
-
-const TONE = {
-  booked: { dot: 'bg-stage-booked', text: 'text-stage-booked', soft: 'bg-slate-500/10' },
-  onway:  { dot: 'bg-stage-onway',  text: 'text-stage-onway',  soft: 'bg-amber-500/10' },
-  onsite: { dot: 'bg-stage-onsite', text: 'text-stage-onsite', soft: 'bg-blue-500/10' },
-  paused: { dot: 'bg-stage-paused', text: 'text-stage-paused', soft: 'bg-orange-600/10' },
-  done:   { dot: 'bg-stage-done',   text: 'text-stage-done',   soft: 'bg-green-600/10' },
-}
-
-const time = (iso) =>
-  new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-const dayAndTime = (iso) =>
-  new Date(iso).toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
-const day = (iso) =>
-  new Date(iso).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
 export default function StatusTracker({ initialStatus, initialProfile }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
   const [pulse, setPulse] = useState(false)
+  const [checkedAt, setCheckedAt] = useState(null)
+  const [isApple, setIsApple] = useState(false)
+  const chrome = useRef(null)
 
   const refresh = useCallback(async () => {
     try {
@@ -35,6 +25,7 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
       if (!r.ok) return
       const { status: next, profile: nextProfile } = await r.json()
       setProfile(nextProfile || null)
+      setCheckedAt(new Date())
       setStatus((prev) => {
         // Flash the card only when the stage actually moves, not on every poll.
         if (next.stage !== prev.stage) { setPulse(true); setTimeout(() => setPulse(false), 700) }
@@ -55,241 +46,322 @@ export default function StatusTracker({ initialStatus, initialProfile }) {
     }
   }, [refresh])
 
+  // Which maps app the address should open in. Decided after mount, because
+  // the server cannot know what the customer is holding — and a guess rendered
+  // on the server is a hydration mismatch.
+  useEffect(() => { setIsApple(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) }, [])
+
   const stage = stageOf(status.stage)
-  const tone = TONE[stage.tone] || TONE.booked
   const step = STAGE_ORDER.indexOf(stage.key)
+  const isPaused = stage.key === 'PAUSED'
   const isLive = stage.key === 'ON_MY_WAY' || stage.key === 'ON_SITE'
-  const icsUrl = `/api/status/${status.code}/calendar`
+
+  // Tint the browser's own chrome to match the page. The blend is computed by
+  // the stylesheet so the stage colour stays defined in one place — but a
+  // custom property computes to its own text rather than to a colour, so it
+  // has to be read back off something that actually paints.
+  useEffect(() => {
+    const probe = chrome.current
+    if (!probe) return
+    const colour = getComputedStyle(probe).backgroundColor
+    if (!colour || colour === 'rgba(0, 0, 0, 0)') return
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', colour)
+  }, [status.stage])
+
+  // Paused deliberately does not light On site: a job can be paused before
+  // anyone has arrived, and lighting it would say someone is there.
+  const reached = isPaused ? STAGE_ORDER.indexOf('ON_MY_WAY') : step
+  const fill = (reached / (STAGE_ORDER.length - 1)) * 100
+
+  const mapsHref = status.jobAddress
+    ? isApple
+      ? `https://maps.apple.com/?q=${encodeURIComponent(status.jobAddress)}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(status.jobAddress)}`
+    : null
 
   return (
-    <main className="mx-auto max-w-xl px-5 pb-16 pt-safe">
-      {/* who is coming — the only thing the customer cares about first */}
-      <header className="animate-rise pt-2">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-brand-600">
-          {TRADE_NAME}
-        </p>
-        <h1 className="mt-2 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">
+    <div className={`relative min-h-screen tone-${stage.tone}`}>
+      <div className="stage-wash" aria-hidden="true" />
+      {/* Paints the blended chrome colour so it can be read back as an rgb(). */}
+      <div ref={chrome} aria-hidden="true" className="pointer-events-none fixed h-px w-px opacity-0"
+           style={{ backgroundColor: 'color-mix(in srgb, var(--tint) 14%, var(--mts-bg))' }} />
+
+      <main className="relative z-10 mx-auto max-w-xl px-4 pb-14 pt-safe">
+        <header className="animate-rise flex items-center justify-between gap-3">
+          <p className="text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>{TRADE_NAME}</p>
+          <p className="flex shrink-0 items-center gap-1.5 text-[12px]" style={{ color: 'var(--label-3)' }}>
+            <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: 'var(--tint)' }} />
+            {checkedAt ? `Updated ${timeOnly(checkedAt)}` : 'Live'}
+          </p>
+        </header>
+
+        <h1 className="animate-rise mt-3.5 text-[34px] font-bold leading-[1.08] tracking-[-0.02em]">
           {status.customerName ? `Hello ${status.customerName}` : 'Your job'}
         </h1>
-        {status.jobSummary && <p className="mt-1.5 text-[17px] muted">{status.jobSummary}</p>}
-      </header>
+        {status.jobSummary && <p className="mt-1 text-[17px] muted">{status.jobSummary}</p>}
 
-      {/* the glance */}
-      <section
-        className={`surface animate-rise mt-6 rounded-4xl p-6 shadow-card transition-transform duration-300 ${
-          pulse ? 'scale-[1.02]' : 'scale-100'
-        }`}
-        style={{ animationDelay: '60ms' }}
-      >
-        <div className="flex items-start gap-4">
-          <span className="relative mt-1.5 flex h-3.5 w-3.5 shrink-0">
-            {isLive && <span className={`absolute inline-flex h-full w-full rounded-full ${tone.dot} animate-ring`} />}
-            <span className={`relative inline-flex h-3.5 w-3.5 rounded-full ${tone.dot}`} />
-          </span>
-          <div className="min-w-0">
-            <p className={`text-[15px] font-semibold ${tone.text}`}>{stage.label}</p>
-            <p className="mt-1 text-[22px] font-semibold leading-snug tracking-[-0.01em]">
-              {stage.customerLine}
-            </p>
-            {status.stageNote && (
-              <p className={`mt-4 rounded-2xl px-4 py-3 text-[16px] ${tone.soft}`}>{status.stageNote}</p>
-            )}
-            {status.arrivingAt && stage.key !== 'BOOKED' && (
-              <p className="mt-3 text-[15px] muted">Set off at {time(status.arrivingAt)}.</p>
-            )}
-
-            {(windowLabel(status) || positionLabel(status.position)) && stage.key !== 'DONE' && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {windowLabel(status) && (
-                  <span className={`rounded-full px-3.5 py-1.5 text-[14px] font-semibold ${tone.soft} ${tone.text}`}>
-                    {windowLabel(status)}
-                  </span>
-                )}
-                {positionLabel(status.position) && (
-                  <span className="rounded-full bg-black/[.05] px-3.5 py-1.5 text-[14px] font-semibold dark:bg-white/[.07]">
-                    {positionLabel(status.position)}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* progress */}
-        <div className="mt-7">
-          <div className="flex items-center">
-            {STAGE_ORDER.map((s, i) => (
-              <div key={s} className={`flex items-center ${i ? 'flex-1' : ''}`}>
-                {i > 0 && (
-                  <div className="mx-1 h-[3px] flex-1 overflow-hidden rounded-full bg-black/[.07] dark:bg-white/10">
-                    <div className={`h-full rounded-full transition-all duration-700 ${i <= step ? tone.dot : ''}`}
-                         style={{ width: i <= step ? '100%' : '0%' }} />
-                  </div>
-                )}
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors duration-500 ${
-                  i <= step ? tone.dot : 'bg-black/[.12] dark:bg-white/15'}`} />
-              </div>
-            ))}
-          </div>
-          <div className="mt-2.5 flex justify-between text-[12px] muted">
-            {STAGE_ORDER.map((s, i) => (
-              <span key={s} className={i === step ? 'font-semibold text-[color:var(--mts-text)]' : ''}>
-                {stageOf(s).label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* who is at the door — only once they are actually on the way */}
-      {profile && (profile.engineerName || profile.vehicle) && (
-        <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '150ms' }}>
-          <h2 className="text-[15px] font-semibold muted">Who to expect</h2>
-          <div className="mt-4 flex items-center gap-4">
-            {profile.engineerPhoto ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'}
-                   className="h-16 w-16 shrink-0 rounded-full object-cover" />
-            ) : (
-              <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-brand-50 text-[24px] dark:bg-white/5">
-                👋
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="text-[20px] font-semibold">{profile.engineerName || 'Your engineer'}</p>
-              {profile.aboutLine && <p className="text-[15px] muted">{profile.aboutLine}</p>}
+        {/* The glance — the one thing they opened this for. */}
+        <section
+          aria-live="polite"
+          className={`glass r-outer animate-rise mt-6 p-5 transition-transform duration-300 ${
+            pulse ? 'scale-[1.02]' : 'scale-100'
+          }`}
+          style={{ animationDelay: '60ms' }}
+        >
+          <div className="flex items-start gap-4">
+            <span className="icon-well">
+              <StageIcon tone={stage.tone} size={26} />
+            </span>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <p className="text-[24px] font-bold leading-tight tracking-[-0.01em]">{stage.label}</p>
+              <p className="mt-1 text-[17px] leading-snug muted">{stage.customerLine}</p>
             </div>
           </div>
 
-          {(profile.vehicle || profile.vehicleReg) && (
-            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-black/[.035] p-4 dark:bg-white/[.05]">
-              {profile.vehiclePhoto ? (
+          {status.stageNote && (
+            <p className="r-inner mt-4 px-4 py-3 text-[16px] leading-snug"
+               style={{ background: 'color-mix(in srgb, var(--tint) 11%, transparent)' }}>
+              {status.stageNote}
+            </p>
+          )}
+
+          {/* A record of what happened, never a prediction of what will. */}
+          {status.arrivingAt && stage.key !== 'BOOKED' && (
+            <p className="mt-3 text-[15px] muted">Set off at {timeOnly(status.arrivingAt)}.</p>
+          )}
+
+          {(windowLabel(status) || positionLabel(status.position)) && stage.key !== 'DONE' && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {windowLabel(status) && (
+                <span className="rounded-full px-3.5 py-1.5 text-[14px] font-semibold"
+                      style={{ background: 'color-mix(in srgb, var(--tint) 14%, transparent)', color: 'var(--tint)' }}>
+                  {windowLabel(status)}
+                </span>
+              )}
+              {positionLabel(status.position) && (
+                <span className="rounded-full px-3.5 py-1.5 text-[14px] font-semibold"
+                      style={{ background: 'rgb(var(--glass-line) / 0.1)' }}>
+                  {positionLabel(status.position)}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Progress */}
+          <div className="mt-7 px-1">
+            <div className="relative">
+              <div className="rail-track">
+                <div className="rail-fill" style={{ width: `${fill}%` }} />
+              </div>
+              <ol className="relative flex justify-between">
+                {STAGE_ORDER.map((s, i) => (
+                  <li key={s}
+                      aria-current={s === stage.key ? 'step' : undefined}
+                      className={`rail-dot ${
+                        i === reached && stage.key !== 'DONE' ? 'rail-dot-live'
+                        : i <= reached ? 'rail-dot-done' : ''
+                      }`} />
+                ))}
+              </ol>
+            </div>
+            <div className="mt-3 flex justify-between">
+              {STAGE_ORDER.map((s, i) => (
+                <span key={s}
+                      className={`flex-1 text-[12px] ${
+                        i === 0 ? 'text-left' : i === STAGE_ORDER.length - 1 ? 'text-right' : 'text-center'
+                      }`}
+                      style={s === stage.key
+                        ? { color: 'var(--tint)', fontWeight: 600 }
+                        : { color: 'var(--label-3)' }}>
+                  {stageOf(s).label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Who is at the door — only once they are actually on the way. */}
+        {profile && (profile.engineerName || profile.vehicle) && (
+          <section className="glass r-outer animate-rise mt-4 p-5" style={{ animationDelay: '150ms' }}>
+            <h2 className="text-[15px] font-semibold muted">Who to expect</h2>
+            <div className="mt-4 flex items-center gap-4">
+              {profile.engineerPhoto ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={profile.vehiclePhoto} alt={profile.vehicle || 'The van'}
-                     className="h-16 w-24 shrink-0 rounded-xl object-cover" />
+                <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'}
+                     className="h-16 w-16 shrink-0 rounded-full object-cover" />
               ) : (
-                <span className="grid h-16 w-24 shrink-0 place-items-center rounded-xl bg-black/[.05] text-[26px] dark:bg-white/[.06]">
-                  🚐
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full"
+                      style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
+                  <WaveIcon size={28} />
                 </span>
               )}
               <div className="min-w-0">
-                <p className="text-[13px] muted">Look out for</p>
-                {profile.vehicle && <p className="text-[17px] font-semibold">{profile.vehicle}</p>}
-                {profile.vehicleReg && (
-                  /* Set like a plate, because that is how it will be read from a window */
-                  <p className="mt-1 inline-block rounded-md bg-[#f5d32a] px-2 py-0.5 font-mono text-[15px] font-bold tracking-wide text-black">
-                    {profile.vehicleReg}
-                  </p>
-                )}
+                <p className="text-[20px] font-semibold">{profile.engineerName || 'Your engineer'}</p>
+                {profile.aboutLine && <p className="text-[15px] muted">{profile.aboutLine}</p>}
               </div>
+            </div>
+
+            {(profile.vehicle || profile.vehicleReg) && (
+              <div className="r-inner mt-5 flex items-center gap-4 p-4"
+                   style={{ background: 'rgb(var(--glass-line) / 0.08)' }}>
+                {profile.vehiclePhoto ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={profile.vehiclePhoto} alt={profile.vehicle || 'The van'}
+                       className="h-16 w-24 shrink-0 rounded-xl object-cover" />
+                ) : (
+                  <span className="grid h-16 w-24 shrink-0 place-items-center rounded-xl"
+                        style={{ color: 'var(--tint)', background: 'rgb(var(--glass-line) / 0.07)' }}>
+                    <VanIcon size={34} />
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <p className="text-[13px] muted">Look out for</p>
+                  {profile.vehicle && <p className="text-[17px] font-semibold">{profile.vehicle}</p>}
+                  {profile.vehicleReg && (
+                    /* Set like a plate, because that is how it will be read from a window */
+                    <p className="mt-1 inline-block rounded-md bg-[#f5d32a] px-2 py-0.5 font-mono text-[15px] font-bold tracking-wide text-black">
+                      {profile.vehicleReg}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* The details, as an inset grouped list — the shape iOS uses for facts. */}
+        <section className="glass ios-list animate-rise mt-4" style={{ animationDelay: '120ms' }}>
+          {status.scheduledFor && (
+            <div className="ios-row">
+              <span className="ios-row-label">Booked for</span>
+              <span className="ios-row-value">
+                {dayOnly(status.scheduledFor)}
+                <span className="mt-0.5 block text-[13px] font-normal muted">
+                  {windowLabel(status) || 'No arrival time is promised'}
+                </span>
+              </span>
+            </div>
+          )}
+          {status.jobAddress && (
+            <a className="ios-row" href={mapsHref} target="_blank" rel="noreferrer">
+              <span className="ios-row-label">Address</span>
+              <span className="ios-row-value inline-flex items-center gap-1.5" style={{ color: 'var(--tint)' }}>
+                {status.jobAddress}
+                <PinIcon size={16} />
+              </span>
+            </a>
+          )}
+          {status.jobRef && (
+            <div className="ios-row">
+              <span className="ios-row-label">Job reference</span>
+              <span className="ios-row-value">{status.jobRef}</span>
+            </div>
+          )}
+          {status.updatedAt && (
+            <div className="ios-row">
+              <span className="ios-row-label">Last updated</span>
+              <span className="ios-row-value">{dayAndTime(status.updatedAt)}</span>
             </div>
           )}
         </section>
-      )}
 
-      {/* the details */}
-      <section className="surface animate-rise mt-4 rounded-4xl shadow-card" style={{ animationDelay: '120ms' }}>
+        {/* Calendar */}
         {status.scheduledFor && (
-          <Row label="Booked for"
-               value={day(status.scheduledFor)}
-               hint={windowLabel(status) || 'No arrival time is promised'} />
+          <section className="animate-rise mt-4" style={{ animationDelay: '160ms' }}>
+            <a href={`/api/status/${status.code}/calendar`}
+               className="glass r-outer flex min-h-[64px] w-full items-center gap-4 px-5 transition-transform active:scale-[.99]">
+              <CalendarGlyph date={status.scheduledFor} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[17px] font-semibold">Put it in my calendar</span>
+                <span className="block text-[14px] muted">
+                  {windowLabel(status) || 'All day — no arrival time promised'}
+                </span>
+              </span>
+              <ChevronIcon size={18} style={{ color: 'var(--label-3)' }} />
+            </a>
+          </section>
         )}
-        {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
-        {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
-        {status.updatedAt && <Row label="Last updated" value={dayAndTime(status.updatedAt)} last />}
-      </section>
 
-      {/* calendar */}
-      {status.scheduledFor && (
-        <section className="animate-rise mt-4" style={{ animationDelay: '160ms' }}>
-          <a href={icsUrl}
-             className="surface flex min-h-[60px] w-full items-center gap-4 rounded-4xl px-5 shadow-card active:scale-[.99] transition-transform">
-            <CalendarGlyph date={new Date(status.scheduledFor)} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-[17px] font-semibold">Put it in my calendar</span>
-              <span className="block text-[14px] muted">{windowLabel(status) || "All day — no arrival time promised"}</span>
-            </span>
-            <span className="muted text-[22px] leading-none">›</span>
-          </a>
-        </section>
-      )}
+        {/* The question that saves a wasted trip */}
+        {status.stage !== 'DONE' && (
+          <Presence status={status} onSaved={(n) => setStatus((s) => ({ ...s, ...n }))} />
+        )}
 
-      {/* the question that saves a wasted trip */}
-      {status.stage !== 'DONE' && (
-        <Presence status={status} onSaved={(n) => setStatus((s) => ({ ...s, ...n }))} />
-      )}
+        {/* What the customer tells the trade */}
+        <AccessNotes status={status} onSaved={(notes) => setStatus((s) => ({ ...s, ...notes }))} />
 
-      {/* what the customer tells the trade */}
-      <AccessNotes status={status} onSaved={(notes) => setStatus((s) => ({ ...s, ...notes }))} />
+        {/* What has happened */}
+        {status.events?.length > 0 && (
+          <section className="glass r-outer animate-rise mt-4 p-5" style={{ animationDelay: '220ms' }}>
+            <h2 className="text-[17px] font-semibold">What has happened</h2>
+            <ol className="mt-4 space-y-4">
+              {[...status.events].reverse().map((e, i, all) => {
+                const s = stageOf(e.stage)
+                return (
+                  <li key={`${e.stage}-${e.at}-${i}`} className={`relative flex gap-3.5 tone-${s.tone}`}>
+                    {/* The line joining one entry to the next, never past the last. */}
+                    {i < all.length - 1 && (
+                      <span aria-hidden="true"
+                            className="absolute left-[1.0625rem] top-9 h-[calc(100%-1rem)] w-px"
+                            style={{ background: 'rgb(var(--glass-line) / 0.3)' }} />
+                    )}
+                    <span className="grid h-[2.125rem] w-[2.125rem] flex-none place-items-center rounded-full"
+                          style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 14%, transparent)' }}>
+                      <StageIcon tone={s.tone} size={18} />
+                    </span>
+                    <span className="min-w-0 flex-1 pt-1">
+                      <span className="block text-[16px] font-semibold leading-tight">{s.label}</span>
+                      <span className="mt-0.5 block text-[13px]" style={{ color: 'var(--label-3)' }}>
+                        {dayAndTime(e.at)}
+                      </span>
+                      {e.note && <span className="mt-1.5 block text-[15px] leading-snug muted">{e.note}</span>}
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
+          </section>
+        )}
 
-      {/* what has happened */}
-      {status.events?.length > 0 && (
-        <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '220ms' }}>
-          <h2 className="text-[17px] font-semibold">What has happened</h2>
-          <ol className="mt-4 space-y-4">
-            {[...status.events].reverse().map((e, i) => {
-              const s = stageOf(e.stage)
-              const t = TONE[s.tone] || TONE.booked
-              return (
-                <li key={`${e.stage}-${e.at}-${i}`} className="flex gap-3.5">
-                  <span className="relative flex flex-col items-center">
-                    <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${t.dot}`} />
-                    {i < status.events.length - 1 && <span className="mt-1 w-px flex-1 bg-black/[.09] dark:bg-white/10" />}
-                  </span>
-                  <span className="min-w-0 pb-1">
-                    <span className="block text-[16px] font-semibold">{s.label}</span>
-                    <span className="block text-[14px] muted">{dayAndTime(e.at)}</span>
-                    {e.note && <span className="mt-1 block text-[15px]">{e.note}</span>}
-                  </span>
-                </li>
-              )
-            })}
-          </ol>
-        </section>
-      )}
+        {/* Contact */}
+        {TRADE_PHONE && (
+          <section className="animate-rise mt-5" style={{ animationDelay: '260ms' }}>
+            <a href={`tel:${TRADE_PHONE_TEL}`} className="btn btn-filled w-full">
+              <PhoneIcon size={19} />
+              Call {TRADE_PHONE}
+            </a>
+            <p className="mt-3 text-center text-[15px] leading-snug muted">
+              Need to change something? Call or message {TRADE_NAME} — it is the same person doing the work.
+            </p>
+          </section>
+        )}
 
-      {/* contact */}
-      {TRADE_PHONE && (
-        <section className="animate-rise mt-4 overflow-hidden rounded-4xl bg-brand-700 p-6 text-white shadow-lift"
-                 style={{ animationDelay: '260ms' }}>
-          <h2 className="text-[19px] font-semibold">Need to change something?</h2>
-          <p className="mt-1.5 text-[16px] text-white/85">
-            Call or message {TRADE_NAME} — it is the same person doing the work.
-          </p>
-          <a href={`tel:${TRADE_PHONE_TEL}`}
-             className="mt-5 flex min-h-[54px] items-center justify-center rounded-2xl bg-white text-[17px] font-semibold text-brand-700 active:scale-[.99] transition-transform">
-            Call {TRADE_PHONE}
-          </a>
-        </section>
-      )}
-
-      <p className="mt-8 text-center text-[13px] muted">This page updates itself.</p>
-      <span className="mt-3 flex items-center justify-center gap-2 pb-safe opacity-60">
-        <Mark className="h-4 w-auto" id="foot" />
-        <span className="text-[12px] muted">Job tracking by My Trade Status</span>
-      </span>
-      <span className="mt-2 flex justify-center pb-safe"><BuildStamp /></span>
-    </main>
-  )
-}
-
-function Row({ label, value, hint, last }) {
-  return (
-    <div className={`px-6 py-4 ${last ? '' : 'border-b hairline'}`}>
-      <p className="text-[13px] muted">{label}</p>
-      <p className="mt-0.5 text-[17px] font-semibold">{value}</p>
-      {hint && <p className="mt-0.5 text-[14px] muted">{hint}</p>}
+        <p className="mt-8 text-center text-[13px] muted">This page updates itself.</p>
+        <span className="mt-3 flex items-center justify-center gap-2 opacity-60">
+          <Mark className="h-4 w-auto" id="foot" />
+          <span className="text-[12px] muted">Job tracking by My Trade Status</span>
+        </span>
+        <span className="mt-2 flex justify-center pb-safe"><BuildStamp /></span>
+      </main>
     </div>
   )
 }
 
 // A little tear-off calendar, so the date is readable before the words are.
+// The tear-off strip wears the stage tint, so it belongs to the page it is on.
 function CalendarGlyph({ date }) {
   return (
-    <span className="grid h-11 w-11 shrink-0 grid-rows-[14px_1fr] overflow-hidden rounded-xl border hairline">
-      <span className="bg-brand-600" />
+    <span className="grid h-11 w-11 shrink-0 grid-rows-[13px_1fr] overflow-hidden rounded-xl"
+          style={{ boxShadow: 'inset 0 0 0 1px rgb(var(--glass-line) / var(--glass-line-alpha))' }}>
+      <span style={{ background: 'var(--tint)' }} />
       <span className="grid place-items-center text-[17px] font-bold leading-none">
-        {date.getDate()}
+        {dayNumber(date)}
       </span>
     </span>
   )

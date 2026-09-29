@@ -1,4 +1,5 @@
 'use client'
+import { CompassIcon, TickIcon, ChevronIcon } from '@/components/icons'
 
 import { useCallback, useEffect, useState } from 'react'
 import { PHASES, STATE } from '@/lib/roadmap'
@@ -42,14 +43,18 @@ export default function Roadmap() {
     <section className="surface mt-4 rounded-4xl shadow-card">
       <button type="button" onClick={() => setOpen((o) => !o)}
               className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-[20px] dark:bg-white/5">🗺️</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+              style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
+          <CompassIcon size={21} />
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[17px] font-semibold">What this could become</span>
           <span className="block text-[14px] muted">
             {wantedCount ? `${wantedCount} marked as wanted` : 'Mark the ones you would actually use'}
           </span>
         </span>
-        <span className={`muted text-[20px] leading-none transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
+        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
+                     className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
 
       {open && (
@@ -83,9 +88,11 @@ export default function Roadmap() {
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <button type="button"
                                   onClick={() => save(item.key, !mine?.wanted, mine?.note)}
-                                  className={`min-h-[40px] rounded-xl px-3.5 text-[14px] font-semibold transition-colors ${
-                                    mine?.wanted ? 'bg-stage-done text-white' : 'bg-black/[.06] dark:bg-white/[.08]'}`}>
-                            {mine?.wanted ? '✓ Want this' : 'Would use this'}
+                                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl px-3.5 text-[14px] font-semibold transition-colors"
+                                  style={mine?.wanted
+                                    ? { background: 'var(--stage-done)', color: '#fff' }
+                                    : { background: 'rgb(var(--glass-line) / 0.1)' }}>
+                            {mine?.wanted ? <><TickIcon size={15} /> Want this</> : 'Would use this'}
                           </button>
                           <button type="button"
                                   onClick={() => { setNoteFor(noteFor === item.key ? null : item.key); setNoteText(mine?.note || '') }}

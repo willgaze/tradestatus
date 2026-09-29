@@ -5,22 +5,25 @@
  * say "I'm at the bottom of the garden". These are the four things people
  * actually are, and each one changes what the person coming should do.
  */
+// `key` names the drawing as well as the answer — PresenceIcon in
+// src/components/icons.jsx. No emoji here for the same reason there are none
+// on a stage.
 export const PRESENCE = {
   IN: {
     key: 'IN', label: "Yes, I'm in", short: 'In',
-    forTrade: 'Someone is in', tone: 'done', icon: '🏠',
+    forTrade: 'Someone is in', tone: 'done',
   },
   BACK_SOON: {
     key: 'BACK_SOON', label: 'Back shortly', short: 'Back soon',
-    forTrade: 'Out briefly — back shortly', tone: 'onway', icon: '🚶',
+    forTrade: 'Out briefly — back shortly', tone: 'onway',
   },
   SOMEONE_ELSE: {
     key: 'SOMEONE_ELSE', label: 'Someone else will be', short: 'Someone else',
-    forTrade: 'Somebody else will be there', tone: 'onsite', icon: '👥',
+    forTrade: 'Somebody else will be there', tone: 'onsite',
   },
   OUT: {
     key: 'OUT', label: "No, I'm out", short: 'Out',
-    forTrade: 'NOBODY IN', tone: 'paused', icon: '🚪',
+    forTrade: 'NOBODY IN', tone: 'paused',
   },
 }
 

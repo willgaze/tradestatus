@@ -12,7 +12,7 @@ import { TRADE_NAME, TRADE_PHONE } from '@/lib/trade'
  *   PASSKIT_CERT_P12        the Pass Type ID certificate, base64 of the .p12
  *   PASSKIT_CERT_PASSWORD   the password set when exporting that .p12
  *   PASSKIT_WWDR_PEM        Apple's WWDR intermediate certificate, PEM
- *   PASSKIT_PASS_TYPE_ID    e.g. pass.co.uk.rosebourneplumbing.job
+ *   PASSKIT_PASS_TYPE_ID    e.g. pass.uk.co.example.job
  *   PASSKIT_TEAM_ID         the 10-character Apple team identifier
  *
  * Until they exist, passkitConfigured() is false and the routes say so plainly
@@ -35,7 +35,7 @@ export function passkitMissing() {
     ['PASSKIT_CERT_P12', 'the Pass Type ID certificate (.p12), base64 encoded'],
     ['PASSKIT_CERT_PASSWORD', 'the password used when exporting that .p12'],
     ['PASSKIT_WWDR_PEM', "Apple's WWDR intermediate certificate, in PEM form"],
-    ['PASSKIT_PASS_TYPE_ID', 'e.g. pass.co.uk.rosebourneplumbing.job'],
+    ['PASSKIT_PASS_TYPE_ID', 'e.g. pass.uk.co.example.job'],
     ['PASSKIT_TEAM_ID', 'the 10-character Apple team identifier'],
   ].filter(([key]) => !process.env[key]).map(([key, what]) => ({ key, what }))
 }

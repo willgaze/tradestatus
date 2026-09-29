@@ -47,6 +47,50 @@ one — and no future feature may introduce one.
 This is the same discipline as the customer's own site: say what is true and
 checkable, never what sounds reassuring.
 
+## How it looks is part of what it says
+
+The customer's page is drawn to the current iOS look: translucent layered cards
+over a stage-tinted wash, the system font, inset grouped lists, dark mode. That
+is not decoration. This is a page a sole trader sends to someone's mother, and
+one that looks like a form from 2011 says the firm behind it is careless before
+a word is read.
+
+**Two colour systems, each with exactly one job.** Mixing them up is how the
+page stops meaning anything:
+
+| | Owns | Rotates? |
+|---|---|---|
+| `THEMES` in `src/lib/version.js` | the page background, and the accent on the landing page, sign-in and dashboard furniture | **yes**, nightly |
+| stage tints in `src/app/globals.css` | the five stages, and nothing else | **never** |
+
+A stage colour means something — a customer who has used this twice knows amber
+before they have read a word — and a meaning that changes colour every night is
+not a meaning. Both lists are curated and contrast-checked; neither is ever
+generated at runtime.
+
+A stage sets `--tint` once, via `tone-<tone>` on a wrapper, and the card, the
+icon well, the rail and the buttons beneath it all read it. Adding a stage means
+adding a tint, not editing five components.
+
+**No emoji anywhere under `src/`.** They render in whatever style the phone
+ships, at a weight and colour nobody chose. `src/components/icons.jsx` holds the
+drawings; `src/lib/trade-status.js` and `src/lib/presence.js` carry only a name,
+because both are imported by API routes and hold no JSX. This check must stay
+silent:
+
+```bash
+python3 -c "
+import re, glob
+pat = re.compile('[\U0001F000-\U0001FAFF\u2300-\u27BF\u2B00-\u2BFF\uFE0F]')
+for f in glob.glob('src/**/*.js*', recursive=True):
+    for i, line in enumerate(open(f, encoding='utf-8'), 1):
+        if pat.search(line): print(f'{f}:{i}')
+"
+```
+
+**Nothing counts down.** The live dot on the rail breathes so the page reads as
+current. It measures nothing, and no future animation may imply an arrival time.
+
 ## The link is the credential
 
 A customer has no login and never will. The code in the URL is the only thing
@@ -110,6 +154,18 @@ Each of these was live. Do not reintroduce them.
 - **The login route had no throttle.** One shared password on a public URL.
   Ten attempts per IP per ten minutes. Note honestly in any change here that
   it is per-instance memory, so it is a speed bump, not a lock.
+- **Dates tore the page in half.** `toLocaleString()` with no zone runs in UTC
+  in a serverless function and in the customer's zone on their phone, so "Set
+  off at 07:42" rendered an hour out on one of them. Naming the zone was not
+  enough: Node and mobile Safari ship different Unicode locale data, and en-GB
+  genuinely disagrees with itself — `Tue 29 Sept` against `Tue, 29 Sept`, `Sep`
+  against `Sept`. React saw the mismatch and threw the whole tree away
+  mid-hydration. **Every date on a page that renders on both sides goes through
+  `src/lib/when.js`**, which uses `Intl` only for the numbers and owns the names
+  and separators itself. Never `toLocaleString()` in a component.
+- **An input bound to `undefined`.** The create form had a `customerPhone` field
+  but `EMPTY` did not, so React treated it as uncontrolled and then complained
+  the moment it was typed in. Every key the form renders belongs in `EMPTY`.
 - **Deployment protection.** `tradestatus.vercel.app` is open; the generated
   per-deployment URLs are behind Vercel's login. Never put a
   `tradestatus-<hash>-…` URL in front of a customer.

@@ -1,4 +1,6 @@
 'use client'
+import { TickIcon } from '@/components/icons'
+import { timeOnly } from '@/lib/when'
 
 import { useState } from 'react'
 import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
@@ -118,7 +120,9 @@ function PassCard({ tracker, big }) {
     <div className="overflow-hidden rounded-[22px] bg-[#1f3b57] text-white shadow-2xl">
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
         <div className="flex min-w-0 items-start gap-2">
-          <span className="mt-[1px] grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#f0a202] text-[12px] font-bold text-[#1f3b57]">✓</span>
+          <span className="mt-[1px] grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#f0a202] text-[#1f3b57]">
+            <TickIcon size={14} />
+          </span>
           <span className="text-[12px] font-bold uppercase leading-[1.25] tracking-wide">{TRADE_NAME}</span>
         </div>
         {tracker?.jobRef && (
@@ -134,7 +138,7 @@ function PassCard({ tracker, big }) {
         <p className={`mt-1 font-bold leading-none ${big ? 'text-[38px]' : 'text-[30px]'}`}>{stage.label}</p>
         <p className="mt-2 text-[13px] text-[#c9d9e7]">
           {tracker?.arrivingAt && stage.key !== 'BOOKED'
-            ? `Set off at ${new Date(tracker.arrivingAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+            ? `Set off at ${timeOnly(tracker.arrivingAt)}`
             : stage.customerLine}
         </p>
       </div>

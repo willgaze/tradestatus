@@ -2,13 +2,7 @@
 
 import { useState } from 'react'
 import { PRESENCE, PRESENCE_ORDER, presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
-
-const TONE = {
-  done:   'bg-stage-done/12 text-stage-done border-stage-done/25',
-  onway:  'bg-stage-onway/12 text-stage-onway border-stage-onway/30',
-  onsite: 'bg-stage-onsite/12 text-stage-onsite border-stage-onsite/25',
-  paused: 'bg-stage-paused/12 text-stage-paused border-stage-paused/25',
-}
+import { PresenceIcon } from '@/components/icons'
 
 /**
  * The customer answering the one question that costs a wasted visit.
@@ -45,7 +39,7 @@ export default function Presence({ status, onSaved }) {
   }
 
   return (
-    <section className="surface animate-rise mt-4 rounded-4xl p-6 shadow-card" style={{ animationDelay: '180ms' }}>
+    <section className="glass r-outer animate-rise mt-4 p-5" style={{ animationDelay: '180ms' }}>
       <h2 className="text-[19px] font-semibold">Will someone be in?</h2>
       <p className="mt-1 text-[15px] muted">
         {current && fresh
@@ -58,11 +52,18 @@ export default function Presence({ status, onSaved }) {
           const p = PRESENCE[k]
           const on = current?.key === k && fresh
           return (
+            // Each answer wears its own tone when chosen, so a glance at the
+            // card says which one is set without reading it.
             <button key={k} type="button" onClick={() => send(k)} disabled={saving === k}
-                    className={`min-h-[64px] rounded-2xl border px-3 text-[15px] font-semibold transition-colors disabled:opacity-60 ${
-                      on ? TONE[p.tone] : 'border-transparent bg-black/[.04] dark:bg-white/[.06]'}`}>
-              <span className="block text-[19px] leading-none">{p.icon}</span>
-              <span className="mt-1.5 block">{p.label}</span>
+                    aria-pressed={on}
+                    className={`tone-${p.tone} r-inner flex min-h-[72px] flex-col items-center justify-center gap-1.5 px-3 text-[15px] font-semibold transition-colors disabled:opacity-60`}
+                    style={on
+                      ? { background: 'color-mix(in srgb, var(--tint) 14%, transparent)',
+                          color: 'var(--tint)',
+                          boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--tint) 30%, transparent)' }
+                      : { background: 'rgb(var(--glass-line) / 0.08)' }}>
+              <PresenceIcon presence={k} size={21} />
+              <span className="block leading-tight">{p.label}</span>
             </button>
           )
         })}
@@ -79,16 +80,17 @@ export default function Presence({ status, onSaved }) {
 
       {!showNote ? (
         <button type="button" onClick={() => setShowNote(true)}
-                className="mt-4 min-h-[44px] text-[15px] font-medium text-brand-600">
+                className="mt-4 min-h-[44px] text-[15px] font-medium" style={{ color: 'var(--tint)' }}>
           {status.presenceNote ? `“${status.presenceNote}” — change` : 'Add a detail'}
         </button>
       ) : (
         <div className="mt-4">
           <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} autoFocus
                  placeholder="Bottom of the garden — ring twice"
-                 className="surface min-h-[50px] w-full rounded-2xl border px-4 text-[16px] hairline" />
+                 className="r-inner min-h-[50px] w-full px-4 text-[17px]"
+                 style={{ background: 'rgb(var(--glass-line) / 0.08)', color: 'var(--mts-text)' }} />
           <button type="button" onClick={() => send(current?.key || 'IN', note)}
-                  className="mt-2.5 min-h-[50px] w-full rounded-2xl bg-brand-600 text-[16px] font-semibold text-white">
+                  className="btn btn-filled mt-2.5 w-full">
             Send it
           </button>
         </div>

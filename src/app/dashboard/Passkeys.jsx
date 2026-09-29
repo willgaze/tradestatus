@@ -1,4 +1,5 @@
 'use client'
+import { dayAndMonth } from '@/lib/when'
 
 import { useCallback, useEffect, useState } from 'react'
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
@@ -96,7 +97,7 @@ export default function Passkeys() {
                 <p className="truncate font-medium">{k.label || 'Device'}</p>
                 <p className="text-xs text-slate-500">
                   {k.lastUsedAt
-                    ? `Last used ${new Date(k.lastUsedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+                    ? `Last used ${dayAndMonth(k.lastUsedAt)}`
                     : 'Not used yet'}
                 </p>
               </div>

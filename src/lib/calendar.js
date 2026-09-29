@@ -1,4 +1,5 @@
 import { TRADE_NAME, TRADE_PHONE } from '@/lib/trade'
+import { timeOnly } from '@/lib/when'
 
 /**
  * Putting the job in the customer's calendar.
@@ -115,10 +116,12 @@ export function googleCalendarUrl(status, trackUrl) {
  */
 export function windowLabel(status) {
   if (!status.windowStart) return null
-  const t = (iso) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  // Through when.js, not toLocaleTimeString: this label is rendered inside the
+  // customer's page, which runs on the server and again on the phone, and the
+  // two must produce byte-identical text.
   return status.windowEnd
-    ? `Between ${t(status.windowStart)} and ${t(status.windowEnd)}`
-    : `From ${t(status.windowStart)}`
+    ? `Between ${timeOnly(status.windowStart)} and ${timeOnly(status.windowEnd)}`
+    : `From ${timeOnly(status.windowStart)}`
 }
 
 /** "You are second today" — ordinal, because "position 2" is not English. */

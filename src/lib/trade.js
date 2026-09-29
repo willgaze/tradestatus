@@ -7,3 +7,13 @@ export const TRADE_NAME = process.env.NEXT_PUBLIC_TRADE_NAME || 'Your tradespers
 export const TRADE_PHONE = process.env.NEXT_PUBLIC_TRADE_PHONE || ''
 export const TRADE_PHONE_TEL =
   process.env.NEXT_PUBLIC_TRADE_PHONE_TEL || TRADE_PHONE.replace(/\D/g, '')
+
+/**
+ * The time zone every date on the customer's page is formatted in.
+ *
+ * Fixed rather than taken from the browser, and that is not a nicety. The page
+ * renders once on the server and again on the phone, and the two must produce
+ * identical text or React tears the page down mid-hydration. See
+ * src/lib/when.js, which is the only place dates are formatted.
+ */
+export const TRADE_TIMEZONE = process.env.NEXT_PUBLIC_TRADE_TIMEZONE || 'Europe/London'

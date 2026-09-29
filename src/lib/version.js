@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.3.2'
+export const VERSION = '1.4.0'
 export const BUILD_DATE = '2026-09-29'
 
 export const THEMES = [
@@ -32,7 +32,14 @@ export const THEMES = [
 
 // Which one this build wears. The nightly job bumps it, so a glance at the
 // page says whether last night's build actually landed.
-export const THEME_INDEX = 0
+//
+// A THEME OWNS THE CHROME, NOT THE STAGES. It sets the page background and the
+// accent on the landing page, the sign-in and the dashboard furniture. It does
+// NOT set the colour of Booked in, On my way, On site, Paused or Job done —
+// those are fixed in globals.css, because they mean something, and a meaning
+// that changes colour every night is not a meaning. See the stage tint block
+// in src/app/globals.css.
+export const THEME_INDEX = 1
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -41,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.4.0', date: '2026-09-29', notes: [
+    'The whole app redrawn to the current iOS look — translucent cards, the system font, proper dark mode',
+    'Every emoji replaced with a drawn icon. They rendered in whatever style the phone shipped and made a finished page look unfinished',
+    'Each stage now has its own colour and keeps it: blue booked, indigo on the way, amber paused, green done',
+    'Fixed: dates were formatted differently by the server and the phone, which tore the page apart as it loaded',
+  ] },
   { version: '1.3.2', date: '2026-09-29', notes: [
     'WhatsApp the customer their link in one tap, beside the text button',
   ] },

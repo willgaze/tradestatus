@@ -85,41 +85,48 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
+    <div className="relative min-h-screen" style={{ '--tint': 'var(--mts-accent)' }}>
+      <div className="stage-wash" aria-hidden="true" />
+      <main className="relative z-10 mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
       <Mark className="mx-auto h-14 w-auto" id="login" />
       <h1 className="mt-6 text-center text-[28px] font-bold tracking-[-0.02em]">Sign in</h1>
 
       {supported && (
         <button type="button" onClick={signInWithPasskey} disabled={busy}
-                className="mt-6 flex min-h-[56px] w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-base font-semibold text-white disabled:opacity-60">
+                className="btn btn-filled mt-6 w-full">
           {busy ? 'One moment…' : 'Sign in with Face ID or Touch ID'}
         </button>
       )}
 
-      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-red-800">{error}</p>}
+      {error && (
+        <p className="r-inner mt-4 p-3.5 text-[15px]"
+           style={{ background: 'color-mix(in srgb, #ff3b30 12%, transparent)', color: '#ff3b30' }}>
+          {error}
+        </p>
+      )}
 
       {!showPassword ? (
         <button type="button" onClick={() => setShowPassword(true)}
-                className="mx-auto mt-6 min-h-[44px] text-sm text-slate-500 underline">
+                className="mx-auto mt-6 min-h-[44px] text-[15px] muted">
           {supported ? 'Use my password instead' : 'Sign in with your password'}
         </button>
       ) : (
         <form onSubmit={signInWithPassword} className="mt-6 space-y-3">
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                  placeholder="Password" autoComplete="current-password" autoFocus
-                 className="min-h-[48px] w-full rounded-xl border border-slate-300 px-4 py-3 text-base" />
-          <button type="submit" disabled={busy}
-                  className="min-h-[48px] w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold disabled:opacity-60">
+                 className="field" />
+          <button type="submit" disabled={busy} className="btn btn-grey w-full">
             {busy ? 'Signing in…' : 'Sign in with password'}
           </button>
         </form>
       )}
 
       {supported && (
-        <p className="mt-8 text-center text-sm text-slate-400">
+        <p className="mt-8 text-center text-[14px]" style={{ color: 'var(--label-3)' }}>
           Add a device from the dashboard once you are in.
         </p>
       )}
-    </main>
+      </main>
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 'use client'
+import { VanIcon, ChevronIcon } from '@/components/icons'
 
 import { useCallback, useEffect, useState } from 'react'
 
@@ -63,7 +64,10 @@ export default function Profile() {
     <section className="surface mt-8 rounded-4xl shadow-card">
       <button type="button" onClick={() => setOpen((o) => !o)}
               className="flex min-h-[64px] w-full items-center gap-4 px-6 text-left">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-[20px] dark:bg-white/5">🚐</span>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+              style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
+          <VanIcon size={21} />
+        </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[17px] font-semibold">Who to expect</span>
           <span className="block text-[14px] muted">
@@ -72,7 +76,8 @@ export default function Profile() {
               : 'Your name and van — set up once'}
           </span>
         </span>
-        <span className={`muted text-[20px] leading-none transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
+        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
+                     className={`shrink-0 transition-transform ${open ? 'rotate-90' : ''}`} />
       </button>
 
       {saved && !open && <p className="px-6 pb-5 text-[14px] text-stage-done">Saved.</p>}
