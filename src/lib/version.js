@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.3.1'
+export const VERSION = '1.3.2'
 export const BUILD_DATE = '2026-09-29'
 
 export const THEMES = [
@@ -41,6 +41,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.3.2', date: '2026-09-29', notes: [
+    'WhatsApp the customer their link in one tap, beside the text button',
+  ] },
   { version: '1.3.1', date: '2026-09-29', notes: [
     'Dark mode: the page background was pinned to the light colour, so the heading was invisible. Each theme now has a dark background of its own.',
   ] },

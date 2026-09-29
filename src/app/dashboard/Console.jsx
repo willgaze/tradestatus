@@ -121,6 +121,29 @@ export default function Console() {
     return `sms:${(t.customerPhone || '').replace(/[^\d+]/g, '')}?&body=${encodeURIComponent(body)}`
   }
 
+  // WhatsApp's click-to-chat link: opens the app with the number and the
+  // message written, same as the sms: button. It wants the number in
+  // international form with no plus and no leading zero, so a UK mobile
+  // typed as 07700 900123 becomes 447700900123. With no number it still
+  // opens WhatsApp with the text ready and lets him pick the contact.
+  const waNumber = (raw) => {
+    const d = String(raw || '').replace(/\D/g, '')
+    if (!d) return ''
+    if (d.startsWith('00')) return d.slice(2)
+    if (d.startsWith('0')) return '44' + d.slice(1)
+    return d
+  }
+  const waHref = (t) => {
+    const link = `${origin}/t/${t.code}`
+    const who = greetingName(t.customerName)
+    const name = who ? ` ${who}` : ''
+    const body =
+      `Hi${name} — you can see where your job is up to here: ${link} ` +
+      `It updates through the day so you are not left guessing.`
+    const n = waNumber(t.customerPhone)
+    return `https://wa.me/${n}?text=${encodeURIComponent(body)}`
+  }
+
   // A time input gives "14:30" with no date. Hang it off the job's own booked
   // day so the window lands on the right date, and fall back to today for a
   // job with no date set yet.
@@ -228,10 +251,16 @@ export default function Console() {
                 <p className="mt-1.5 select-all break-all font-mono text-[14px]">
                   {origin}/t/{t.code}
                 </p>
-                <a href={smsHref(t)}
-                   className="mt-3 flex min-h-[54px] w-full items-center justify-center rounded-2xl bg-brand-600 px-4 text-[17px] font-semibold text-white transition-transform active:scale-[.99]">
-                  Text {greetingName(t.customerName) || 'the customer'} this link
-                </a>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <a href={smsHref(t)}
+                     className="flex min-h-[54px] items-center justify-center rounded-2xl bg-brand-600 px-3 text-center text-[16px] font-semibold leading-tight text-white transition-transform active:scale-[.99]">
+                    Text {greetingName(t.customerName) || 'them'}
+                  </a>
+                  <a href={waHref(t)} target="_blank" rel="noreferrer"
+                     className="flex min-h-[54px] items-center justify-center rounded-2xl bg-[#25D366] px-3 text-center text-[16px] font-semibold leading-tight text-[#062e18] transition-transform active:scale-[.99]">
+                    WhatsApp {greetingName(t.customerName) || 'them'}
+                  </a>
+                </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button type="button" onClick={() => copyLink(t.code)}
                           className="surface min-h-[44px] rounded-2xl border px-4 text-[14px] font-semibold hairline">
