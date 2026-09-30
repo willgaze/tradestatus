@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { normaliseW3w, normaliseMapPin, w3wUrl } from '@/lib/places'
 import { readOwn, writeOwn } from './own-answers'
+import DropPin from '@/components/DropPin'
 
 const DOORS = [
   { key: 'FRONT', label: 'Front' },
@@ -113,10 +114,20 @@ export default function AccessNotes({ status, onSaved }) {
             )}
           </label>
 
-          <label className="block">
+          <div className="block">
             <span className="text-[15px] font-semibold">Or drop a pin</span>
             <span className="mt-0.5 block text-[14px] muted">
-              In Google Maps: press and hold on your door, Share, paste the link here
+              Easiest from your doorstep — one tap and your phone does it.
+            </span>
+
+            {/* The one-tap way, first, because it is the one that works for
+                somebody standing at their own door. */}
+            <div className="mt-2.5">
+              <DropPin onPin={(url) => setPin(url)} label="Use where I am now" />
+            </div>
+
+            <span className="mt-4 block text-[14px] muted">
+              Or in Google Maps: press and hold on your door, Share, paste the link here
             </span>
             <input type="url" value={pin} onChange={(e) => setPin(e.target.value)}
                    placeholder="https://maps.app.goo.gl/…" autoCapitalize="none" autoCorrect="off" inputMode="url"
@@ -132,7 +143,7 @@ export default function AccessNotes({ status, onSaved }) {
                 Check the pin ›
               </a>
             )}
-          </label>
+          </div>
 
           <label className="block">
             <span className="text-[15px] font-semibold">Anything else?</span>

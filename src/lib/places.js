@@ -40,6 +40,41 @@ export function normalisePhotoUrl(raw) {
   } catch { return null }
 }
 
+/* --- A pin dropped from the phone's own GPS ------------------------------ */
+
+// Six decimal places is about 10cm, which is far past what any phone knows.
+// It is used because it is lossless for our purposes and costs nothing, not
+// because the fix is that good — see accuracy handling in DropPin.
+const dp = (n) => Number(n).toFixed(6)
+
+/**
+ * A coordinate turned into a link.
+ *
+ * Deliberately a Google Maps URL rather than two new columns. `mapPin` already
+ * exists and already holds a Google link, so a pin dropped from GPS needs no
+ * migration and works the moment it deploys — and `normaliseMapPin` below
+ * checks it on the way in exactly as it checks a pasted one.
+ */
+export function coordsPinUrl(lat, lng) {
+  if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) return null
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null
+  return `https://www.google.com/maps/search/?api=1&query=${dp(lat)},${dp(lng)}`
+}
+
+/** The coordinates back out of one, or null if it is a pasted share link. */
+export function pinCoords(mapPin) {
+  try {
+    const u = new URL(String(mapPin || ''))
+    const m = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(u.searchParams.get('query') || '')
+    if (!m) return null
+    const lat = Number(m[1])
+    const lng = Number(m[2])
+    return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null
+  } catch {
+    return null
+  }
+}
+
 const q = (s) => encodeURIComponent(String(s || '').trim())
 
 /** Where it is, on a map. */
@@ -48,6 +83,11 @@ export const mapsSearchUrl = (address) =>
 
 /** How to get there, from wherever the van is now. A pin beats an address. */
 export function mapsDirectionsUrl({ mapPin, address }) {
+  // A dropped pin carries its coordinates, so it can become real turn-by-turn
+  // directions to the exact spot rather than a map centred near it. A pasted
+  // share link cannot be taken apart safely, so it is opened as it was given.
+  const at = pinCoords(mapPin)
+  if (at) return `https://www.google.com/maps/dir/?api=1&destination=${dp(at.lat)},${dp(at.lng)}&travelmode=driving`
   if (mapPin) return mapPin
   return address ? `https://www.google.com/maps/dir/?api=1&destination=${q(address)}&travelmode=driving` : null
 }

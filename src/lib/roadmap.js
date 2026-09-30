@@ -31,6 +31,8 @@ export const PHASES = [
         what: 'Told once by the customer, read before you knock.' },
       { key: 'navigate', name: 'Navigate to the job', state: 'live',
         what: 'One tap opens directions in Maps — to the pin if there is one, the address if not.' },
+      { key: 'one-tap-pin', name: 'Drop a pin with one tap', state: 'live',
+        what: 'Standing at the door, one tap instead of pasting a Maps link. Either end can do it, and Navigate then runs to the exact spot.' },
       { key: 'map-links', name: 'what3words and dropped pins that open', state: 'live',
         what: 'Tap the three words or the pin and the right app opens on the right square.' },
       { key: 'door-photos', name: 'Photos of the house and the door', state: 'live',

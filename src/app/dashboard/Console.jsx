@@ -11,6 +11,7 @@ import WalletShowcase from './WalletShowcase'
 import Roadmap from './Roadmap'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
+import DropPin from '@/components/DropPin'
 import { DB_REASONS } from '@/lib/db-errors'
 import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon } from '@/components/icons'
 
@@ -277,6 +278,18 @@ export default function Console() {
                   )}
                 </div>
               )}
+
+              {/* Dropped from the doorstep on the first visit, which is the
+                  better moment than asking the customer to do it: the person
+                  standing there is the one who will have to find it again, and
+                  a pin beats "third gate past the postbox" next time. */}
+              <div className="mt-2">
+                <DropPin
+                  label={t.mapPin ? 'Replace pin with where I am' : 'Drop a pin here'}
+                  className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]"
+                  onPin={(url) => patch(t.id, { mapPin: url })}
+                />
+              </div>
               {(t.doorToUse || t.petsOnSite || t.accessNotes) && (
                 <div className="r-inner mt-3 flex items-start gap-3 px-4 py-3" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                   <KeyIcon size={18} className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }} />

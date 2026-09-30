@@ -176,6 +176,36 @@ node scripts/check-public-shape.mjs
   browser store. Offline support is worth having and should come back, but
   scoped and on purpose, never as a side effect of wanting notifications.
 
+## A pin is a coordinate, and coordinates are the sharpest thing here
+
+`mapPin` holds a Google Maps URL, and a pin dropped from a phone's GPS is
+written into that same column as `…/maps/search/?api=1&query=LAT,LNG` — see
+`coordsPinUrl()` in `src/lib/places.js`. That is deliberate: no new columns, no
+migration, and `normaliseMapPin()` checks a dropped pin on the way in exactly
+as it checks a pasted one. `pinCoords()` reads it back, which is what lets
+**Navigate** give turn-by-turn to the exact spot rather than a map centred near
+it.
+
+Two rules for anything that touches location:
+
+- **Never ask for it automatically.** `DropPin` fires on a tap and only on a
+  tap. Requesting a location on page load is hostile, and iOS refuses a prompt
+  with no gesture behind it — so "automatic" means a dialog nobody asked for,
+  followed by a denial that needs a trip to Settings to undo.
+- **Never take a fix on trust.** A phone indoors can be a hundred metres out,
+  which in a terrace is four doors down. The reading carries an accuracy radius;
+  anything vaguer than 60m is accepted with a warning that says so. A pin that
+  is confidently wrong is worse than no pin, because it sends a van somewhere
+  with certainty.
+
+A precise location is the sharpest field this product holds, so it obeys the
+rule above it: the trade sees it on the dashboard, the tapping device remembers
+it, and it is not in `publicShape()`.
+
+**what3words from a GPS fix needs their API and a key**, so it is not built.
+Once there is a pin it is also not needed — three words exist to be said down a
+phone, and a pin is better for everything else.
+
 ## Every operator route guards itself
 
 `requireOperator()` from `src/lib/operator-auth.js` is the first statement of
