@@ -297,6 +297,41 @@ bash scripts/setup.sh         # idempotent: reuses both projects, re-reads Neon'
 `main` is connected to Vercel: a push deploys to production, any other branch
 gets a preview.
 
+## Shipping a schema change without taking the product down
+
+**There are two kinds of migration and only one of them is safe to ship ahead
+of the migration itself.**
+
+| | If `prisma db push` has not run |
+|---|---|
+| A **new table** | Fails soft. Every read of it sits in a try/catch, the feature stays dark, nothing else notices. `PushSubscription` works this way. |
+| **New columns on an existing table** | Fails **hard, everywhere**. Prisma selects every scalar field on a model, so the new columns are in every query for that table whether or not the new feature is touched. The whole product goes down, and the blast radius is every customer rather than the feature. |
+
+This has happened. v1.9.0 added four columns to `TradeStatus`, the live database
+did not have them, and from the moment it deployed every tracking link read
+"Status unavailable right now" and the dashboard could not load a job. It had to
+be reverted.
+
+So: **columns on an existing table are not shippable until the migration has
+run.** Either run it first, or hold the commit. Do not reason from "the push
+table shipped fine" — that was a new table, which is the other case.
+
+### The check after any deploy that touches the schema
+
+One curl, and it is not optional:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://tradestatus.vercel.app/api/status/ZZZZZZZZ
+```
+
+**404 is healthy** — the row was looked for and not found. **503 means the code
+and the database disagree**, and every customer link is down right now. A page
+that still returns 200 proves nothing: it renders the "unavailable" state with a
+perfectly good status code.
+
+Checking the theme colour changed is not this check. The theme comes from a
+constant in the bundle and is green while the database is on fire.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.
