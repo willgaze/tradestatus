@@ -430,6 +430,19 @@ and dark text on the background for contrast. Generating one at runtime to be
 deleted: it is the record of what the app looked like on a given day, and it is
 wanted for marketing.
 
+**It no longer needs a database.** With no `DEMO_CODE` the customer shots come
+from `/preview`, which renders the real component from a fixture in
+`src/app/preview/Preview.jsx` — invented name, invented address, one job
+mid-flight with every row populated, which is the busiest the page ever gets
+and so the state worth measuring. That route is a 404 wherever
+`VERCEL_ENV === 'production'`, and the gate is on `VERCEL_ENV` rather than
+`NODE_ENV` on purpose: `next start` is `NODE_ENV=production` too, and it is the
+server the diary is captured against. The dashboard and wallet shots still need
+an operator session, and the README says so when they are missing rather than
+leaving a silent gap. `playwright` is not a dependency — `npm install --no-save
+playwright`, and pass `CHROME_PATH` if the pre-installed browser is a different
+build.
+
 **Improve one real thing, not five speculative ones.** A nightly build that
 churns the interface is worse than one that fixes a defect. Look at what is
 actually wrong — read `docs/diary/` against the current build, run the app,
