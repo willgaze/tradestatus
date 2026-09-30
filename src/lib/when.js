@@ -24,7 +24,8 @@
  * Any new date on a page that renders on both sides goes through here.
  */
 
-import { TRADE_TIMEZONE } from '@/lib/trade'
+// Relative: see the note in trade-status.js.
+import { TRADE_TIMEZONE } from './trade.js'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
   'August', 'September', 'October', 'November', 'December']
@@ -83,6 +84,40 @@ export function dayAndTime(value) {
 export function dayAndMonth(value) {
   const t = zoned(value)
   return t ? `${t.day} ${MONTHS_SHORT[t.month - 1]}` : ''
+}
+
+/**
+ * "09:00" on a given day, as an instant — in the trade's zone, not UTC.
+ *
+ * A customer picking 9am means nine o'clock where they are, and Britain is an
+ * hour ahead of UTC for seven months of the year. Building the instant with
+ * setUTCHours(9) stores 09:00Z, which is displayed straight back to them as
+ * 10:00 — the window they did not ask for.
+ *
+ * Done by guess and correct rather than by a table of offsets: assume the wall
+ * time is UTC, ask what that instant actually reads as in the zone, and shift
+ * by the difference. Twice, because the first correction can itself land on
+ * the other side of a clock change — an 01:30 on the last Sunday in October is
+ * two different instants and this settles on one of them rather than
+ * oscillating.
+ */
+export function atLocalTime(day, hhmm) {
+  if (typeof hhmm !== 'string' || !/^\d{1,2}:\d{2}$/.test(hhmm)) return null
+  const [hour, minute] = hhmm.split(':').map(Number)
+  if (hour > 23 || minute > 59) return null
+
+  const on = zoned(day ? new Date(day) : new Date())
+  if (!on) return null
+
+  const wall = Date.UTC(on.year, on.month - 1, on.day, hour, minute)
+  let instant = wall
+  for (let i = 0; i < 2; i += 1) {
+    const seen = zoned(new Date(instant))
+    if (!seen) return null
+    const seenWall = Date.UTC(seen.year, seen.month - 1, seen.day, seen.hour, seen.minute)
+    instant = wall - (seenWall - instant)
+  }
+  return new Date(instant)
 }
 
 /** The day of the month on its own, for the tear-off calendar glyph. */

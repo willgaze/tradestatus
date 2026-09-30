@@ -33,6 +33,19 @@ model TradeStatus {
   windowStart DateTime?
   windowEnd   DateTime?
 
+  // A window is an ARRANGEMENT, not an announcement, so it needs to know who
+  // said it last and whether the other end has agreed.
+  //
+  // Four columns carry a whole back-and-forth because a counter-offer is just
+  // a new proposal from the other side: whoever proposes overwrites
+  // windowStart/End, sets windowBy to themselves and windowState to PROPOSED.
+  // The other end either agrees or proposes again. No queue of offers, no
+  // history to reconcile — only ever the offer on the table and who made it.
+  windowState String? // PROPOSED | AGREED  (null: no window discussed)
+  windowBy    String? // TRADE | CUSTOMER — who put the current one forward
+  windowNote  String? // "I'm on a call until 11" — why it does not suit
+  windowAt    DateTime? // when the current offer or agreement was made
+
   // Where this job sits in that day's run. 1 is first. Lets the page say
   // "you are second today" — a fact about order, never a time."
   position Int?

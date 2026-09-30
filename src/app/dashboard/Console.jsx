@@ -12,6 +12,8 @@ import Roadmap from './Roadmap'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
+import { windowSummary, windowHours } from '@/lib/window'
+import { TickIcon } from '@/components/icons'
 import { DB_REASONS } from '@/lib/db-errors'
 import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon } from '@/components/icons'
 
@@ -341,6 +343,37 @@ export default function Console() {
                   </a>
                 </div>
               </div>
+
+              {/* What the customer said back about the time. Loud when it is
+                  waiting on an answer, because an unanswered counter-offer is
+                  a wasted trip in the making. */}
+              {t.windowState === 'PROPOSED' && t.windowBy === 'CUSTOMER' && (
+                <div className="r-inner mt-3 p-4"
+                     style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
+                  <p className="text-[15px] font-bold" style={{ color: 'var(--stage-paused)' }}>
+                    {windowSummary({ state: t.windowState, by: t.windowBy, start: t.windowStart, end: t.windowEnd }, 'TRADE')}
+                  </p>
+                  {t.windowNote && <p className="mt-1 text-[15px]">&ldquo;{t.windowNote}&rdquo;</p>}
+                  <button type="button" onClick={() => patch(t.id, { windowAgree: true })}
+                          className="btn btn-filled mt-3 w-full !min-h-[48px] !text-[16px]">
+                    <TickIcon size={17} /> That works — agree it
+                  </button>
+                  <p className="mt-2 text-[13px] muted">
+                    Or set your own hours below, which sends it back to them.
+                  </p>
+                </div>
+              )}
+
+              {t.windowState === 'AGREED' && t.windowStart && (
+                <p className="mt-3 text-[15px] font-semibold" style={{ color: 'var(--stage-done)' }}>
+                  {windowHours({ start: t.windowStart, end: t.windowEnd })} — agreed with them
+                </p>
+              )}
+              {t.windowState === 'PROPOSED' && t.windowBy === 'TRADE' && (
+                <p className="mt-3 text-[15px] muted">
+                  {windowHours({ start: t.windowStart, end: t.windowEnd })} — sent, waiting on them
+                </p>
+              )}
 
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <label className="block text-[13px] muted">
