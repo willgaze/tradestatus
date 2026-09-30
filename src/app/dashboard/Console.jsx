@@ -9,6 +9,7 @@ import Changelog from './Changelog'
 import Profile from './Profile'
 import WalletShowcase from './WalletShowcase'
 import Roadmap from './Roadmap'
+import Assistant from './Assistant'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
@@ -36,7 +37,7 @@ const STAGE_BUTTONS = ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']
 // React treat it as uncontrolled and then complain the moment it is typed in.
 const EMPTY = { customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
 
-export default function Console() {
+export default function Console({ assistant = false }) {
   const [trackers, setTrackers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -57,33 +58,44 @@ export default function Console() {
 
   useEffect(() => { load() }, [load])
 
-  const create = async (e) => {
-    e.preventDefault()
+  // One way in for a new job, whether the fields came from the form or from
+  // the assistant's card. Returns whether it worked, so the caller knows what
+  // to clear.
+  const createFields = async (fields) => {
     setSaving(true)
     try {
       const r = await fetch('/api/dashboard/trackers', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
       })
-      if (!r.ok) return setError(await failure(r, 'Could not create the link'))
-      setForm(EMPTY)
+      if (!r.ok) { setError(await failure(r, 'Could not create the link')); return false }
       await load()
+      return true
     } catch {
       setError({ title: 'Could not create the link', fix: 'Check your connection and try again.' })
+      return false
     } finally { setSaving(false) }
+  }
+
+  const create = async (e) => {
+    e.preventDefault()
+    if (await createFields(form)) setForm(EMPTY)
   }
 
   const patch = async (id, body) => {
     // Optimistic: signal is patchy in a van, and a button that does nothing for
     // three seconds gets pressed four times.
     setTrackers((rows) => rows.map((r) => (r.id === id ? { ...r, ...body } : r)))
+    let ok = false
     try {
       const r = await fetch(`/api/dashboard/trackers/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       })
+      ok = r.ok
       if (!r.ok) setError(await failure(r, 'Update failed'))
     } catch {
       setError({ title: 'Update failed', fix: 'Check your connection and try again.' })
     } finally { await load() }
+    return ok
   }
 
   const revoke = async (id) => {
@@ -197,6 +209,10 @@ export default function Console() {
           {error.fix && <p className="mt-1 text-sm">{error.fix}</p>}
         </div>
       )}
+
+      {/* Say it, check the card, tap. The form underneath is the same fields
+          by hand, and the fallback when there is no key or no signal. */}
+      {assistant && <Assistant jobs={trackers} onCreate={createFields} onUpdate={patch} />}
 
       <form onSubmit={create} className="glass r-outer mt-6 grid gap-4 p-5 sm:grid-cols-2">
         {field('customerName', 'Customer name', 'Sarah Whitfield')}

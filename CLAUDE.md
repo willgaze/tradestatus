@@ -129,6 +129,30 @@ button.
 the row does not render and nothing sends. That is the gate that lets this ship
 before the keys and the migration exist.
 
+## The assistant proposes, never acts
+
+The box at the top of the dashboard takes words — typed, dictated, or a pasted
+booking email — and hands back a card. `src/lib/assistant.js` is the whole of
+it, and three rules hold there that hold everywhere else in this file:
+
+- **It never writes.** `propose()` returns JSON to the browser; the trade taps
+  Confirm; `/api/dashboard/trackers` does the work exactly as if the form had
+  been filled in. Do not give the model a tool that touches the database. A
+  wrong reading costs one tap, and that is the whole safety model.
+- **It never promises a time.** The prompt forbids it and `stripTimePromise()`
+  is the second lock: a note like "with you by 2" is dropped, with a warning
+  the card shows, and the time goes into the arrival window where it belongs.
+- **Its output is untrusted.** `sanitiseProposal()` treats the model's JSON
+  as a body from a stranger: `cleanText()`, the stage whitelist, the date and
+  time checks, and a job id that must be one it was shown. Adding a field to
+  the proposal means adding it there, deliberately.
+
+It is trade-side only. The customer's page is a status bar; a chat on that side
+is how the product started asking the customer things last time, and the
+answers ended up on a forwardable link. It is invisible until
+`ANTHROPIC_API_KEY` is set — the same gate as push — and the key never reaches
+the browser, only the fact that there is one.
+
 ## The link is the credential
 
 A customer has no login and never will. The code in the URL is the only thing

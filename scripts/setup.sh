@@ -148,6 +148,12 @@ if [ -n "$VAPID_PRIVATE_KEY" ]; then
   set_env VAPID_PRIVATE_KEY            "$VAPID_PRIVATE_KEY"
   set_env VAPID_SUBJECT                "mailto:${TRADE_EMAIL:-hello@mytradestatus.app}"
 fi
+# The assistant ("say what happened, get a card") needs a key from
+# console.anthropic.com. Optional: export ANTHROPIC_API_KEY before running this
+# and it is set; leave it unset and the box simply does not appear.
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  set_env ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY"
+fi
 
 say "Deploying to production"
 DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes "${SCOPE_ARGS[@]}" | tail -n 1)"

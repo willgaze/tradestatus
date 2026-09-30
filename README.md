@@ -72,6 +72,11 @@ connection per invocation, and a direct string runs the database out of them.
 `NEXT_PUBLIC_TRADE_NAME` and `NEXT_PUBLIC_TRADE_PHONE` decide whose name and
 number the customer sees. Nothing about any one trade is hardcoded.
 
+`ANTHROPIC_API_KEY` switches on the assistant: a box at the top of the
+dashboard that turns "on my way to Whitfield" or a pasted booking email into a
+card to confirm. It proposes only; the same routes as the form do the writing.
+No key, no box.
+
 ## Security
 
 The code in the URL is the only credential a customer has, so it is 8

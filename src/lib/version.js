@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.9.0'
+export const VERSION = '1.10.0'
 export const BUILD_DATE = '2026-09-30'
 
 export const THEMES = [
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.10.0', date: '2026-09-30', notes: [
+    'Say what happened, get a card, tap once. A box at the top of the dashboard reads “on my way to Whitfield”, “paused on Hale, waiting on the cylinder” or a pasted booking email and fills in the card for you.',
+    'It proposes and you confirm. Nothing is saved until you tap, and the same routes as the form do the saving.',
+    'It cannot promise a time. “Tell them by two” sets the window; the note to the customer never carries it.',
+    'Trade side only, and invisible until ANTHROPIC_API_KEY is set. No key, no box.',
+  ] },
   { version: '1.9.0', date: '2026-09-30', notes: [
     'The product has a name: Turnup. My Trade Status was a working title, and it described the thing rather than naming it.',
     'The name lives in one file, src/lib/product.js. The repo, the Vercel project and the database keep the old title, because renaming plumbing buys nothing.',
