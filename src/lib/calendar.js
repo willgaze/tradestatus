@@ -1,20 +1,13 @@
 import { TRADE_NAME, TRADE_PHONE } from '@/lib/trade'
-import { windowHours } from '@/lib/window'
+import { timeOnly } from '@/lib/when'
 
 /**
  * Putting the job in the customer's calendar.
  *
- * ALL DAY, unless the two of them agreed hours between themselves.
- *
- * The product does not invent an arrival time. A block at nine in the morning
- * that nobody signed up to is a promise, made in the one place a customer will
- * definitely look again, and they would be right to be annoyed when it
- * slipped. All day says "this is the day", which is true.
- *
- * An AGREED window is different in kind: it is not the product guessing, it is
- * a thing both ends said yes to, and putting it in the calendar is recording
- * an arrangement rather than making a promise. A window still only PROPOSED is
- * not that, and stays all-day — a proposal in a calendar looks settled.
+ * The product never promises an arrival time, so the event is ALL DAY. An
+ * hour-long block at nine in the morning would be a promise, made in the one
+ * place a customer will definitely look again — and they would be right to be
+ * annoyed when it slipped. All day says "this is the day", which is true.
  */
 
 const pad = (n) => String(n).padStart(2, '0')
@@ -55,13 +48,13 @@ export function buildIcs(status, trackUrl) {
   const start = new Date(status.scheduledFor)
   if (Number.isNaN(start.getTime())) return null
 
-  // Timed only when both ends AGREED it. A proposal on the table is not an
-  // arrangement, and dropping it into a calendar would make it look like one.
-  // DTEND is exclusive for an all-day VEVENT, so that lands on the next date.
-  const agreed = status.window?.state === 'AGREED' && status.window?.start
-  const from = agreed ? new Date(status.window.start) : start
-  const end = agreed
-    ? new Date(status.window.end || new Date(from.getTime() + 2 * 60 * 60 * 1000))
+  // With a window, this is a real block in the day and goes in as one. Without,
+  // it stays all-day — DTEND is exclusive for an all-day VEVENT, so it lands on
+  // the following date.
+  const timed = Boolean(status.windowStart)
+  const from = timed ? new Date(status.windowStart) : start
+  const end = timed
+    ? new Date(status.windowEnd || new Date(from.getTime() + 2 * 60 * 60 * 1000))
     : (() => { const e = new Date(start); e.setUTCDate(e.getUTCDate() + 1); return e })()
 
   const stamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
@@ -75,14 +68,13 @@ export function buildIcs(status, trackUrl) {
     'BEGIN:VEVENT',
     `UID:${status.code}@mytradestatus`,
     `DTSTAMP:${stamp}`,
-    ...(agreed
+    ...(timed
       ? [`DTSTART:${stampOf(from)}`, `DTEND:${stampOf(end)}`]
       : [`DTSTART;VALUE=DATE:${ymd(from)}`, `DTEND;VALUE=DATE:${ymd(end)}`]),
     fold(`SUMMARY:${esc(calendarSummary(status))}`),
     ...(status.jobAddress ? [fold(`LOCATION:${esc(status.jobAddress)}`)] : []),
     fold(`DESCRIPTION:${esc(calendarDescription(status, trackUrl))}`),
     fold(`URL:${trackUrl}`),
-    ...(TRADE_PHONE ? [fold(`CONTACT:${esc(`${TRADE_NAME}, ${TRADE_PHONE}`)}`)] : []),
     'STATUS:CONFIRMED',
     'TRANSP:TRANSPARENT',        // an all-day job should not mark them busy
     'BEGIN:VALARM',
@@ -101,16 +93,16 @@ export function googleCalendarUrl(status, trackUrl) {
   if (!status.scheduledFor) return null
   const start = new Date(status.scheduledFor)
   if (Number.isNaN(start.getTime())) return null
-  const agreed = status.window?.state === 'AGREED' && status.window?.start
-  const from = agreed ? new Date(status.window.start) : start
-  const end = agreed
-    ? new Date(status.window.end || new Date(from.getTime() + 2 * 60 * 60 * 1000))
+  const timed = Boolean(status.windowStart)
+  const from = timed ? new Date(status.windowStart) : start
+  const end = timed
+    ? new Date(status.windowEnd || new Date(from.getTime() + 2 * 60 * 60 * 1000))
     : (() => { const e = new Date(start); e.setUTCDate(e.getUTCDate() + 1); return e })()
 
   const q = new URLSearchParams({
     action: 'TEMPLATE',
     text: calendarSummary(status),
-    dates: agreed ? `${stampOf(from)}/${stampOf(end)}` : `${ymd(from)}/${ymd(end)}`,
+    dates: timed ? `${stampOf(from)}/${stampOf(end)}` : `${ymd(from)}/${ymd(end)}`,
     details: calendarDescription(status, trackUrl),
     location: status.jobAddress || '',
   })
@@ -123,10 +115,13 @@ export function googleCalendarUrl(status, trackUrl) {
  * product would rather say less than promise more.
  */
 export function windowLabel(status) {
-  // Only an AGREED window is stated as fact anywhere the old label was used.
-  // A proposal has its own line, which says it is a proposal.
-  if (status.window?.state !== 'AGREED') return null
-  return windowHours(status.window)
+  if (!status.windowStart) return null
+  // Through when.js, not toLocaleTimeString: this label is rendered inside the
+  // customer's page, which runs on the server and again on the phone, and the
+  // two must produce byte-identical text.
+  return status.windowEnd
+    ? `Between ${timeOnly(status.windowStart)} and ${timeOnly(status.windowEnd)}`
+    : `From ${timeOnly(status.windowStart)}`
 }
 
 /** "You are second today" — ordinal, because "position 2" is not English. */

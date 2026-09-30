@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.9.0'
+export const VERSION = '1.8.0'
 export const BUILD_DATE = '2026-09-30'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 5
+export const THEME_INDEX = 4
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,12 +48,6 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.9.0', date: '2026-09-30', notes: [
-    'A window is now something you agree, not something you announce',
-    'They can say "that suits" or ask for different hours, and say why \u2014 either end can start it',
-    'Only an agreed window is stated as fact, or goes in a calendar as a real block',
-    'What they ask for goes to you, never onto a page that can be forwarded',
-  ] },
   { version: '1.8.0', date: '2026-09-30', notes: [
     'Drop a pin with one tap instead of pasting a Maps link \u2014 from either end',
     'You can drop it yourself standing at the door on the first visit, so the next one is easy',

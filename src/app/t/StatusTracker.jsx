@@ -6,14 +6,12 @@ import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
 import Notify from './Notify'
-import Window from './Window'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
-import { windowSummary } from '@/lib/window'
 import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
 import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon } from '@/components/icons'
@@ -274,22 +272,6 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
             <Notify code={status.code} />
           </Disclosure>
         )}
-
-        {/* A window is an arrangement, so it sits with the things the customer
-            does rather than the things they read. Hidden once the job is done:
-            there is nothing left to arrange. */}
-        {status.scheduledFor && stage.key !== 'DONE' && (() => {
-          const win = status.window || {}
-          const needsThem = win.state === 'PROPOSED' && win.by === 'TRADE'
-          return (
-            <Disclosure icon={<ClockIcon size={21} />} title="When suits you?" delay="172ms"
-                        accent={needsThem || !win.state}
-                        summary={windowSummary(win, 'CUSTOMER') || 'No hours set — tap to ask for some'}
-                        open={openRow === 'when'} onToggle={() => toggle('when')}>
-              <Window status={status} onSaved={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
-            </Disclosure>
-          )
-        })()}
 
         <Disclosure icon={<PinIcon size={21} />} title="The job" delay="180ms"
                     summary={[

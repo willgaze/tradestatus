@@ -18,11 +18,6 @@
 // page look like a placeholder. This file is imported by the API routes, so it
 // holds no JSX and no CSS — only the name.
 
-// Relative, not '@/lib/window'. This file is loaded by plain node in
-// scripts/check-public-shape.mjs, which has no bundler to resolve the '@'
-// alias — and that check running without a build step is the point of it.
-import { publicWindow } from './window.js'
-
 export const STAGES = {
   BOOKED: {
     key: 'BOOKED',
@@ -133,12 +128,8 @@ export function publicShape(row) {
     // Do not add a customer-supplied field back to this shape. If a page needs
     // one, it needs the device that supplied it.
     // ---------------------------------------------------------------------
-    // Gated, not copied. publicWindow() hands back the hours only when the
-    // TRADE is the one putting them forward — their own proposal, or one they
-    // have agreed to. While the CUSTOMER's counter-offer is on the table the
-    // page learns that it is waiting and not what was asked for, because
-    // "I am free between 2 and 4" says when a house is occupied.
-    window: publicWindow(row),
+    windowStart: row.windowStart ? row.windowStart.toISOString() : null,
+    windowEnd: row.windowEnd ? row.windowEnd.toISOString() : null,
     // Order only, never the total: "second today" is reassuring, but how many
     // jobs the trade has on is their business, not the customer's.
     position: row.position ?? null,
