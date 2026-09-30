@@ -30,6 +30,8 @@ const MUST_NOT_LEAK = [
   'mapPin',
   'presence',
   'presenceNote',
+  // The customer saying why a time does not suit is theirs, not the page's.
+  'windowNote',
   // Wayfinding for the trade, of a customer's home. Dashboard only.
   'housePhoto',
   'doorPhoto',
@@ -67,6 +69,10 @@ const row = {
   mapPin: 'https://maps.app.goo.gl/example',
   housePhoto: 'https://example/house.jpg',
   doorPhoto: 'https://example/door.jpg',
+  windowState: 'PROPOSED',
+  windowBy: 'CUSTOMER',
+  windowNote: "I'm on a call until 11",
+  windowAt: new Date('2026-10-01T07:05:00Z'),
   presence: 'OUT',
   presenceNote: 'Out all morning',
   presenceAt: new Date('2026-10-01T07:00:00Z'),
@@ -78,6 +84,37 @@ const row = {
 
 const out = publicShape(row)
 const leaked = MUST_NOT_LEAK.filter((key) => key in out)
+
+/* --- The window gate ------------------------------------------------------
+ * A window is the one field that is sometimes public and sometimes not, which
+ * makes it the one most likely to go wrong. A time the TRADE proposed is
+ * theirs to publish; a time the CUSTOMER proposed is not, because "I am free
+ * between 2 and 4" says when a house is occupied. Both directions are checked.
+ */
+const failures = []
+
+const windowFor = (over) => publicShape({ ...row, ...over }).window
+
+const tradeProposed = windowFor({ windowState: 'PROPOSED', windowBy: 'TRADE' })
+if (!tradeProposed.start) failures.push('a window the TRADE proposed is being withheld from its own customer')
+
+const agreed = windowFor({ windowState: 'AGREED', windowBy: 'CUSTOMER' })
+if (!agreed.start) failures.push('an AGREED window is being withheld — both sides signed up to it')
+
+const customerCounter = windowFor({ windowState: 'PROPOSED', windowBy: 'CUSTOMER' })
+if (customerCounter.start || customerCounter.end) {
+  failures.push(`a customer's pending counter-offer is public (${customerCounter.start} → ${customerCounter.end})`)
+}
+
+if (row.windowNote && 'windowNote' in out) failures.push('windowNote is public — it is the customer saying why a time does not suit')
+
+
+if (failures.length) {
+  console.error('\nThe window gate is wrong:\n')
+  for (const f of failures) console.error(`  ${f}`)
+  console.error('\nSee publicWindow() in src/lib/window.js.\n')
+  process.exit(1)
+}
 
 if (leaked.length) {
   console.error('\npublicShape() is handing out fields that a forwarded link must never carry:\n')

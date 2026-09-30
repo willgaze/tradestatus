@@ -19,6 +19,8 @@ export const PHASES = [
         what: 'Opens Messages or WhatsApp with the number and the message already written.' },
       { key: 'passkey', name: 'Face ID sign-in', state: 'live',
         what: 'No password to type in a van.' },
+      { key: 'window-agree', name: 'Agree the window, do not announce it', state: 'live',
+        what: 'Offer hours; they say that suits or ask for different ones and why. Either end can start it, and only an agreed window is stated as a fact.' },
       { key: 'window', name: 'Arrival window you can narrow', state: 'live',
         what: 'Sometime Tuesday becomes between 2 and 4 as the day settles.' },
       { key: 'run-position', name: 'Where they are in the day', state: 'live',
@@ -94,8 +96,6 @@ export const PHASES = [
     title: 'The bigger idea',
     blurb: 'A different product, and the one this was always pointing at. Every item here needs the data model rebuilt around a journey with two ends.',
     items: [
-      { key: 'window-negotiate', name: 'Agree the window instead of announcing it', state: 'idea',
-        what: 'A window is a two-way arrangement and today it is a broadcast. Offer one, let the other end say "not then, I am on a call" and counter — in a shape their own assistant can read and answer without either person typing.' },
       { key: 'access-trust', name: 'Do we know them well enough to let them in?', state: 'idea',
         what: 'When nobody will be in: let them in themselves via a key safe, leave it somewhere safe, or neither. Decided per trade per household, not per job, and the answer is remembered.' },
       { key: 'whereabouts-privacy', name: 'Who is allowed to ask if you are in', state: 'idea',
