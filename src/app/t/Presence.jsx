@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PRESENCE, PRESENCE_ORDER, presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { PresenceIcon } from '@/components/icons'
+import { readOwn, writeOwn } from './own-answers'
 
 /**
  * The customer answering the one question that costs a wasted visit.
@@ -12,12 +13,18 @@ import { PresenceIcon } from '@/components/icons'
  * stale in hours, so it asks again rather than showing Tuesday's answer on
  * Thursday.
  */
-export default function Presence({ status, onSaved }) {
+export default function Presence({ status, own, onSaved }) {
   const [saving, setSaving] = useState(null)
-  const [note, setNote] = useState(status.presenceNote || '')
+  const [note, setNote] = useState('')
   const [showNote, setShowNote] = useState(false)
 
-  const current = presenceOf(status.presence)
+  // What this device answered. The server no longer says — the answer is not
+  // public, because "nobody is in" travels with a forwarded link. See
+  // ./own-answers.js. On anyone else's phone these are simply empty, which is
+  // the point.
+  useEffect(() => { setNote(readOwn(status.code).presenceNote || '') }, [status.code])
+
+  const current = presenceOf(own?.presence)
   const fresh = presenceIsFresh(status.presenceAt)
 
   const send = async (presence, presenceNote = note) => {
@@ -26,15 +33,15 @@ export default function Presence({ status, onSaved }) {
       const r = await fetch(`/api/status/${status.code}/notes`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // The access notes travel with it, so answering this does not wipe
-          // what they told the trade about the gate.
-          doorToUse: status.doorToUse, petsOnSite: status.petsOnSite,
-          what3words: status.what3words, accessNotes: status.accessNotes,
-          presence, presenceNote,
-        }),
+        // Only the answer. The route leaves every field it is not sent
+        // alone, so this cannot wipe what they told the trade about the gate.
+        body: JSON.stringify({ presence, presenceNote }),
       })
-      if (r.ok) { onSaved?.((await r.json()).notes); setShowNote(false) }
+      if (r.ok) {
+        const { presenceAt } = await r.json()
+        onSaved?.({ presenceAt }, writeOwn(status.code, { presence, presenceNote }))
+        setShowNote(false)
+      }
     } finally { setSaving(null) }
   }
 
@@ -74,7 +81,7 @@ export default function Presence({ status, onSaved }) {
       {!showNote ? (
         <button type="button" onClick={() => setShowNote(true)}
                 className="mt-4 min-h-[44px] text-[15px] font-medium" style={{ color: 'var(--tint)' }}>
-          {status.presenceNote ? `“${status.presenceNote}” — change` : 'Add a detail'}
+          {note ? `“${note}” — change` : 'Add a detail'}
         </button>
       ) : (
         <div className="mt-4">

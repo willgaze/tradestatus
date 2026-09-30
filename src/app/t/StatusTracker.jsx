@@ -6,6 +6,7 @@ import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
 import Notify from './Notify'
+import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
@@ -28,6 +29,14 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
   const [openRow, setOpenRow] = useState(null)
   const toggle = (k) => setOpenRow((o) => (o === k ? null : k))
   const chrome = useRef(null)
+
+  // What THIS device told the trade. The server does not hand it back — a
+  // tracking link gets forwarded, and the customer's own answers are not for
+  // whoever it reaches. See ./own-answers.js. Read after mount: the server has
+  // no localStorage, and anything guessed during the server render tears
+  // hydration apart.
+  const [own, setOwn] = useState({})
+  useEffect(() => { setOwn(readOwn(initialStatus.code)) }, [initialStatus.code])
 
   const refresh = useCallback(async () => {
     try {
@@ -231,16 +240,25 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         )}
 
         {status.stage !== 'DONE' && (() => {
-          const cur = presenceOf(status.presence)
+          // The TIME of the answer comes from the server; the ANSWER comes
+          // from this device. So a forwarded link can see that the question
+          // was answered, and never what the answer was.
+          const cur = presenceOf(own.presence)
           const fresh = presenceIsFresh(status.presenceAt)
-          const answered = cur && fresh
+          const answered = Boolean(status.presenceAt) && fresh
           return (
             <Disclosure icon={<HouseIcon size={21} />} title="Will someone be in?" delay="150ms" accent={!answered}
-                        summary={answered
-                          ? `You said: ${cur.short}${status.presenceNote ? ` — ${status.presenceNote}` : ''} · ${presenceAgeLabel(status.presenceAt)}`
-                          : 'Tap to answer — saves them a wasted trip'}
+                        summary={!answered
+                          ? 'Tap to answer — saves them a wasted trip'
+                          : cur
+                            ? `You said: ${cur.short} · ${presenceAgeLabel(status.presenceAt)}`
+                            : `Answered ${presenceAgeLabel(status.presenceAt)} — tap to change`}
                         open={openRow === 'in'} onToggle={() => toggle('in')}>
-              <Presence status={status} onSaved={(n) => setStatus((s) => ({ ...s, ...n }))} />
+              <Presence status={status} own={own}
+                        onSaved={(fromServer, mine) => {
+                          setStatus((s) => ({ ...s, ...fromServer }))
+                          setOwn(mine)
+                        }} />
             </Disclosure>
           )
         })()}
@@ -267,7 +285,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
                    hint={windowLabel(status) || 'No arrival time is promised'} />
             )}
             {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
-            {(status.jobAddress || status.what3words || status.mapPin) && (
+            {(status.jobAddress || own.what3words || own.mapPin) && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {status.jobAddress && (
                   <a href={mapsSearchUrl(status.jobAddress)} target="_blank" rel="noreferrer"
@@ -275,34 +293,30 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
                     <CompassIcon size={15} /> Open in Maps
                   </a>
                 )}
-                {status.what3words && (
-                  <a href={w3wUrl(status.what3words)} target="_blank" rel="noreferrer"
+                {/* From this device's own memory, not from the page payload:
+                    a precise location is the last thing that should ride on a
+                    forwarded link. */}
+                {own.what3words && (
+                  <a href={w3wUrl(own.what3words)} target="_blank" rel="noreferrer"
                      className="btn btn-grey !min-h-[40px] !px-3.5 !text-[14px]">
-                    ///{status.what3words}
+                    ///{own.what3words}
                   </a>
                 )}
-                {status.mapPin && (
-                  <a href={status.mapPin} target="_blank" rel="noreferrer"
+                {own.mapPin && (
+                  <a href={own.mapPin} target="_blank" rel="noreferrer"
                      className="btn btn-grey !min-h-[40px] !px-3.5 !text-[14px]">
                     <PinIcon size={15} /> Your pin
                   </a>
                 )}
               </div>
             )}
-            {(status.housePhoto || status.doorPhoto) && (
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                {[[status.housePhoto, 'The house from the road'], [status.doorPhoto, 'The door to come to']]
-                  .filter(([src]) => src)
-                  .map(([src, label]) => (
-                    <figure key={label} className="min-w-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt={label} className="r-inner aspect-[4/3] w-full object-cover"
-                           onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }} />
-                      <figcaption className="mt-1 text-[13px] muted">{label}</figcaption>
-                    </figure>
-                  ))}
-              </div>
-            )}
+            {/* The house and door photos are NOT shown here, and are not in
+                the page payload at all. They are wayfinding for the trade,
+                they are on the dashboard behind a password, and the customer
+                already knows what their own front door looks like. A photo of
+                it next to "nobody is in" and a time window, on a link that
+                gets forwarded, is the one item on this page worth most to
+                somebody who should not have it. */}
             {status.jobSummary && <Row label="Work" value={status.jobSummary} />}
             {status.jobRef && <Row label="Job reference" value={status.jobRef} />}
             {status.updatedAt && <Row label="Last updated" value={dayAndTime(status.updatedAt)} />}
@@ -322,11 +336,11 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         </Disclosure>
 
         <Disclosure icon={<KeyIcon size={21} />} title="Help them find you" delay="210ms"
-                    summary={(status.doorToUse || status.petsOnSite || status.what3words || status.accessNotes)
-                      ? 'Saved — tap to change'
+                    summary={(own.doorToUse || own.petsOnSite || own.what3words || own.mapPin || own.accessNotes)
+                      ? 'Sent — they have it. Tap to change'
                       : 'Which door, parking, the dog'}
                     open={openRow === 'find'} onToggle={() => toggle('find')}>
-          <AccessNotes status={status} onSaved={(notes) => setStatus((s) => ({ ...s, ...notes }))} />
+          <AccessNotes status={status} onSaved={(mine) => setOwn(mine)} />
         </Disclosure>
 
         {status.events?.length > 0 && (

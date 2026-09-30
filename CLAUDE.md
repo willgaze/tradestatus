@@ -136,6 +136,40 @@ standing between a stranger and someone's name and home address, so:
   `lastViewedAt`.
 - Every page carries `robots: { index: false }`. A leaked link must never end
   up in a search index.
+
+**One rule decides what `publicShape()` may return:**
+
+> It carries what the **trade** told the **customer**.
+> It never carries what the **customer** told the **trade**.
+
+A tracking link gets forwarded — to a partner, into a family group chat, onward
+from there. Everything `publicShape()` returns is readable by everyone that link
+reaches, for as long as it is live.
+
+That rule was broken once, and nobody noticed because each step was reasonable.
+The product grew from *reporting* ("on my way") into *asking* ("will someone be
+in?"), the credential never changed to match, and the answers went back onto the
+page. Together they were the address, a photo of the house, a photo of the front
+door, which door to use, "the gate sticks, park on the verge", whether there is
+a dog, "No, I'm out", and "between 09:00 and 11:00" — a door, a time and a way
+in, on a link anyone could forward.
+
+So: **customer-supplied answers live on the device that supplied them**
+(`src/app/t/own-answers.js`, browser storage) and on the dashboard, which is
+behind a password. The customer's own phone prefills their form; a forwarded
+link gets a blank one and learns nothing. `presenceAt` is public and `presence`
+is not — the page may say *when* someone answered, never *what* they said.
+
+House and door photos are not on the customer page at all. They are wayfinding
+for the trade, the customer already knows their own front door, and a photo of
+it beside "nobody is in" is the single most valuable thing on that page to
+somebody who should not have it.
+
+This check must pass, and it fails loudly with the field named:
+
+```bash
+node scripts/check-public-shape.mjs
+```
 - **`public/sw.js` caches nothing, deliberately.** A service worker's scope is
   the whole origin, and the origin includes `/dashboard` — every customer's name
   and address, behind a password. A caching worker there puts that list in a
@@ -201,6 +235,17 @@ Each of these was live. Do not reintroduce them.
 - **An input bound to `undefined`.** The create form had a `customerPhone` field
   but `EMPTY` did not, so React treated it as uncontrolled and then complained
   the moment it was typed in. Every key the form renders belongs in `EMPTY`.
+- **A forwarded link became a burglary kit.** Covered in full under *The link is
+  the credential*. The shape of the mistake is the part worth remembering: no
+  single commit did it. The product grew from reporting into asking, each new
+  field was reasonable on its own, and the security model was never revisited to
+  match. **When this product starts asking the customer something new, stop and
+  ask who else can read the answer.**
+- **A save wiped what it did not send.** `/api/status/[code]/notes` overwrote
+  every access field on every call, so the presence buttons had to re-send the
+  door, the dog and the notes just to preserve them — which is why those fields
+  were on the page in the first place. It now patches: a field absent from the
+  body is a field the caller is not changing.
 - **Deployment protection.** `tradestatus.vercel.app` is open; the generated
   per-deployment URLs are behind Vercel's login. Never put a
   `tradestatus-<hash>-…` URL in front of a customer.

@@ -29,45 +29,50 @@ export async function PUT(request, { params }) {
     if (!row || !row.isActive) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 
     const body = await request.json().catch(() => ({}))
-    const door = typeof body.doorToUse === 'string' ? body.doorToUse.toUpperCase() : null
 
-    const updated = await prisma.tradeStatus.update({
-      where: { id: row.id },
-      data: {
-        doorToUse: DOORS.includes(door) ? door : null,
-        petsOnSite: Boolean(body.petsOnSite),
-        // ///filled.count.soap — keep the words, drop anything else.
-        // Three real words or nothing — a typo stored here sends a van to the
-        // wrong field. Same for the pin: Google's hosts only.
-        what3words: normaliseW3w(body.what3words),
-        mapPin: normaliseMapPin(body.mapPin),
-        accessNotes: cleanText(body.accessNotes, 400),
-        notesUpdatedAt: new Date(),
-        // Presence is stamped separately: it goes stale in hours, while "use
-        // the back gate" is true until the gate moves.
-        ...(body.presence !== undefined
-          ? {
-              presence: isValidPresence(body.presence) ? body.presence : null,
-              presenceNote: cleanText(body.presenceNote, 200),
-              presenceAt: body.presence ? new Date() : null,
-            }
-          : {}),
-      },
-    })
+    // Only what was actually sent is written.
+    //
+    // This used to overwrite every access field on every call, which meant the
+    // presence buttons had to re-send the door, the dog and the notes just to
+    // avoid wiping them — reading those values back off the page. The page no
+    // longer has them (they are not public any more), so the fix belongs here
+    // rather than there: a field absent from the body is a field the caller is
+    // not changing.
+    const data = { notesUpdatedAt: new Date() }
 
+    if (body.doorToUse !== undefined) {
+      const door = typeof body.doorToUse === 'string' ? body.doorToUse.toUpperCase() : null
+      data.doorToUse = DOORS.includes(door) ? door : null
+    }
+    if (body.petsOnSite !== undefined) data.petsOnSite = Boolean(body.petsOnSite)
+    // ///filled.count.soap — keep the words, drop anything else. Three real
+    // words or nothing: a typo stored here sends a van to the wrong field.
+    // Same for the pin, which is held to Google's hosts.
+    if (body.what3words !== undefined) data.what3words = normaliseW3w(body.what3words)
+    if (body.mapPin !== undefined) data.mapPin = normaliseMapPin(body.mapPin)
+    if (body.accessNotes !== undefined) data.accessNotes = cleanText(body.accessNotes, 400)
+
+    // Presence is stamped separately: it goes stale in hours, while "use the
+    // back gate" is true until the gate moves.
+    if (body.presence !== undefined) {
+      data.presence = isValidPresence(body.presence) ? body.presence : null
+      data.presenceNote = cleanText(body.presenceNote, 200)
+      data.presenceAt = body.presence ? new Date() : null
+    }
+
+    const updated = await prisma.tradeStatus.update({ where: { id: row.id }, data })
+
+    // A confirmation, not a copy.
+    //
+    // This route is public — the code is the only credential — so anything it
+    // returns is readable by anyone holding a forwarded link, including
+    // someone who did not send it. It used to echo the whole set back, which
+    // handed a link-holder the door, the dog, the notes and whether anyone was
+    // in. The caller already knows what it just sent; its own device remembers
+    // it (src/app/t/own-answers.js). Nobody else needs it back.
     return NextResponse.json({
-      notes: {
-        doorToUse: updated.doorToUse,
-        petsOnSite: updated.petsOnSite,
-        what3words: updated.what3words,
-        accessNotes: updated.accessNotes,
-        mapPin: updated.mapPin,
-        housePhoto: updated.housePhoto,
-        doorPhoto: updated.doorPhoto,
-        presence: updated.presence,
-        presenceNote: updated.presenceNote,
-        presenceAt: updated.presenceAt,
-      },
+      ok: true,
+      presenceAt: updated.presenceAt,
     })
   } catch (error) {
     console.error('notes update failed:', error)

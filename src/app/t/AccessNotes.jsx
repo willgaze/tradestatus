@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { normaliseW3w, normaliseMapPin, w3wUrl } from '@/lib/places'
+import { readOwn, writeOwn } from './own-answers'
 
 const DOORS = [
   { key: 'FRONT', label: 'Front' },
@@ -23,11 +24,25 @@ const DOORS = [
 export default function AccessNotes({ status, onSaved }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [door, setDoor] = useState(status.doorToUse || null)
-  const [pets, setPets] = useState(Boolean(status.petsOnSite))
-  const [w3w, setW3w] = useState(status.what3words || '')
-  const [pin, setPin] = useState(status.mapPin || '')
-  const [notes, setNotes] = useState(status.accessNotes || '')
+  const [door, setDoor] = useState(null)
+  const [pets, setPets] = useState(false)
+  const [w3w, setW3w] = useState('')
+  const [pin, setPin] = useState('')
+  const [notes, setNotes] = useState('')
+
+  // Prefilled from this device, not from the server. The trade has all of it;
+  // the page does not hand it back, because a tracking link gets forwarded and
+  // "the gate sticks, park on the verge" is not for whoever it reaches. See
+  // ./own-answers.js. Read after mount — the server has no localStorage, and a
+  // value guessed during the server render is a hydration mismatch.
+  useEffect(() => {
+    const mine = readOwn(status.code)
+    setDoor(mine.doorToUse || null)
+    setPets(Boolean(mine.petsOnSite))
+    setW3w(mine.what3words || '')
+    setPin(mine.mapPin || '')
+    setNotes(mine.accessNotes || '')
+  }, [status.code])
 
   const anything = door || pets || w3w || pin || notes
 
@@ -40,8 +55,9 @@ export default function AccessNotes({ status, onSaved }) {
         body: JSON.stringify({ doorToUse: door, petsOnSite: pets, what3words: w3w, mapPin: pin, accessNotes: notes }),
       })
       if (r.ok) {
-        const { notes: fresh } = await r.json()
-        onSaved?.(fresh)
+        onSaved?.(writeOwn(status.code, {
+          doorToUse: door, petsOnSite: pets, what3words: w3w, mapPin: pin, accessNotes: notes,
+        }))
         setSaved(true); setTimeout(() => setSaved(false), 2500)
       }
     } finally {

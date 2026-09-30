@@ -25,6 +25,8 @@ export const PHASES = [
         what: 'You are 2nd today. A fact about order, not a clock.' },
       { key: 'presence', name: 'Will someone be in?', state: 'live',
         what: 'Four taps back from the customer. Saves the wasted trip.' },
+      { key: 'answers-private', name: 'What you tell them stays between you', state: 'live',
+        what: 'Your answers about the door, the dog and whether anyone is in go to the trade only. A forwarded link cannot read them back.' },
       { key: 'access-notes', name: 'Which door, the dog, what3words', state: 'live',
         what: 'Told once by the customer, read before you knock.' },
       { key: 'navigate', name: 'Navigate to the job', state: 'live',

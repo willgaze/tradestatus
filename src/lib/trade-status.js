@@ -102,21 +102,39 @@ export function publicShape(row) {
     scheduledFor: row.scheduledFor ? row.scheduledFor.toISOString() : null,
     arrivingAt: row.arrivingAt ? row.arrivingAt.toISOString() : null,
     updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
-    // What the customer told the trade. Theirs to read back and change.
+    // ---------------------------------------------------------------------
+    // ONE RULE DECIDES WHAT GOES BELOW THIS LINE:
+    //
+    //   This payload carries what the TRADE told the CUSTOMER.
+    //   It never carries what the CUSTOMER told the TRADE.
+    //
+    // The code in the URL is the only credential, and a tracking link gets
+    // forwarded — to a partner, into a family group chat, onward from there.
+    // Everything this function returns is readable by everyone that link
+    // reaches, for as long as it is live.
+    //
+    // For a while it returned the customer's own answers too, and together
+    // they stopped being a status page: the address, a photo of the house, a
+    // photo of the front door, which door is used, "the gate sticks, park on
+    // the verge", whether there is a dog, "No, I'm out", and "between 09:00
+    // and 11:00". That is a door, a time and a way in, and it went to anyone
+    // holding a forwarded link.
+    //
+    // So those fields are gone from here. The trade still sees every one of
+    // them on the dashboard, which is behind a password. The customer's own
+    // phone remembers what it sent, in src/app/t/own-answers.js, so their form
+    // still prefills — on their device and nobody else's.
+    //
+    // Do not add a customer-supplied field back to this shape. If a page needs
+    // one, it needs the device that supplied it.
+    // ---------------------------------------------------------------------
     windowStart: row.windowStart ? row.windowStart.toISOString() : null,
     windowEnd: row.windowEnd ? row.windowEnd.toISOString() : null,
     // Order only, never the total: "second today" is reassuring, but how many
     // jobs the trade has on is their business, not the customer's.
     position: row.position ?? null,
-    doorToUse: row.doorToUse || null,
-    petsOnSite: Boolean(row.petsOnSite),
-    what3words: row.what3words || null,
-    accessNotes: row.accessNotes || null,
-    mapPin: row.mapPin || null,
-    housePhoto: row.housePhoto || null,
-    doorPhoto: row.doorPhoto || null,
-    presence: row.presence || null,
-    presenceNote: row.presenceNote || null,
+    // The TIME an answer was given, never the answer. Lets the page say "you
+    // answered 20 minutes ago" without saying whether anyone is home.
     presenceAt: row.presenceAt ? row.presenceAt.toISOString() : null,
     events: (row.events || []).map((event) => ({
       stage: event.stage,
