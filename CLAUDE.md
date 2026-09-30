@@ -1,10 +1,18 @@
-# CLAUDE.md — My Trade Status
+# CLAUDE.md — Turnup
+
+**The product is called Turnup.** It was My Trade Status until v1.9.0; the
+repository, the Vercel project, the database and the Prisma models keep that
+working title because renaming plumbing buys nothing. Everything a person
+reads takes the name from `src/lib/product.js`, and nowhere else — so
+`grep -rn "My Trade Status" src/` should only ever find comments explaining
+the history. The mark is applied for, not registered: ™ only, never ®, until
+the IPO says otherwise.
 
 ## This is not Rosebourne Plumbing
 
 **Read this first, because the mistake has been made twice.**
 
-My Trade Status is its own product, in its own repository, with its own
+Turnup is its own product, in its own repository, with its own
 database and its own Vercel project. Rosebourne Plumbing is a *customer* of it
 — the first one, and currently the only one. The two share nothing but an
 owner.

@@ -1,8 +1,9 @@
 import './globals.css'
 import { theme } from '@/lib/version'
+import { PRODUCT_NAME } from '@/lib/product'
 
 export const metadata = {
-  title: 'My Trade Status',
+  title: PRODUCT_NAME,
   description: 'See where your job is — booked in, on my way, on site, done.',
   robots: { index: false, follow: false },
   // Installable, so the trade's side lives on a home screen and opens without

@@ -1,5 +1,6 @@
 'use client'
 
+import { PRODUCT_NAME } from '@/lib/product'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
@@ -387,7 +388,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
       <p className="mt-8 text-center text-[13px] muted">This page updates itself.</p>
       <span className="mt-3 flex items-center justify-center gap-2 pb-safe opacity-60">
         <Mark className="h-4 w-auto" id="foot" />
-        <span className="text-[12px] muted">Job tracking by My Trade Status</span>
+        <span className="text-[12px] muted">Job tracking by {PRODUCT_NAME}</span>
       </span>
       <span className="mt-2 flex justify-center pb-safe"><BuildStamp /></span>
     </main>

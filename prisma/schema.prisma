@@ -1,4 +1,4 @@
-// My Trade Status — its own database. Nothing here is shared with any other
+// Turnup (working title My Trade Status) — its own database. Nothing here is shared with any other
 // system: the whole point of this repo is that a tracking link does not need
 // the rest of a plumbing firm's website to exist.
 
@@ -114,7 +114,7 @@ model TradeProfile {
   vehicleColour String? // "White"
   vehiclePhoto  String? // the actual van, sign-written
 
-  // Free tier shows My Trade Status on the card. Paid shows the trade's own.
+  // Free tier shows Turnup on the card. Paid shows the trade's own.
   brandLogo   String?
   brandColour String?
 

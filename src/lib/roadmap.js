@@ -86,7 +86,7 @@ export const PHASES = [
       { key: 'customer-camera', name: 'Customer takes the door photo themselves', state: 'idea',
         what: 'A camera button on their page. Needs photo storage — an unsigned Cloudinary preset is a five-minute job.' },
       { key: 'branded-card', name: 'Your own logo on the wallet card', state: 'idea',
-        what: 'The paid tier. Free shows My Trade Status instead.' },
+        what: 'The paid tier. Free shows Turnup instead.' },
     ],
   },
   {

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@/lib/product'
 import { TRADE_NAME, TRADE_PHONE } from '@/lib/trade'
 import { timeOnly } from '@/lib/when'
 
@@ -62,10 +63,13 @@ export function buildIcs(status, trackUrl) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//My Trade Status//EN',
+    `PRODID:-//${PRODUCT_NAME}//EN`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
+    // The UID suffix is the old working title on purpose: it is the event's
+    // identity in the customer's calendar, and changing it would duplicate
+    // every event already added.
     `UID:${status.code}@mytradestatus`,
     `DTSTAMP:${stamp}`,
     ...(timed

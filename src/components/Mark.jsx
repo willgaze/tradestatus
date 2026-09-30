@@ -1,5 +1,7 @@
+import { PRODUCT_NAME } from '@/lib/product'
+
 /**
- * The My Trade Status mark — the one from 2015, redrawn.
+ * The Turnup mark — the one drawn for My Trade Status in 2015, redrawn.
  *
  * Five nodes on a journey: solid lines behind, dotted ahead. It was always the
  * right mark for this product, because that is exactly what the status page
@@ -9,7 +11,7 @@
  * `id` must be unique per instance — two of these on one page with the same
  * gradient id and the second one renders unpainted.
  */
-export default function Mark({ className = '', id = 'mts', title = 'My Trade Status' }) {
+export default function Mark({ className = '', id = 'mts', title = PRODUCT_NAME }) {
   const g = `${id}-grad`
   return (
     <svg viewBox="0 0 170 112" fill="none" className={className} role="img" aria-label={title}>
@@ -39,7 +41,7 @@ export function Wordmark({ className = '', id = 'mts-w' }) {
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <Mark id={id} className="h-[22px] w-auto" />
       <span className="text-[13px] font-semibold uppercase tracking-[0.13em] muted">
-        My Trade Status
+        {PRODUCT_NAME}
       </span>
     </span>
   )

@@ -1,4 +1,7 @@
-# My Trade Status
+# Turnup
+
+Formerly My Trade Status. The name lives in `src/lib/product.js`; the repo,
+the Vercel project and the database keep the old working title.
 
 **Live at https://tradestatus.vercel.app**
 

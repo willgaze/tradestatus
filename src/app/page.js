@@ -1,6 +1,7 @@
 import Mark from '@/components/Mark'
+import { PRODUCT_NAME, PRODUCT_NAME_TM, PRODUCT_TAGLINE } from '@/lib/product'
 
-export const metadata = { title: 'My Trade Status', robots: { index: false, follow: false } }
+export const metadata = { title: PRODUCT_NAME, robots: { index: false, follow: false } }
 
 // The product's own front door. Deliberately carries no trade's name, phone or
 // branding: a customer who lands here has mistyped a link, and whose link it
@@ -25,7 +26,7 @@ export default function Home() {
         Lost it? Ask whoever booked the job to send it again.
       </p>
       <p className="mt-10 text-[13px]" style={{ color: 'var(--label-3)' }}>
-        Live job tracking for trades
+        {PRODUCT_NAME_TM} · {PRODUCT_TAGLINE}
       </p>
 
       {/* The way in for the trade. Small, because a customer landing here by

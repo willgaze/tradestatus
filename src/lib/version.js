@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.8.0'
+export const VERSION = '1.9.0'
 export const BUILD_DATE = '2026-09-30'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.9.0', date: '2026-09-30', notes: [
+    'The product has a name: Turnup. My Trade Status was a working title, and it described the thing rather than naming it.',
+    'The name lives in one file, src/lib/product.js. The repo, the Vercel project and the database keep the old title, because renaming plumbing buys nothing.',
+    'Trade mark symbol on the landing page, and only that symbol, until the IPO grants the mark.',
+  ] },
   { version: '1.8.0', date: '2026-09-30', notes: [
     'Drop a pin with one tap instead of pasting a Maps link \u2014 from either end',
     'You can drop it yourself standing at the door on the first visit, so the next one is easy',

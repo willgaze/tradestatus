@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@/lib/product'
 import { NextResponse } from 'next/server'
 import { generateRegistrationOptions } from '@simplewebauthn/server'
 import { prisma } from '@/lib/prisma'
@@ -18,7 +19,7 @@ export async function POST() {
     const existing = await prisma.passkey.findMany()
 
     const options = await generateRegistrationOptions({
-      rpName: 'My Trade Status',
+      rpName: PRODUCT_NAME,
       rpID,
       userName: process.env.OPERATOR_EMAIL || 'operator',
       userDisplayName: process.env.NEXT_PUBLIC_TRADE_NAME || 'Operator',
