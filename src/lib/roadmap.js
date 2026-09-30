@@ -48,6 +48,9 @@ export const PHASES = [
     title: 'Built, waiting on someone else',
     blurb: 'The code is done. These need an account or a certificate that only you can get.',
     items: [
+      { key: 'push', name: 'Your phone buzzes when they set off', state: 'ready',
+        what: 'Set off, arrived, done — on the lock screen, no app. The closest thing to the wallet card, and it costs nothing.',
+        needs: 'One database migration and a key pair — both in setup.sh' },
       { key: 'wallet-pass', name: 'The card in Apple Wallet', state: 'ready',
         what: 'Updates itself on the lock screen when you tap a stage.',
         needs: 'Apple Developer Program, £79/yr' },
@@ -87,6 +90,12 @@ export const PHASES = [
     title: 'The bigger idea',
     blurb: 'A different product, and the one this was always pointing at. Every item here needs the data model rebuilt around a journey with two ends.',
     items: [
+      { key: 'window-negotiate', name: 'Agree the window instead of announcing it', state: 'idea',
+        what: 'A window is a two-way arrangement and today it is a broadcast. Offer one, let the other end say "not then, I am on a call" and counter — in a shape their own assistant can read and answer without either person typing.' },
+      { key: 'access-trust', name: 'Do we know them well enough to let them in?', state: 'idea',
+        what: 'When nobody will be in: let them in themselves via a key safe, leave it somewhere safe, or neither. Decided per trade per household, not per job, and the answer is remembered.' },
+      { key: 'whereabouts-privacy', name: 'Who is allowed to ask if you are in', state: 'idea',
+        what: 'Answering "will someone be in?" tells somebody a house is empty. A request from a name the household does not recognise should not get that answer at all.' },
       { key: 'two-roles', name: 'Anyone can be either end', state: 'idea',
         what: 'Today the trade always moves and the customer always waits. In fact one person MOVES and one WAITS, and either of you can be either — a mate dropping something off, a neighbour picking up a key.' },
       { key: 'pickup-dropoff', name: 'Pickup and drop-off are two journeys', state: 'idea',

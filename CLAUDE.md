@@ -91,6 +91,36 @@ for f in glob.glob('src/**/*.js*', recursive=True):
 **Nothing counts down.** The live dot on the rail breathes so the page reads as
 current. It measures nothing, and no future animation may imply an arrival time.
 
+## What may go on a lock screen
+
+Push notifications are the least private surface this product touches: they are
+read by whoever picks the phone up off the kitchen table, not by whoever holds
+the link. So a notification carries **the trade's name and the stage, and
+nothing else** — never the address, never the job reference, never the
+customer's name, and never `stageNote`, which is free text and could say
+anything. Detail lives behind the link, where the code is the credential.
+`LINES` in `src/lib/push.js` is the whole vocabulary; adding a field to it is a
+privacy decision, not a copy one.
+
+The no-promised-time rule applies here hardest. "Has set off" is a fact. A push
+notification is the very worst place to promise an arrival.
+
+**Push never blocks a stage change.** `notifyStage()` is called un-awaited from
+the tracker PATCH handler and swallows everything: the trade tapped a button on
+a driveway and is waiting on that response, and a push service having a bad
+afternoon must not turn it into an error. A 404 or 410 from a push service means
+the browser discarded the subscription — delete the row, do not retry it.
+
+**The iPhone catch.** iOS delivers web push only to a page added to the home
+screen; Safari in a tab has no `Notification` API at all, so subscribing does
+not fail, it is absent. `src/app/t/Notify.jsx` detects that and shows the
+two-tap how-to instead of a button that does nothing. Never replace that with a
+button.
+
+**It is invisible until configured.** No `NEXT_PUBLIC_VAPID_PUBLIC_KEY` means
+the row does not render and nothing sends. That is the gate that lets this ship
+before the keys and the migration exist.
+
 ## The link is the credential
 
 A customer has no login and never will. The code in the URL is the only thing
@@ -106,6 +136,11 @@ standing between a stranger and someone's name and home address, so:
   `lastViewedAt`.
 - Every page carries `robots: { index: false }`. A leaked link must never end
   up in a search index.
+- **`public/sw.js` caches nothing, deliberately.** A service worker's scope is
+  the whole origin, and the origin includes `/dashboard` — every customer's name
+  and address, behind a password. A caching worker there puts that list in a
+  browser store. Offline support is worth having and should come back, but
+  scoped and on purpose, never as a side effect of wanting notifications.
 
 ## Every operator route guards itself
 

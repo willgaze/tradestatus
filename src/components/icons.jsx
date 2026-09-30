@@ -170,6 +170,13 @@ export const ClockIcon = (p) => (
   </Svg>
 )
 
+export const BellIcon = (p) => (
+  <Svg {...p}>
+    <path d="M18 9.5a6 6 0 1 0-12 0c0 4.2-1.6 5.6-2.2 6.1a.8.8 0 0 0 .5 1.4h15.4a.8.8 0 0 0 .5-1.4c-.6-.5-2.2-1.9-2.2-6.1Z" />
+    <path d="M10 20.2a2.4 2.4 0 0 0 4 0" />
+  </Svg>
+)
+
 export const ChevronIcon = (p) => (
   <Svg {...p}>
     <path d="m9.5 5.5 7 6.5-7 6.5" />

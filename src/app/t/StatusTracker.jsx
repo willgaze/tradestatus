@@ -5,6 +5,7 @@ import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
+import Notify from './Notify'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
@@ -12,7 +13,7 @@ import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
 import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
-import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon } from '@/components/icons'
+import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon } from '@/components/icons'
 
 // Dates come from src/lib/when.js and never from toLocaleString(): this page
 // renders on the server and again on the phone, and the two ship different
@@ -243,6 +244,16 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
             </Disclosure>
           )
         })()}
+
+        {/* Nothing more is going to happen on a finished job, so there is
+            nothing to be told about. */}
+        {status.stage !== 'DONE' && (
+          <Disclosure icon={<BellIcon size={21} />} title="Tell me when they set off" delay="165ms"
+                      summary="Set off, arrived, done — straight to your phone"
+                      open={openRow === 'notify'} onToggle={() => toggle('notify')}>
+            <Notify code={status.code} />
+          </Disclosure>
+        )}
 
         <Disclosure icon={<PinIcon size={21} />} title="The job" delay="180ms"
                     summary={[

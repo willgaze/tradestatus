@@ -16,12 +16,12 @@ datasource db {
 model TradeStatus {
   id            String    @id @default(cuid())
   code          String    @unique
-  jobRef        String?                      // the trade's own job number
-  externalId    String?                      // e.g. a ServiceM8 job UUID
+  jobRef        String? // the trade's own job number
+  externalId    String? // e.g. a ServiceM8 job UUID
   customerName  String?
-  customerPhone String?                      // so the dashboard can open a text, prefilled
+  customerPhone String? // so the dashboard can open a text, prefilled
   jobAddress    String?
-  jobSummary    String?                      // "Unvented cylinder swap"
+  jobSummary    String? // "Unvented cylinder swap"
   stage         String    @default("BOOKED") // BOOKED | ON_MY_WAY | ON_SITE | PAUSED | DONE
   stageNote     String?
   scheduledFor  DateTime?
@@ -30,41 +30,42 @@ model TradeStatus {
   // narrowed as the day goes: "sometime Tuesday" in the morning becomes
   // "between 2 and 4" once the first job is done. Absent, the customer is
   // told the day and nothing more, which is the honest default.
-  windowStart   DateTime?
-  windowEnd     DateTime?
+  windowStart DateTime?
+  windowEnd   DateTime?
 
   // Where this job sits in that day's run. 1 is first. Lets the page say
   // "you are second today" — a fact about order, never a time."
-  position      Int?
+  position Int?
 
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.
-  doorToUse     String?                      // FRONT | BACK | SIDE
-  petsOnSite    Boolean  @default(false)     // "friendly pooch guarding the house"
-  what3words    String?                      // for a farm track with no number
-  accessNotes   String?                      // parking, gate code, ring twice, baby asleep
+  doorToUse      String? // FRONT | BACK | SIDE
+  petsOnSite     Boolean   @default(false) // "friendly pooch guarding the house"
+  what3words     String? // for a farm track with no number
+  accessNotes    String? // parking, gate code, ring twice, baby asleep
   notesUpdatedAt DateTime?
   // Finding the door. A what3words square for a track with no number, a
   // dropped pin the customer pasted, and — set by the trade on the first
   // visit so the next one is easy — the house from the road and the door.
-  mapPin        String?                      // a Google Maps share link
-  housePhoto    String?                      // URL for now; camera upload needs storage
-  doorPhoto     String?
+  mapPin         String? // a Google Maps share link
+  housePhoto     String? // URL for now; camera upload needs storage
+  doorPhoto      String?
 
   // Will someone be in? The question every trade and every courier asks
   // blind, and the one the customer can answer in two seconds. Costs a
   // wasted visit when it goes unasked.
-  presence      String?                      // IN | OUT | BACK_SOON | SOMEONE_ELSE
-  presenceNote  String?                      // "bottom of the garden, ring twice"
-  presenceAt    DateTime?                    // stale after a while; say when it was said
-  arrivingAt    DateTime?                    // when they set off — a record, never a promise
-  isActive      Boolean   @default(true)
-  viewCount     Int       @default(0)
-  lastViewedAt  DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  presence     String? // IN | OUT | BACK_SOON | SOMEONE_ELSE
+  presenceNote String? // "bottom of the garden, ring twice"
+  presenceAt   DateTime? // stale after a while; say when it was said
+  arrivingAt   DateTime? // when they set off — a record, never a promise
+  isActive     Boolean   @default(true)
+  viewCount    Int       @default(0)
+  lastViewedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  events        TradeStatusEvent[]
+  events   TradeStatusEvent[]
+  pushSubs PushSubscription[]
 
   @@index([code])
   @@index([isActive, updatedAt])
@@ -72,13 +73,13 @@ model TradeStatus {
 
 /// Every stage change, so the customer reads a timeline rather than one word.
 model TradeStatusEvent {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   tradeStatusId String
   stage         String
   note          String?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime @default(now())
 
-  tradeStatus   TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
+  tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
 
   @@index([tradeStatusId, createdAt])
 }
@@ -87,14 +88,14 @@ model TradeStatusEvent {
 /// Storing only a public key: there is nothing here worth stealing, which is
 /// the point of the whole scheme. A password database is a target; this is not.
 model Passkey {
-  id            String   @id @default(cuid())
-  credentialId  String   @unique              // base64url, as the authenticator gave it
-  publicKey     Bytes
-  counter       BigInt   @default(0)          // replay guard; must never go backwards
-  transports    String?                       // e.g. "internal,hybrid" — lets the browser hint
-  label         String?                       // "Will's iPhone", so a lost device can be found
-  createdAt     DateTime @default(now())
-  lastUsedAt    DateTime?
+  id           String    @id @default(cuid())
+  credentialId String    @unique // base64url, as the authenticator gave it
+  publicKey    Bytes
+  counter      BigInt    @default(0) // replay guard; must never go backwards
+  transports   String? // e.g. "internal,hybrid" — lets the browser hint
+  label        String? // "Will's iPhone", so a lost device can be found
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
 }
 
 /// The trade, set up once. Everything a customer wants to know before they
@@ -102,30 +103,63 @@ model Passkey {
 ///
 /// One row. There is one operator, and multi-tenancy is a different product.
 model TradeProfile {
-  id            String   @id @default("singleton")
-  engineerName  String?                      // "Will" — a first name is enough
-  engineerPhoto String?                      // a URL; the face at the door
-  aboutLine     String?                      // "G3 qualified, 22 years"
+  id            String  @id @default("singleton")
+  engineerName  String? // "Will" — a first name is enough
+  engineerPhoto String? // a URL; the face at the door
+  aboutLine     String? // "G3 qualified, 22 years"
 
-  vehicleReg    String?                      // looked up, then cached below
-  vehicleMake   String?                      // "Ford"
-  vehicleModel  String?                      // "Transit Custom"
-  vehicleColour String?                      // "White"
-  vehiclePhoto  String?                      // the actual van, sign-written
+  vehicleReg    String? // looked up, then cached below
+  vehicleMake   String? // "Ford"
+  vehicleModel  String? // "Transit Custom"
+  vehicleColour String? // "White"
+  vehiclePhoto  String? // the actual van, sign-written
 
   // Free tier shows My Trade Status on the card. Paid shows the trade's own.
-  brandLogo     String?
-  brandColour   String?
+  brandLogo   String?
+  brandColour String?
 
-  updatedAt     DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 /// Interest in something not built yet. A roadmap is worth more when it
 /// records what was actually wanted than when it records what sounded good
 /// at midnight.
 model FeatureInterest {
-  key       String   @id          // slug of the feature
+  key       String   @id // slug of the feature
   wanted    Boolean  @default(false)
-  note      String?               // "only if it does X"
+  note      String? // "only if it does X"
   updatedAt DateTime @updatedAt
+}
+
+/// A browser that asked to be told when this job moves.
+///
+/// One row per device per job, not per customer: there are no customer
+/// accounts and never will be, so the tracking code is the only thing tying a
+/// subscription to a job. Deleting the job deletes these with it.
+///
+/// `endpoint` is a URL at Apple's or Google's push service and is unique —
+/// the browser hands back the same one if you subscribe twice, so upserting on
+/// it is what stops a customer who taps the button three times getting three
+/// notifications.
+///
+/// The keys are the browser's own public key and auth secret, used to encrypt
+/// the payload so the push service cannot read it. They are not credentials
+/// for anything of ours and they only work for this one endpoint, but they are
+/// still never returned by any public route.
+model PushSubscription {
+  id            String    @id @default(cuid())
+  tradeStatusId String
+  endpoint      String    @unique
+  p256dh        String
+  auth          String
+  createdAt     DateTime  @default(now())
+  lastSentAt    DateTime?
+  // A push service answering 404 or 410 means the browser threw the
+  // subscription away. Counted so a dead endpoint is dropped rather than
+  // retried on every stage change for the life of the job.
+  failureCount  Int       @default(0)
+
+  tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
+
+  @@index([tradeStatusId])
 }

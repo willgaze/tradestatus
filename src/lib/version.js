@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.5.0'
-export const BUILD_DATE = '2026-09-29'
+export const VERSION = '1.6.0'
+export const BUILD_DATE = '2026-09-30'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 1
+export const THEME_INDEX = 2
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.6.0', date: '2026-09-30', notes: [
+    'Your phone buzzes when they set off, arrive and finish — no app, no App Store',
+    'On iPhone it needs the page added to the home screen first, and the page says so rather than giving you a button that does nothing',
+    'The notification says who and what stage, and nothing else. Your address does not go on a lock screen.',
+    'Needs one migration and a key pair before it works — run scripts/setup.sh',
+  ] },
   { version: '1.5.0', date: '2026-09-29', notes: [
     'Dashboard brought onto the same iOS material as the customer page — glass cards, capsule buttons, proper fields',
     'what3words and a dropped pin open the map in one tap, both sides. A Navigate button on every job',

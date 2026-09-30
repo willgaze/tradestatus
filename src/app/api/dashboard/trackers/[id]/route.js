@@ -4,6 +4,7 @@ import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
+import { notifyStage } from '@/lib/push'
 import { normaliseW3w, normaliseMapPin, normalisePhotoUrl } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
@@ -81,6 +82,21 @@ export async function PATCH(request, { params }) {
     }
 
     const tracker = await prisma.tradeStatus.update({ where: { id }, data })
+
+    // Tell any device watching this job that it moved.
+    //
+    // Deliberately not awaited, and deliberately swallowed. This runs on the
+    // tap of a stage button on a driveway: the trade is waiting on this
+    // response, and it must not be held up by a round trip to Apple's push
+    // service — nor fail because that service is having a bad afternoon.
+    // notifyStage() never throws, but the catch is here anyway, because the
+    // thing that must survive is the stage change.
+    if (data.stage) {
+      notifyStage(tracker, data.stage).catch((error) =>
+        console.error('push: notify failed after stage change:', error?.message),
+      )
+    }
+
     return NextResponse.json({ tracker })
   } catch (error) {
     if (error?.code === 'P2025') return NextResponse.json({ error: 'not_found' }, { status: 404 })
