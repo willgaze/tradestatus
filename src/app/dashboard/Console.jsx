@@ -308,16 +308,26 @@ export default function Console() {
                 <p className="mt-1.5 select-all break-all font-mono text-[14px]">
                   {origin}/t/{t.code}
                 </p>
+                {/* Two capsules side by side. The channel is the big word and the
+                    customer's name sits under it in one truncated line, so "Text
+                    Mrs Whitfield" can never wrap to three lines and stretch the
+                    pair into a pill the size of a thumb. */}
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <a href={smsHref(t)}
-                     className="btn !text-[16px]"
+                     className="btn !min-h-[56px] !flex-col !gap-0 !px-3 !py-2 !text-[16px]"
                      style={{ background: 'var(--mts-accent)', color: '#fff' }}>
-                    <MessageIcon size={18} />
-                    Text {greetingName(t.customerName) || 'them'}
+                    <span className="flex items-center gap-1.5"><MessageIcon size={17} /> Text</span>
+                    <span className="max-w-full truncate text-[12px] font-medium opacity-80">
+                      {greetingName(t.customerName) || 'the customer'}
+                    </span>
                   </a>
                   <a href={waHref(t)} target="_blank" rel="noreferrer"
-                     className="btn !text-[16px]" style={{ background: '#25D366', color: '#062e18' }}>
-                    WhatsApp {greetingName(t.customerName) || 'them'}
+                     className="btn !min-h-[56px] !flex-col !gap-0 !px-3 !py-2 !text-[16px]"
+                     style={{ background: '#25D366', color: '#062e18' }}>
+                    <span>WhatsApp</span>
+                    <span className="max-w-full truncate text-[12px] font-medium opacity-80">
+                      {greetingName(t.customerName) || 'the customer'}
+                    </span>
                   </a>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
