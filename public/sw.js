@@ -1,4 +1,4 @@
-/* My Trade Status — the worker that puts "they have set off" on a lock screen.
+/* TurnUp — the worker that puts "they have set off" on a lock screen.
  *
  * Registered only from a customer's tracking page. It exists for one job:
  * receive a push and show it. It deliberately does NOT cache anything.

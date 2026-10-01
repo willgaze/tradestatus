@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# One-shot setup for My Trade Status.
+# One-shot setup for TurnUp.
 #
 # Creates the Neon database, creates the Vercel project, sets every
 # environment variable, deploys, and creates the two tables. You log in to
@@ -140,7 +140,7 @@ DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes "${SCOPE_ARGS[@]}" | t
 cat <<DONE
 
 ────────────────────────────────────────────────────────────
-  My Trade Status is live
+  TurnUp is live
 
   Dashboard   ${DEPLOY_URL}/dashboard
   Password    ${OPERATOR_PASSWORD}

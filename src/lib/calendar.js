@@ -69,7 +69,7 @@ export function buildIcs(status, trackUrl) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//My Trade Status//EN',
+    'PRODID:-//TurnUp//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

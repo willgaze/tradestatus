@@ -423,7 +423,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
       <p className="mt-7 text-center text-[13px] muted">This page updates itself.</p>
       <span className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pb-safe opacity-60">
         <Mark className="h-3.5 w-auto" id="foot" />
-        <span className="text-[12px] muted">Job tracking by My Trade Status</span>
+        <span className="text-[12px] muted">Job tracking by TurnUp</span>
         <BuildStamp compact />
       </span>
     </main>

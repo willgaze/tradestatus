@@ -1,5 +1,5 @@
 {
-  "name": "My Trade Status",
+  "name": "TurnUp",
   "short_name": "Job Status",
   "description": "Update where each job is up to, and send the customer their tracking link.",
   "start_url": "/dashboard",

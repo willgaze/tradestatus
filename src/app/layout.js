@@ -2,7 +2,7 @@ import './globals.css'
 import { theme } from '@/lib/version'
 
 export const metadata = {
-  title: 'My Trade Status',
+  title: 'TurnUp',
   description: 'See where your job is — booked in, on my way, on site, done.',
   robots: { index: false, follow: false },
   // Installable, so the trade's side lives on a home screen and opens without

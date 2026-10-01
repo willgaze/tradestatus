@@ -1,4 +1,4 @@
-// My Trade Status — its own database. Nothing here is shared with any other
+// TurnUp — its own database. Nothing here is shared with any other
 // system: the whole point of this repo is that a tracking link does not need
 // the rest of a plumbing firm's website to exist.
 
@@ -127,7 +127,7 @@ model TradeProfile {
   vehicleColour String? // "White"
   vehiclePhoto  String? // the actual van, sign-written
 
-  // Free tier shows My Trade Status on the card. Paid shows the trade's own.
+  // Free tier shows TurnUp on the card. Paid shows the trade's own.
   brandLogo   String?
   brandColour String?
 
@@ -175,4 +175,31 @@ model PushSubscription {
   tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
 
   @@index([tradeStatusId])
+}
+
+/// A trade who wants this and cannot have it yet.
+///
+/// There is one operator and multi-tenancy is a different product, so the
+/// homepage cannot honestly offer a sign-up. It offers a waiting list, and
+/// this is the list — real rows, visible on the dashboard, so "we will let you
+/// know" is a thing that can actually be done rather than a line of copy.
+///
+/// A NEW TABLE, which is the migration case that fails soft: until
+/// `prisma db push` runs, every read and write here sits in a try/catch, the
+/// form says it could not save, and nothing else in the product notices. See
+/// the migration table in CLAUDE.md.
+///
+/// `email` is unique so somebody signing up twice is one row, not two.
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  trade     String? // "Plumber", "Electrician" — free text, their words
+  town      String? // roughly where, so a first area can be picked
+  note      String? // whatever they wanted to say
+  // Not shown to them and not acted on automatically: a note to self, for when
+  // the list is long enough to need working through.
+  contacted Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

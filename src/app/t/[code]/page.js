@@ -6,7 +6,7 @@ import { TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import StatusTracker from '../StatusTracker'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Your job | My Trade Status', robots: { index: false, follow: false } }
+export const metadata = { title: 'Your job | TurnUp', robots: { index: false, follow: false } }
 
 export default async function TrackPage({ params }) {
   const { code } = await params
@@ -53,7 +53,7 @@ export default async function TrackPage({ params }) {
             Call {TRADE_PHONE}
           </a>
         )}
-        <p className="mt-8 text-sm text-slate-400"><Link href="/" className="underline">My Trade Status</Link></p>
+        <p className="mt-8 text-sm text-slate-400"><Link href="/" className="underline">TurnUp</Link></p>
       </main>
     )
   }

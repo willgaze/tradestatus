@@ -8,6 +8,7 @@ import BuildStamp from '@/components/BuildStamp'
 import Changelog from './Changelog'
 import Profile from './Profile'
 import WalletShowcase from './WalletShowcase'
+import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
@@ -480,6 +481,7 @@ export default function Console() {
         </ul>
       )}
 
+      <WaitlistPanel />
       <WalletShowcase tracker={trackers[0]} />
       <Profile />
       <Passkeys />

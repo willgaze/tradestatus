@@ -1,4 +1,4 @@
-# My Trade Status
+# TurnUp
 
 **Live at https://tradestatus.vercel.app**
 

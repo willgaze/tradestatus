@@ -18,7 +18,7 @@ export async function POST() {
     const existing = await prisma.passkey.findMany()
 
     const options = await generateRegistrationOptions({
-      rpName: 'My Trade Status',
+      rpName: 'TurnUp',
       rpID,
       userName: process.env.OPERATOR_EMAIL || 'operator',
       userDisplayName: process.env.NEXT_PUBLIC_TRADE_NAME || 'Operator',

@@ -39,7 +39,10 @@ const SHOTS = [
   ...(CODE ? [] : [{ name: 'customer-booked', path: () => '/preview?stage=BOOKED', scheme: 'light', full: true, auth: false }]),
   { name: 'dashboard',      path: () => '/dashboard', scheme: 'light', full: true, auth: true, db: true },
   { name: 'login',          path: () => '/login',     scheme: 'light', full: false, auth: false },
-  { name: 'landing',        path: () => '/',          scheme: 'light', full: false, auth: false },
+  // The homepage is a page in its own right now rather than a "you have
+  // mistyped your link" card, so it is captured whole.
+  { name: 'homepage',       path: () => '/',          scheme: 'light', full: true,  auth: false },
+  { name: 'homepage-dark',  path: () => '/',          scheme: 'dark',  full: true,  auth: false },
 ]
 
 // Playwright only writes PNG or JPEG; sharp (already here as a Next.js dependency)
