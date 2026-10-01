@@ -1,4 +1,7 @@
-# My Trade Status
+# Turnup
+
+Formerly My Trade Status. The name lives in `src/lib/product.js`; the repo,
+the Vercel project and the database keep the old working title.
 
 **Live at https://tradestatus.vercel.app**
 
@@ -68,6 +71,11 @@ connection per invocation, and a direct string runs the database out of them.
 
 `NEXT_PUBLIC_TRADE_NAME` and `NEXT_PUBLIC_TRADE_PHONE` decide whose name and
 number the customer sees. Nothing about any one trade is hardcoded.
+
+`ANTHROPIC_API_KEY` switches on the assistant: a box at the top of the
+dashboard that turns "on my way to Whitfield" or a pasted booking email into a
+card to confirm. It proposes only; the same routes as the form do the writing.
+No key, no box.
 
 ## Security
 

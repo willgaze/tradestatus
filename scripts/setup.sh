@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# One-shot setup for My Trade Status.
+# One-shot setup for Turnup (the repo still answers to tradestatus).
 #
 # Creates the Neon database, creates the Vercel project, sets every
 # environment variable, deploys, and creates the two tables. You log in to
@@ -132,6 +132,12 @@ set_env NEXT_PUBLIC_TRADE_PHONE_TEL "$TRADE_PHONE_TEL"
 #
 # Push now has its own script, which can be run on its own, at any time, and is
 # safe to re-run: scripts/enable-push.sh.
+# The assistant ("say what happened, get a card") needs a key from
+# console.anthropic.com. Optional: export ANTHROPIC_API_KEY before running this
+# and it is set; leave it unset and the box simply does not appear.
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  set_env ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY"
+fi
 
 say "Deploying to production"
 DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes "${SCOPE_ARGS[@]}" | tail -n 1)"
@@ -140,7 +146,7 @@ DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes "${SCOPE_ARGS[@]}" | t
 cat <<DONE
 
 ────────────────────────────────────────────────────────────
-  My Trade Status is live
+  Turnup is live
 
   Dashboard   ${DEPLOY_URL}/dashboard
   Password    ${OPERATOR_PASSWORD}

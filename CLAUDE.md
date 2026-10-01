@@ -1,10 +1,18 @@
-# CLAUDE.md — My Trade Status
+# CLAUDE.md — Turnup
+
+**The product is called Turnup.** It was My Trade Status until v1.13.0; the
+repository, the Vercel project, the database and the Prisma models keep that
+working title because renaming plumbing buys nothing. Everything a person
+reads takes the name from `src/lib/product.js`, and nowhere else — so
+`grep -rn "My Trade Status" src/` should only ever find comments explaining
+the history. The mark is applied for, not registered: ™ only, never ®, until
+the IPO says otherwise.
 
 ## This is not Rosebourne Plumbing
 
 **Read this first, because the mistake has been made twice.**
 
-My Trade Status is its own product, in its own repository, with its own
+Turnup is its own product, in its own repository, with its own
 database and its own Vercel project. Rosebourne Plumbing is a *customer* of it
 — the first one, and currently the only one. The two share nothing but an
 owner.
@@ -167,6 +175,30 @@ redeploys. **Will runs it, not Claude**, and that is deliberate on two counts:
 A deploy is part of the script because `NEXT_PUBLIC_*` is **inlined at build
 time**. Setting the variable without rebuilding changes nothing, and the row
 stays missing while the dashboard says the key is set.
+
+## The assistant proposes, never acts
+
+The box at the top of the dashboard takes words — typed, dictated, or a pasted
+booking email — and hands back a card. `src/lib/assistant.js` is the whole of
+it, and three rules hold there that hold everywhere else in this file:
+
+- **It never writes.** `propose()` returns JSON to the browser; the trade taps
+  Confirm; `/api/dashboard/trackers` does the work exactly as if the form had
+  been filled in. Do not give the model a tool that touches the database. A
+  wrong reading costs one tap, and that is the whole safety model.
+- **It never promises a time.** The prompt forbids it and `stripTimePromise()`
+  is the second lock: a note like "with you by 2" is dropped, with a warning
+  the card shows, and the time goes into the arrival window where it belongs.
+- **Its output is untrusted.** `sanitiseProposal()` treats the model's JSON
+  as a body from a stranger: `cleanText()`, the stage whitelist, the date and
+  time checks, and a job id that must be one it was shown. Adding a field to
+  the proposal means adding it there, deliberately.
+
+It is trade-side only. The customer's page is a status bar; a chat on that side
+is how the product started asking the customer things last time, and the
+answers ended up on a forwardable link. It is invisible until
+`ANTHROPIC_API_KEY` is set — the same gate as push — and the key never reaches
+the browser, only the fact that there is one.
 
 ## The link is the credential
 

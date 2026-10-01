@@ -1,4 +1,4 @@
-// My Trade Status — the five states a job can be in, in the customer's words.
+// Turnup — the five states a job can be in, in the customer's words.
 //
 // Wording rule: these describe what is happening now, never what will happen
 // by a certain time. They also name nobody — this product is fitted by more

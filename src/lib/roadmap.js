@@ -54,6 +54,9 @@ export const PHASES = [
     title: 'Built, waiting on someone else',
     blurb: 'The code is done. These need an account or a certificate that only you can get.',
     items: [
+      { key: 'assistant', name: 'Say what happened, get a card', state: 'ready',
+        what: '"On my way to Whitfield", "paused on Hale, waiting on the cylinder", or a pasted booking email. It reads the words, fills the card, you tap Confirm. It never saves anything itself and never promises a time.',
+        needs: 'An Anthropic API key, about a penny a go' },
       { key: 'push', name: 'Your phone buzzes when they set off', state: 'ready',
         what: 'Set off, arrived, done — on the lock screen, no app. The closest thing to the wallet card, and it costs nothing.',
         needs: 'One database migration and a key pair — both in setup.sh' },
@@ -88,7 +91,7 @@ export const PHASES = [
       { key: 'customer-camera', name: 'Customer takes the door photo themselves', state: 'idea',
         what: 'A camera button on their page. Needs photo storage — an unsigned Cloudinary preset is a five-minute job.' },
       { key: 'branded-card', name: 'Your own logo on the wallet card', state: 'idea',
-        what: 'The paid tier. Free shows My Trade Status instead.' },
+        what: 'The paid tier. Free shows Turnup instead.' },
     ],
   },
   {

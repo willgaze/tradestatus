@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.12.0'
+export const VERSION = '1.13.0'
 export const BUILD_DATE = '2026-10-01'
 
 export const THEMES = [
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.13.0', date: '2026-10-01', notes: [
+    'The product has a name: Turnup. My Trade Status was a working title, and it described the thing rather than naming it. The name lives in one file, src/lib/product.js; the repo and the database keep the old title.',
+    'Say what happened, get a card, tap once. A box at the top of the dashboard reads \u201con my way to Whitfield\u201d, \u201cpaused on Hale, waiting on the cylinder\u201d or a pasted booking email and fills in the card for you.',
+    'It proposes and you confirm. Nothing is saved until you tap, and the same routes as the form do the saving. It cannot promise a time: \u201ctell them by two\u201d sets the window, never the note.',
+    'Trade side only, and invisible until ANTHROPIC_API_KEY is set. No key, no box.',
+  ] },
   { version: '1.12.0', date: '2026-10-01', notes: [
     'The jobs list is a day\u2019s run now \u2014 what you are on, then what is next, finished at the bottom',
     'A job shows who, where and the stage buttons; tap the row for the link, hours, photos and note',
