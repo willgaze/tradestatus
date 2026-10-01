@@ -5,6 +5,7 @@ import { isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
 import { notifyStage } from '@/lib/push'
+import { proposeWindow, agreeWindow, clearWindow } from '@/lib/window'
 import { normaliseW3w, normaliseMapPin, normalisePhotoUrl } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
@@ -45,19 +46,43 @@ export async function PATCH(request, { params }) {
     if (body.mapPin !== undefined) data.mapPin = normaliseMapPin(body.mapPin)
     if (body.what3words !== undefined) data.what3words = normaliseW3w(body.what3words)
 
-    // The window is meant to be narrowed through the day as jobs finish, so
-    // both ends are independently settable and either can be cleared.
-    for (const f of ['windowStart', 'windowEnd']) {
-      if (body[f] !== undefined) {
-        const when = body[f] ? new Date(body[f]) : null
-        if (when && Number.isNaN(when.getTime())) {
-          return NextResponse.json({ error: 'bad_window' }, { status: 400 })
+    // A window is an arrangement now, not a field. Setting one is a PROPOSAL
+    // the customer can agree to or counter; "windowAgree" takes their counter.
+    // See the state machine in src/lib/window.js.
+    if (body.windowAgree) {
+      Object.assign(data, agreeWindow({ by: 'TRADE' }))
+    } else if (body.windowClear) {
+      Object.assign(data, clearWindow())
+    } else if (body.windowStart !== undefined || body.windowEnd !== undefined) {
+      const at = {}
+      for (const f of ['windowStart', 'windowEnd']) {
+        if (body[f] !== undefined) {
+          const when = body[f] ? new Date(body[f]) : null
+          if (when && Number.isNaN(when.getTime())) {
+            return NextResponse.json({ error: 'bad_window' }, { status: 400 })
+          }
+          at[f] = when
         }
-        data[f] = when
       }
-    }
-    if (data.windowStart && data.windowEnd && data.windowEnd <= data.windowStart) {
-      return NextResponse.json({ error: 'window_backwards' }, { status: 400 })
+      // Clearing the start clears the arrangement: there is nothing on the
+      // table to agree to, and leaving a dangling end time would say there is.
+      if (body.windowStart !== undefined && !at.windowStart) {
+        Object.assign(data, clearWindow())
+      } else {
+        // Narrowing one end of a window that already exists keeps the other.
+        const current = await prisma.tradeStatus.findUnique({
+          where: { id },
+          select: { windowStart: true, windowEnd: true },
+        })
+        const start = at.windowStart !== undefined ? at.windowStart : current?.windowStart ?? null
+        const end = at.windowEnd !== undefined ? at.windowEnd : current?.windowEnd ?? null
+        if (start && end && end <= start) {
+          return NextResponse.json({ error: 'window_backwards' }, { status: 400 })
+        }
+        // Proposing again reopens it: a window the customer already agreed to
+        // and the trade then moved is not still agreed.
+        Object.assign(data, proposeWindow({ start, end, by: 'TRADE', note: null }))
+      }
     }
 
     if (body.position !== undefined) {

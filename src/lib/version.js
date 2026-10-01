@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.10.0'
-export const BUILD_DATE = '2026-09-30'
+export const VERSION = '1.11.0'
+export const BUILD_DATE = '2026-10-01'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 4
+export const THEME_INDEX = 6
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,16 +48,23 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.10.0', date: '2026-09-30', notes: [
-    'Say what happened, get a card, tap once. A box at the top of the dashboard reads “on my way to Whitfield”, “paused on Hale, waiting on the cylinder” or a pasted booking email and fills in the card for you.',
-    'It proposes and you confirm. Nothing is saved until you tap, and the same routes as the form do the saving.',
-    'It cannot promise a time. “Tell them by two” sets the window; the note to the customer never carries it.',
+  { version: '1.11.0', date: '2026-10-01', notes: [
+    'The product has a name: Turnup. My Trade Status was a working title, and it described the thing rather than naming it. The name lives in one file, src/lib/product.js; the repo and the database keep the old title.',
+    'Say what happened, get a card, tap once. A box at the top of the dashboard reads \u201con my way to Whitfield\u201d, \u201cpaused on Hale, waiting on the cylinder\u201d or a pasted booking email and fills in the card for you.',
+    'It proposes and you confirm. Nothing is saved until you tap, and the same routes as the form do the saving. It cannot promise a time: \u201ctell them by two\u201d sets the window, never the note.',
     'Trade side only, and invisible until ANTHROPIC_API_KEY is set. No key, no box.',
   ] },
+  { version: '1.10.0', date: '2026-09-30', notes: [
+    'The page is a quarter shorter \u2014 less to scroll past before the thing that matters',
+    'Tap any heading to open it; closed, each row says the one thing worth knowing',
+    'Removed the notifications row until the keys are in, rather than open onto nothing',
+    'The version line, the wordmark and the small print are now one line, not three',
+  ] },
   { version: '1.9.0', date: '2026-09-30', notes: [
-    'The product has a name: Turnup. My Trade Status was a working title, and it described the thing rather than naming it.',
-    'The name lives in one file, src/lib/product.js. The repo, the Vercel project and the database keep the old title, because renaming plumbing buys nothing.',
-    'Trade mark symbol on the landing page, and only that symbol, until the IPO grants the mark.',
+    'A window is now something you agree, not something you announce',
+    'They can say "that suits" or ask for different hours, and say why \u2014 either end can start it',
+    'Only an agreed window is stated as fact, or goes in a calendar as a real block',
+    'What they ask for goes to you, never onto a page that can be forwarded',
   ] },
   { version: '1.8.0', date: '2026-09-30', notes: [
     'Drop a pin with one tap instead of pasting a Maps link \u2014 from either end',

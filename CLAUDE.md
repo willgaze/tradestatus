@@ -1,6 +1,6 @@
 # CLAUDE.md — Turnup
 
-**The product is called Turnup.** It was My Trade Status until v1.9.0; the
+**The product is called Turnup.** It was My Trade Status until v1.11.0; the
 repository, the Vercel project, the database and the Prisma models keep that
 working title because renaming plumbing buys nothing. Everything a person
 reads takes the name from `src/lib/product.js`, and nowhere else — so
@@ -47,10 +47,30 @@ Shop app for a parcel. Same idea, for physical work at someone's house.
 
 ## What it deliberately does not do
 
-**It never promises a time.** No countdown, no ETA, no "with you in 20
-minutes". "On my way" is a fact. "Set off at 07:42" is a record. One
-tradesperson cannot keep a promise about traffic, so the product does not make
-one — and no future feature may introduce one.
+**It never invents a time.** No countdown, no ETA, no "with you in 20 minutes",
+and nothing anywhere that counts down to an arrival. "On my way" is a fact.
+"Set off at 07:42" is a record. One tradesperson cannot keep a promise about
+traffic, so the product does not make one on their behalf.
+
+**An agreed window is not the product making a promise.** It is two people
+arranging something and the product carrying it, which is a different thing and
+is allowed. The line between them is who said it:
+
+| | Allowed? |
+|---|---|
+| The product working out when they will arrive | **never** |
+| The trade proposing hours, the customer agreeing or countering | yes |
+| A window only PROPOSED, shown as if settled | **never** — it says whose it is and that it is waiting |
+
+*(The rule used to read "no future feature may introduce one" and the product
+grew windows anyway. The owner has affirmed them twice, so the rule is written
+to match what is true rather than left to be quietly broken — but the ban on
+the product guessing stands, and is the part that matters.)*
+
+Only an **AGREED** window is ever stated as a fact: it is the only one that
+goes in the status card, into `windowLabel()`, or into a calendar file as a
+timed event. A proposal on the table lives in its own row, which says who
+proposed it and that it is waiting. See `src/lib/window.js`.
 
 This is the same discipline as the customer's own site: say what is true and
 checkable, never what sounds reassuring.
@@ -208,6 +228,38 @@ node scripts/check-public-shape.mjs
   browser store. Offline support is worth having and should come back, but
   scoped and on purpose, never as a side effect of wanting notifications.
 
+## A window is an arrangement, not an announcement
+
+Both ends can propose; the other agrees or counters; a counter is simply a new
+proposal from the other side. That is why four columns carry the whole
+back-and-forth — there is only ever the offer on the table and who put it
+there, never a queue of competing times to reconcile. The state machine is in
+`src/lib/window.js` and is the only place that moves it.
+
+**Not a calendar invite, and that was worth checking.** Email invites have had
+this since the nineties — `METHOD:REQUEST`, and the recipient's client offers
+Accept, Decline and Propose New Time. It is the obvious answer and it does not
+work here: it needs the invite to arrive as an email, in an email client, with
+a reply address for the `REPLY` to go back to. This product sends a **link, by
+text**. An `.ics` opened from a link just adds an event — no buttons, nobody to
+reply to. So the negotiation lives in the product, where it works over a texted
+link, and the calendar file carries the result once there is one.
+
+**Whose window is public follows the rule above it.** Hours the *trade* put
+forward are theirs to publish. Hours the *customer* put forward are not —
+"I'm free between 2 and 4" says when a house is occupied, and the link gets
+forwarded. Once the trade agrees, it is something the trade is asserting and it
+goes public. `publicWindow()` is the only place that decides, and
+`scripts/check-public-shape.mjs` proves both directions — that a trade's
+proposal reaches its own customer, and that a customer's pending counter does
+not reach anyone.
+
+**Times are resolved in the trade's zone, never UTC.** Somebody picking 9am
+means nine o'clock where they are, and Britain is an hour ahead of UTC for
+seven months of the year — `setUTCHours(9)` stores a window the customer did
+not ask for and shows it back to them as 10:00. `atLocalTime()` in
+`src/lib/when.js` is the only way to turn "09:00" into an instant.
+
 ## A pin is a coordinate, and coordinates are the sharpest thing here
 
 `mapPin` holds a Google Maps URL, and a pin dropped from a phone's GPS is
@@ -308,6 +360,14 @@ Each of these was live. Do not reintroduce them.
   door, the dog and the notes just to preserve them — which is why those fields
   were on the page in the first place. It now patches: a field absent from the
   body is a field the caller is not changing.
+- **A window was a broadcast pretending to be an arrangement.** The trade could
+  set one; the customer could only read it. The first either of them knew that
+  09:00 did not suit was a missed doorbell and a second appointment. It is a
+  negotiation now. Anything else in this product that one side states *at* the
+  other is worth the same look.
+- **A time built in UTC came back an hour out.** Covered above under *A window
+  is an arrangement*. `setUTCHours()` on a wall-clock time is always wrong for
+  seven months of the year.
 - **Deployment protection.** `tradestatus.vercel.app` is open; the generated
   per-deployment URLs are behind Vercel's login. Never put a
   `tradestatus-<hash>-…` URL in front of a customer.
@@ -401,6 +461,19 @@ and dark text on the background for contrast. Generating one at runtime to be
 `docs/diary/v<version>/`. Nothing in there is ever overwritten, tidied or
 deleted: it is the record of what the app looked like on a given day, and it is
 wanted for marketing.
+
+**It no longer needs a database.** With no `DEMO_CODE` the customer shots come
+from `/preview`, which renders the real component from a fixture in
+`src/app/preview/Preview.jsx` — invented name, invented address, one job
+mid-flight with every row populated, which is the busiest the page ever gets
+and so the state worth measuring. That route is a 404 wherever
+`VERCEL_ENV === 'production'`, and the gate is on `VERCEL_ENV` rather than
+`NODE_ENV` on purpose: `next start` is `NODE_ENV=production` too, and it is the
+server the diary is captured against. The dashboard and wallet shots still need
+an operator session, and the README says so when they are missing rather than
+leaving a silent gap. `playwright` is not a dependency — `npm install --no-save
+playwright`, and pass `CHROME_PATH` if the pre-installed browser is a different
+build.
 
 **Improve one real thing, not five speculative ones.** A nightly build that
 churns the interface is worse than one that fixes a defect. Look at what is

@@ -34,6 +34,19 @@ function urlBase64ToUint8Array(base64) {
 
 const VAPID = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
 
+/**
+ * Whether push exists on this deployment at all.
+ *
+ * Exported because the row ABOVE this component has to know. Without keys
+ * this component renders nothing, which used to leave a row on the page
+ * titled "Tell me when they set off", promising "straight to your phone",
+ * that opened onto an empty drawer. The gate has to be outside the drawer.
+ *
+ * NEXT_PUBLIC_* is inlined at build time, so this is the same value on the
+ * server and in the browser and cannot tear the page.
+ */
+export const PUSH_CONFIGURED = Boolean(VAPID)
+
 export default function Notify({ code }) {
   // 'checking' until the browser has been asked what it can do.
   const [state, setState] = useState('checking')

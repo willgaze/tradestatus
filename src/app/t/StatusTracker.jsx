@@ -6,13 +6,15 @@ import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TRADE_NAME, TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import AccessNotes from './AccessNotes'
 import Presence from './Presence'
-import Notify from './Notify'
+import Notify, { PUSH_CONFIGURED } from './Notify'
+import Window from './Window'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
+import { windowSummary } from '@/lib/window'
 import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
 import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon } from '@/components/icons'
@@ -128,8 +130,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         <div className="flex items-start gap-4">
           <span className="icon-well"><StageIcon tone={stage.tone} size={26} /></span>
           <div className="min-w-0 flex-1 pt-0.5">
-            <p className="text-[24px] font-bold leading-tight tracking-[-0.01em]">{stage.label}</p>
-            <p className="mt-1 text-[17px] leading-snug muted">{stage.customerLine}</p>
+            <p className="text-[26px] font-bold leading-tight tracking-[-0.01em]">{stage.label}</p>
           </div>
         </div>
 
@@ -146,20 +147,20 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         )}
 
         {(windowLabel(status) || positionLabel(status.position)) && stage.key !== 'DONE' && (
-          <div className="mt-4 flex flex-wrap gap-2">
+          /* Two facts that usually fit on one line and sometimes do not. A
+             flex row with a gap gives the browser somewhere to break, and
+             nowrap on each keeps a part whole — left to itself it broke "You
+             are / 2nd today", and forced onto one line it ran off the card. */
+          <p className="mt-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             {windowLabel(status) && (
-              <span className="rounded-full px-3.5 py-1.5 text-[14px] font-semibold"
-                    style={{ background: 'color-mix(in srgb, var(--tint) 14%, transparent)', color: 'var(--tint)' }}>
+              <span className="whitespace-nowrap text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>
                 {windowLabel(status)}
               </span>
             )}
             {positionLabel(status.position) && (
-              <span className="rounded-full px-3.5 py-1.5 text-[14px] font-semibold"
-                    style={{ background: 'rgb(var(--glass-line) / 0.1)' }}>
-                {positionLabel(status.position)}
-              </span>
+              <span className="whitespace-nowrap text-[14px] font-medium muted">{positionLabel(status.position)}</span>
             )}
-          </div>
+          </p>
         )}
 
         {/* progress */}
@@ -175,15 +176,15 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
               ))}
             </ol>
           </div>
-          <div className="mt-3 flex justify-between">
+          {/* Only the stage it is at is named. The heading above is already
+              the largest thing on the page and says the same word. */}
+          <div className="mt-2.5 flex justify-between">
             {STAGE_ORDER.map((s, i) => (
               <span key={s}
                     className={`flex-1 text-[12px] ${
                       i === 0 ? 'text-left' : i === STAGE_ORDER.length - 1 ? 'text-right' : 'text-center'}`}
-                    style={s === stage.key
-                      ? { color: 'var(--tint)', fontWeight: 600 }
-                      : { color: 'var(--label-3)' }}>
-                {stageOf(s).label}
+                    style={{ color: 'var(--tint)', fontWeight: 600 }}>
+                {s === stage.key ? stageOf(s).label : '\u00A0'}
               </span>
             ))}
           </div>
@@ -194,7 +195,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
       <div className="mt-4 space-y-3">
 
         {profile && (profile.engineerName || profile.vehicle) && (
-          <Disclosure icon={<WaveIcon size={21} />} title="Who to expect" delay="120ms"
+          <Disclosure icon={<WaveIcon size={19} />} title="Who to expect" delay="120ms"
                       summary={[profile.engineerName, profile.vehicle].filter(Boolean).join(' · ')}
                       open={openRow === 'who'} onToggle={() => toggle('who')}>
             <div className="flex items-center gap-4">
@@ -248,7 +249,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           const fresh = presenceIsFresh(status.presenceAt)
           const answered = Boolean(status.presenceAt) && fresh
           return (
-            <Disclosure icon={<HouseIcon size={21} />} title="Will someone be in?" delay="150ms" accent={!answered}
+            <Disclosure icon={<HouseIcon size={19} />} title="Will someone be in?" delay="150ms" accent={!answered}
                         summary={!answered
                           ? 'Tap to answer — saves them a wasted trip'
                           : cur
@@ -265,16 +266,34 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         })()}
 
         {/* Nothing more is going to happen on a finished job, so there is
-            nothing to be told about. */}
-        {status.stage !== 'DONE' && (
-          <Disclosure icon={<BellIcon size={21} />} title="Tell me when they set off" delay="165ms"
+            nothing to be told about — and nothing to be told WITH until the
+            deployment has VAPID keys, which is why the row itself is gated and
+            not just its contents. */}
+        {PUSH_CONFIGURED && status.stage !== 'DONE' && (
+          <Disclosure icon={<BellIcon size={19} />} title="Tell me when they set off" delay="165ms"
                       summary="Set off, arrived, done — straight to your phone"
                       open={openRow === 'notify'} onToggle={() => toggle('notify')}>
             <Notify code={status.code} />
           </Disclosure>
         )}
 
-        <Disclosure icon={<PinIcon size={21} />} title="The job" delay="180ms"
+        {/* A window is an arrangement, so it sits with the things the customer
+            does rather than the things they read. Hidden once the job is done:
+            there is nothing left to arrange. */}
+        {status.scheduledFor && stage.key !== 'DONE' && (() => {
+          const win = status.window || {}
+          const needsThem = win.state === 'PROPOSED' && win.by === 'TRADE'
+          return (
+            <Disclosure icon={<ClockIcon size={19} />} title="When suits you?" delay="172ms"
+                        accent={needsThem || !win.state}
+                        summary={windowSummary(win, 'CUSTOMER') || 'No hours set — tap to ask for some'}
+                        open={openRow === 'when'} onToggle={() => toggle('when')}>
+              <Window status={status} onSaved={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
+            </Disclosure>
+          )
+        })()}
+
+        <Disclosure icon={<PinIcon size={19} />} title="The job" delay="180ms"
                     summary={[
                       status.scheduledFor && dayOnly(status.scheduledFor),
                       status.jobAddress,
@@ -336,7 +355,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           )}
         </Disclosure>
 
-        <Disclosure icon={<KeyIcon size={21} />} title="Help them find you" delay="210ms"
+        <Disclosure icon={<KeyIcon size={19} />} title="Help them find you" delay="210ms"
                     summary={(own.doorToUse || own.petsOnSite || own.what3words || own.mapPin || own.accessNotes)
                       ? 'Sent — they have it. Tap to change'
                       : 'Which door, parking, the dog'}
@@ -345,7 +364,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         </Disclosure>
 
         {status.events?.length > 0 && (
-          <Disclosure icon={<ClockIcon size={21} />} title="What has happened" delay="240ms"
+          <Disclosure icon={<ClockIcon size={19} />} title="What has happened" delay="240ms"
                       summary={`${status.events.length} update${status.events.length === 1 ? '' : 's'} · last ${timeOnly(status.events[status.events.length - 1].at)}`}
                       open={openRow === 'log'} onToggle={() => toggle('log')}>
             <ol className="space-y-4">
@@ -385,12 +404,15 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         </a>
       )}
 
-      <p className="mt-8 text-center text-[13px] muted">This page updates itself.</p>
-      <span className="mt-3 flex items-center justify-center gap-2 pb-safe opacity-60">
-        <Mark className="h-4 w-auto" id="foot" />
+      {/* Three stacked lines of small print were 95px of page doing the work of
+          one. The reassurance is the only part the customer needs; the mark and
+          the build stamp ride alongside it. */}
+      <p className="mt-7 text-center text-[13px] muted">This page updates itself.</p>
+      <span className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pb-safe opacity-60">
+        <Mark className="h-3.5 w-auto" id="foot" />
         <span className="text-[12px] muted">Job tracking by {PRODUCT_NAME}</span>
+        <BuildStamp compact />
       </span>
-      <span className="mt-2 flex justify-center pb-safe"><BuildStamp /></span>
     </main>
     </div>
   )

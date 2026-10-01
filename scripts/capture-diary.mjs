@@ -25,10 +25,16 @@ const CODE = process.env.DEMO_CODE
 const OUT = new URL(`../docs/diary/v${VERSION}/`, import.meta.url).pathname
 const EXEC = process.env.CHROME_PATH || undefined
 
+// Without a DEMO_CODE there is no real job to photograph, so the customer
+// shots come from /preview — the same component, drawn from a fixture. That is
+// the difference between a diary entry and no diary entry on a machine with no
+// database, and it keeps a real customer's name out of the marketing folder.
+const CUSTOMER = CODE ? `/t/${CODE}` : '/preview'
+
 const SHOTS = [
-  { name: 'customer-light', path: () => `/t/${CODE}`, scheme: 'light', full: true, auth: false },
-  { name: 'customer-dark',  path: () => `/t/${CODE}`, scheme: 'dark',  full: true, auth: false },
-  { name: 'dashboard',      path: () => '/dashboard', scheme: 'light', full: true, auth: true },
+  { name: 'customer-light', path: () => CUSTOMER, scheme: 'light', full: true, auth: false },
+  { name: 'customer-dark',  path: () => CUSTOMER, scheme: 'dark',  full: true, auth: false },
+  { name: 'dashboard',      path: () => '/dashboard', scheme: 'light', full: true, auth: true, db: true },
   { name: 'login',          path: () => '/login',     scheme: 'light', full: false, auth: false },
   { name: 'landing',        path: () => '/',          scheme: 'light', full: false, auth: false },
 ]
@@ -38,26 +44,31 @@ const SHOTS = [
 const toWebp = (png, file) => sharp(png).webp({ quality: 82 }).toFile(file)
 
 const run = async () => {
-  if (!CODE) throw new Error('Set DEMO_CODE to a tracking code that exists on this server.')
   await mkdir(OUT, { recursive: true })
+  if (!CODE) console.log('No DEMO_CODE \u2014 customer shots from /preview, operator shots skipped.')
 
   const browser = await chromium.launch({ executablePath: EXEC })
   let cookie = null
-  {
+  try {
     const r = await fetch(`${BASE}/api/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: PASSWORD }),
     })
     const set = r.headers.get('set-cookie')
     if (set) cookie = set.split(';')[0].split('=').slice(1).join('=')
+  } catch {
+    // No database, no session. The shots that need one are skipped below.
   }
 
   const done = []
+  const skipped = []
 
   // The wallet views are the marketing shots — the ones that show what this
   // is, without a paragraph of explanation. Captured separately because each
   // needs a tab clicked first.
-  {
+  if (!cookie) {
+    skipped.push('the wallet views and the dashboard (they need an operator session)')
+  } else {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
     if (cookie) await ctx.addCookies([{ name: 'mts-session', value: cookie, url: BASE }])
     const page = await ctx.newPage()
@@ -78,6 +89,7 @@ const run = async () => {
   }
 
   for (const shot of SHOTS) {
+    if (shot.db && !cookie) continue
     const ctx = await browser.newContext({
       viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: shot.scheme,
     })
@@ -107,6 +119,7 @@ const run = async () => {
 **${BUILD_DATE}** · background \`${t.bg}\` · accent \`${t.accent}\`
 
 ${(release?.notes || ['No notes recorded.']).map((n) => `- ${n}`).join('\n')}
+${skipped.length ? `\nNot captured this time: ${skipped.join('; ')}.\n` : ''}
 
 ${done.map((n) => `### ${n}\n\n![${n}](./${n}.webp)`).join('\n\n')}
 `)
