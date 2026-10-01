@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.11.0'
+export const VERSION = '1.13.0'
 export const BUILD_DATE = '2026-10-01'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 6
+export const THEME_INDEX = 8
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,11 +48,22 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.11.0', date: '2026-10-01', notes: [
+  { version: '1.13.0', date: '2026-10-01', notes: [
     'The product has a name: Turnup. My Trade Status was a working title, and it described the thing rather than naming it. The name lives in one file, src/lib/product.js; the repo and the database keep the old title.',
     'Say what happened, get a card, tap once. A box at the top of the dashboard reads \u201con my way to Whitfield\u201d, \u201cpaused on Hale, waiting on the cylinder\u201d or a pasted booking email and fills in the card for you.',
     'It proposes and you confirm. Nothing is saved until you tap, and the same routes as the form do the saving. It cannot promise a time: \u201ctell them by two\u201d sets the window, never the note.',
     'Trade side only, and invisible until ANTHROPIC_API_KEY is set. No key, no box.',
+  ] },
+  { version: '1.12.0', date: '2026-10-01', notes: [
+    'The jobs list is a day\u2019s run now \u2014 what you are on, then what is next, finished at the bottom',
+    'A job shows who, where and the stage buttons; tap the row for the link, hours, photos and note',
+    'New job is a button, not six empty boxes above the work',
+    'Dashboard went from nine screens to under four',
+  ] },
+  { version: '1.11.0', date: '2026-10-01', notes: [
+    'A job that is only booked now says the day on the card, not two taps down',
+    'Agreed hours replace it once there are any \u2014 never both, the day is implied',
+    'One command turns push notifications on: bash scripts/enable-push.sh',
   ] },
   { version: '1.10.0', date: '2026-09-30', notes: [
     'The page is a quarter shorter \u2014 less to scroll past before the thing that matters',

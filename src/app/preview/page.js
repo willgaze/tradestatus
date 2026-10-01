@@ -16,7 +16,10 @@ import Preview from './Preview'
 export const dynamic = 'force-dynamic'
 export const metadata = { robots: { index: false } }
 
-export default function PreviewPage() {
+export default async function PreviewPage({ searchParams }) {
   if (process.env.VERCEL_ENV === 'production') notFound()
-  return <Preview />
+  // ?stage=BOOKED to look at a job nothing has happened to yet, which is the
+  // state the page spends most of its life in and the easiest one to forget.
+  const { stage } = await searchParams
+  return <Preview stage={stage} />
 }

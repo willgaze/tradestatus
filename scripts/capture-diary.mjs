@@ -34,6 +34,9 @@ const CUSTOMER = CODE ? `/t/${CODE}` : '/preview'
 const SHOTS = [
   { name: 'customer-light', path: () => CUSTOMER, scheme: 'light', full: true, auth: false },
   { name: 'customer-dark',  path: () => CUSTOMER, scheme: 'dark',  full: true, auth: false },
+  // The state the page spends most of its life in. Only the fixture can show
+  // it on demand, so it is skipped when shooting a real job.
+  ...(CODE ? [] : [{ name: 'customer-booked', path: () => '/preview?stage=BOOKED', scheme: 'light', full: true, auth: false }]),
   { name: 'dashboard',      path: () => '/dashboard', scheme: 'light', full: true, auth: true, db: true },
   { name: 'login',          path: () => '/login',     scheme: 'light', full: false, auth: false },
   { name: 'landing',        path: () => '/',          scheme: 'light', full: false, auth: false },
@@ -76,6 +79,10 @@ const run = async () => {
     await page.waitForTimeout(1000)
     const card = page.locator('section', { hasText: 'The wallet card' }).first()
     await card.scrollIntoViewIfNeeded()
+    // The showcase is shut by default now — 911px of a feature that does not
+    // exist yet does not belong open on a screen opened every morning.
+    const opener = card.getByRole('button', { name: /The wallet card/ })
+    if (await opener.count()) { await opener.first().click(); await page.waitForTimeout(400) }
     for (const [tab, name] of [['In the wallet', 'wallet-in-stack'],
                                ['Opened', 'wallet-opened'],
                                ['On its own', 'wallet-alone']]) {

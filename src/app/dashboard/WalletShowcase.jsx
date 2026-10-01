@@ -1,5 +1,5 @@
 'use client'
-import { TickIcon } from '@/components/icons'
+import { TickIcon, ChevronIcon } from '@/components/icons'
 import { timeOnly } from '@/lib/when'
 
 import { useEffect, useState } from 'react'
@@ -29,6 +29,10 @@ const VIEWS = [
 
 export default function WalletShowcase({ tracker }) {
   const [view, setView] = useState('stack')
+  // Shut by default. 911px of a feature that does not exist yet, sitting in
+  // the middle of the screen the trade opens every morning, is the showcase
+  // costing more than it shows. It is worth looking at — occasionally.
+  const [open, setOpen] = useState(false)
   // The card wears the trade's logo once one is set, so the preview is honest
   // about what the paid tier looks like.
   const [logo, setLogo] = useState(null)
@@ -39,10 +43,21 @@ export default function WalletShowcase({ tracker }) {
 
   return (
     <section className="glass mt-8 overflow-hidden r-outer">
-      <div className="px-6 pt-6">
-        <h2 className="text-[19px] font-semibold">The wallet card</h2>
-        <p className="mt-1 text-[15px] muted">
-          Not live yet — it needs an Apple signing certificate. This is exactly what it will look like.
+      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open}
+              className="flex min-h-[66px] w-full items-center gap-3 px-6 py-4 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block text-[19px] font-semibold">The wallet card</span>
+          <span className="block text-[14px] muted">Not live yet — what it will look like</span>
+        </span>
+        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
+                     className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
+      </button>
+
+      {open && (<>
+      <div className="px-6">
+        <p className="text-[15px] muted">
+          It needs an Apple signing certificate and a Google Wallet issuer account. Until those exist this
+          is a link, not a card.
         </p>
 
         <div className="mt-4 flex gap-1.5 rounded-2xl bg-black/[.05] p-1 dark:bg-white/[.06]">
@@ -61,6 +76,7 @@ export default function WalletShowcase({ tracker }) {
         {view === 'popped' && <PoppedView tracker={tracker} logo={logo} />}
         {view === 'alone' && <div className="mx-auto max-w-[300px]"><PassCard tracker={tracker} logo={logo} /></div>}
       </div>
+      </>)}
     </section>
   )
 }

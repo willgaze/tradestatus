@@ -3,20 +3,32 @@
 import StatusTracker from '../t/StatusTracker'
 
 /**
- * One job, mid-flight, with everything filled in — the busiest the customer's
- * page ever gets, which is the state worth measuring and photographing.
+ * The customer's page, drawn from a fixture.
+ *
+ * Two states worth looking at, and `?stage=` picks between them:
+ *
+ *   ON_MY_WAY (default) — everything filled in. The busiest the page ever
+ *                         gets, so the state to measure and photograph.
+ *   BOOKED              — nothing arranged, nothing reported. The state the
+ *                         page spends most of its life in, and the easiest
+ *                         one to forget is there.
  *
  * The day is fixed rather than relative to now, so two captures a week apart
  * are comparable.
  */
 const DAY = '2026-10-01T00:00:00.000Z'
-const at = (hour) => {
+const hour = (h) => {
   const d = new Date(DAY)
-  d.setUTCHours(hour - 1, 0, 0, 0) // the fixture day is BST, an hour ahead
+  d.setUTCHours(h - 1, 0, 0, 0) // the fixture day is BST, an hour ahead
   return d.toISOString()
 }
 
-export default function Preview() {
+const STAGES = ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']
+
+export default function Preview({ stage }) {
+  const at = STAGES.includes(stage) ? stage : 'ON_MY_WAY'
+  const fresh = at === 'BOOKED'
+
   return (
     <StatusTracker
       initialProfile={{
@@ -28,22 +40,24 @@ export default function Preview() {
       initialBrand={null}
       initialStatus={{
         code: 'K7M4PQRT',
-        stage: 'ON_MY_WAY',
-        stageNote: 'Cylinder is on the van — picked it up from the merchant first thing.',
+        stage: at,
+        stageNote: fresh ? null : 'Cylinder is on the van — picked it up from the merchant first thing.',
         customerName: 'Sarah',
         jobRef: '2718',
         jobAddress: 'Church Lane, Burbage SN8',
         jobSummary: 'Unvented cylinder swap',
         scheduledFor: DAY,
-        arrivingAt: at(8),
-        updatedAt: at(8),
-        position: 2,
-        presenceAt: at(7),
-        window: { state: 'AGREED', by: 'TRADE', start: at(9), end: at(11), at: at(7) },
-        events: [
-          { stage: 'BOOKED', note: 'Booked in for Thursday.', at: at(6) },
-          { stage: 'ON_MY_WAY', note: null, at: at(8) },
-        ],
+        arrivingAt: fresh ? null : hour(8),
+        updatedAt: hour(fresh ? 6 : 8),
+        position: fresh ? null : 2,
+        presenceAt: fresh ? null : hour(7),
+        window: fresh ? null : { state: 'AGREED', by: 'TRADE', start: hour(9), end: hour(11), at: hour(7) },
+        events: fresh
+          ? [{ stage: 'BOOKED', note: 'Booked in for Thursday.', at: hour(6) }]
+          : [
+            { stage: 'BOOKED', note: 'Booked in for Thursday.', at: hour(6) },
+            { stage: at, note: null, at: hour(8) },
+          ],
       }}
     />
   )

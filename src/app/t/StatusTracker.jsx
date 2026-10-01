@@ -78,6 +78,11 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
   const reached = isPaused ? STAGE_ORDER.indexOf('ON_MY_WAY') : step
   const fill = (reached / (STAGE_ORDER.length - 1)) * 100
 
+  // Agreed hours if there are any; otherwise the day. Never both — once the
+  // hours are agreed the day is implied and repeating it is clutter, and on a
+  // job that is only booked the day is the one thing the customer came for.
+  const whenLine = windowLabel(status) || (status.scheduledFor ? dayOnly(status.scheduledFor) : null)
+
   // Tint the browser's own chrome to match the page. The blend is computed by
   // the stylesheet so a stage colour stays defined in one place — but a custom
   // property computes to its own text rather than to a colour, so it has to be
@@ -120,6 +125,15 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
       </header>
 
       {/* the glance */}
+      {/* Agreed hours if there are any, otherwise the day.
+          A customer opening a job that is only booked came for one fact —
+          WHEN — and it was two taps away, truncated inside "The job" as
+          "Thursday 1 October \u00b7 Church Lane\u2026". The card said "Booked in"
+          and drew a rail, which they could already see.
+          This does not break the no-promised-time rule: the ban is on the
+          PRODUCT working out an arrival. A date the trade typed in is a fact
+          being reported, and a day with no hours attached is exactly the
+          honest default \u2014 it promises nothing about when in that day. */}
       <section
         aria-live="polite"
         className={`glass r-outer animate-rise mt-6 p-5 transition-transform duration-300 ${
@@ -146,15 +160,15 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           <p className="mt-3 text-[15px] muted">Set off at {timeOnly(status.arrivingAt)}.</p>
         )}
 
-        {(windowLabel(status) || positionLabel(status.position)) && stage.key !== 'DONE' && (
+        {(whenLine || positionLabel(status.position)) && stage.key !== 'DONE' && (
           /* Two facts that usually fit on one line and sometimes do not. A
              flex row with a gap gives the browser somewhere to break, and
              nowrap on each keeps a part whole — left to itself it broke "You
              are / 2nd today", and forced onto one line it ran off the card. */
           <p className="mt-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            {windowLabel(status) && (
+            {whenLine && (
               <span className="whitespace-nowrap text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>
-                {windowLabel(status)}
+                {whenLine}
               </span>
             )}
             {positionLabel(status.position) && (
@@ -251,7 +265,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           return (
             <Disclosure icon={<HouseIcon size={19} />} title="Will someone be in?" delay="150ms" accent={!answered}
                         summary={!answered
-                          ? 'Tap to answer — saves them a wasted trip'
+                          ? 'Tap to answer — saves a trip'
                           : cur
                             ? `You said: ${cur.short} · ${presenceAgeLabel(status.presenceAt)}`
                             : `Answered ${presenceAgeLabel(status.presenceAt)} — tap to change`}

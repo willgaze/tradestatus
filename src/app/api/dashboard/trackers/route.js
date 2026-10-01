@@ -7,6 +7,39 @@ import { cleanText } from '@/lib/clean-text'
 
 export const dynamic = 'force-dynamic'
 
+/**
+ * A day's run, in the order it happens.
+ *
+ * This used to be `updatedAt desc`, which sounds reasonable and puts the job
+ * you have just finished at the top of the list — above the one you are
+ * driving to next. Tapping "Done" pushed that job to the top; tomorrow's work
+ * sank below yesterday's.
+ *
+ * So: unfinished work first, soonest booked day first, and finished jobs at
+ * the bottom with the most recent of them first. A job with no day set has not
+ * been arranged yet and sits after the ones that have.
+ *
+ * Done in JavaScript rather than SQL because "DONE last" is not an ordering
+ * Postgres knows about and a CASE expression here would be harder to read than
+ * the thing it replaces. The route takes 100 rows.
+ */
+const STAGE_RANK = { ON_SITE: 0, ON_MY_WAY: 1, PAUSED: 2, BOOKED: 3, DONE: 4 }
+const FAR_FUTURE = 8.64e15
+
+function inRunOrder(rows) {
+  const day = (r) => (r.scheduledFor ? new Date(r.scheduledFor).getTime() : FAR_FUTURE)
+  const finished = (r) => (r.stage === 'DONE' ? 1 : 0)
+  return [...rows].sort((a, b) =>
+    // A revoked link is not work; it goes to the very bottom either way.
+    Number(b.isActive) - Number(a.isActive) ||
+    finished(a) - finished(b) ||
+    // Finished jobs read newest-first; everything else reads soonest-first.
+    (finished(a) ? new Date(b.updatedAt) - new Date(a.updatedAt) : day(a) - day(b)) ||
+    (STAGE_RANK[a.stage] ?? 9) - (STAGE_RANK[b.stage] ?? 9) ||
+    new Date(b.updatedAt) - new Date(a.updatedAt),
+  )
+}
+
 export async function GET() {
   const operator = await requireOperator()
   if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
@@ -16,7 +49,7 @@ export async function GET() {
       orderBy: [{ isActive: 'desc' }, { updatedAt: 'desc' }],
       take: 100,
     })
-    return NextResponse.json({ trackers })
+    return NextResponse.json({ trackers: inRunOrder(trackers) })
   } catch (error) {
     console.error('tracker list failed:', error)
     return NextResponse.json({ error: dbReason(error) }, { status: 503 })
