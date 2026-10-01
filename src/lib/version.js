@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.11.0'
+export const VERSION = '1.12.0'
 export const BUILD_DATE = '2026-10-01'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 7
+export const THEME_INDEX = 8
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.12.0', date: '2026-10-01', notes: [
+    'The jobs list is a day\u2019s run now \u2014 what you are on, then what is next, finished at the bottom',
+    'A job shows who, where and the stage buttons; tap the row for the link, hours, photos and note',
+    'New job is a button, not six empty boxes above the work',
+    'Dashboard went from nine screens to under four',
+  ] },
   { version: '1.11.0', date: '2026-10-01', notes: [
     'A job that is only booked now says the day on the card, not two taps down',
     'Agreed hours replace it once there are any \u2014 never both, the day is implied',

@@ -15,7 +15,7 @@ import DropPin from '@/components/DropPin'
 import { windowSummary, windowHours } from '@/lib/window'
 import { TickIcon } from '@/components/icons'
 import { DB_REASONS } from '@/lib/db-errors'
-import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon } from '@/components/icons'
+import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon, PlusIcon, ChevronIcon } from '@/components/icons'
 
 // The API answers a failure with a reason code rather than a status number,
 // because "503" tells the one person who can fix this nothing. Whoever is
@@ -45,6 +45,13 @@ export default function Console() {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(null)
+  // One job open at a time, and the new-job form shut until it is wanted.
+  // Everything on this screen used to be open at once: five jobs came to
+  // 7,826px, nine and a quarter screens, with a 663px empty form on top of
+  // the work. A trade standing on a driveway scrolled a full screen per job
+  // to reach the one they were at.
+  const [openJob, setOpenJob] = useState(null)
+  const [showForm, setShowForm] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -68,6 +75,7 @@ export default function Console() {
       })
       if (!r.ok) return setError(await failure(r, 'Could not create the link'))
       setForm(EMPTY)
+      setShowForm(false)
       await load()
     } catch {
       setError({ title: 'Could not create the link', fix: 'Check your connection and try again.' })
@@ -200,6 +208,16 @@ export default function Console() {
         </div>
       )}
 
+      {/* Shut by default. It is six empty fields used once per job, and it was
+          the first thing on the screen every time the screen was opened. */}
+      {!showForm && (
+        <button type="button" onClick={() => setShowForm(true)}
+                className="btn btn-filled mt-6 w-full">
+          <PlusIcon size={18} /> New job
+        </button>
+      )}
+
+      {showForm && (
       <form onSubmit={create} className="glass r-outer mt-6 grid gap-4 p-5 sm:grid-cols-2">
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
         {field('customerPhone', 'Their mobile', '07700 900123', 'tel')}
@@ -213,13 +231,18 @@ export default function Console() {
             {saving ? 'Creating…' : 'Create tracking link'}
           </button>
         </div>
+        <button type="button" onClick={() => { setForm(EMPTY); setShowForm(false) }}
+                className="btn btn-grey w-full sm:col-span-2">Cancel</button>
       </form>
+      )}
 
       {loading ? <p className="mt-8 text-center text-[15px] muted">Loading…</p>
        : trackers.length === 0 ? <p className="mt-8 text-center text-[15px] muted">No jobs yet. Create one above.</p>
        : (
         <ul className="mt-6 space-y-4">
-          {trackers.map((t) => (
+          {trackers.map((t) => {
+            const open = openJob === t.id
+            return (
             <li key={t.id}
                 className={`glass r-outer tone-${stageOf(t.stage).tone} p-4 ${t.isActive ? '' : 'opacity-55'}`}>
               {presenceOf(t.presence) && presenceIsFresh(t.presenceAt) && (
@@ -281,17 +304,6 @@ export default function Console() {
                 </div>
               )}
 
-              {/* Dropped from the doorstep on the first visit, which is the
-                  better moment than asking the customer to do it: the person
-                  standing there is the one who will have to find it again, and
-                  a pin beats "third gate past the postbox" next time. */}
-              <div className="mt-2">
-                <DropPin
-                  label={t.mapPin ? 'Replace pin with where I am' : 'Drop a pin here'}
-                  className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]"
-                  onPin={(url) => patch(t.id, { mapPin: url })}
-                />
-              </div>
               {(t.doorToUse || t.petsOnSite || t.accessNotes) && (
                 <div className="r-inner mt-3 flex items-start gap-3 px-4 py-3" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                   <KeyIcon size={18} className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }} />
@@ -304,6 +316,65 @@ export default function Console() {
                   </span>
                 </div>
               )}
+
+              {/* What the customer said back about the time. Loud when it is
+                  waiting on an answer, because an unanswered counter-offer is
+                  a wasted trip in the making. */}
+              {t.windowState === 'PROPOSED' && t.windowBy === 'CUSTOMER' && (
+                <div className="r-inner mt-3 p-4"
+                     style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
+                  <p className="text-[15px] font-bold" style={{ color: 'var(--stage-paused)' }}>
+                    {windowSummary({ state: t.windowState, by: t.windowBy, start: t.windowStart, end: t.windowEnd }, 'TRADE')}
+                  </p>
+                  {t.windowNote && <p className="mt-1 text-[15px]">&ldquo;{t.windowNote}&rdquo;</p>}
+                  <button type="button" onClick={() => patch(t.id, { windowAgree: true })}
+                          className="btn btn-filled mt-3 w-full !min-h-[48px] !text-[16px]">
+                    <TickIcon size={17} /> That works — agree it
+                  </button>
+                  <p className="mt-2 text-[13px] muted">
+                    Or open this job and set your own hours, which sends it back to them.
+                  </p>
+                </div>
+              )}
+
+              {t.windowState === 'AGREED' && t.windowStart && (
+                <p className="mt-3 text-[15px] font-semibold" style={{ color: 'var(--stage-done)' }}>
+                  {windowHours({ start: t.windowStart, end: t.windowEnd })} — agreed with them
+                </p>
+              )}
+              {t.windowState === 'PROPOSED' && t.windowBy === 'TRADE' && (
+                <p className="mt-3 text-[15px] muted">
+                  {windowHours({ start: t.windowStart, end: t.windowEnd })} — sent, waiting on them
+                </p>
+              )}
+
+              {/* --- everything below is folded away until the row is opened ---
+
+                  What stays visible is what gets used standing next to a van:
+                  who and where, the stage buttons, Navigate, anything the
+                  customer has said that is waiting on an answer. The rest —
+                  sending the link, setting hours, photos, the note — is done
+                  once per job, sitting down, and does not belong between this
+                  job and the next one. */}
+              <button type="button" onClick={() => setOpenJob(open ? null : t.id)}
+                      aria-expanded={open}
+                      className="mt-3 flex min-h-[44px] w-full items-center justify-between gap-2 text-[14px] font-medium muted">
+                <span>{open ? 'Less' : 'Link, hours, photos, note'}</span>
+                <ChevronIcon size={16} className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
+              </button>
+
+              {open && (<>
+              {/* Dropped from the doorstep on the first visit, which is the
+                  better moment than asking the customer to do it: the person
+                  standing there is the one who will have to find it again, and
+                  a pin beats "third gate past the postbox" next time. */}
+              <div className="mt-2">
+                <DropPin
+                  label={t.mapPin ? 'Replace pin with where I am' : 'Drop a pin here'}
+                  className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]"
+                  onPin={(url) => patch(t.id, { mapPin: url })}
+                />
+              </div>
 
               <div className="r-inner mt-4 p-4" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                 <p className="text-[13px] font-semibold muted">Send this to the customer</p>
@@ -344,36 +415,6 @@ export default function Console() {
                 </div>
               </div>
 
-              {/* What the customer said back about the time. Loud when it is
-                  waiting on an answer, because an unanswered counter-offer is
-                  a wasted trip in the making. */}
-              {t.windowState === 'PROPOSED' && t.windowBy === 'CUSTOMER' && (
-                <div className="r-inner mt-3 p-4"
-                     style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
-                  <p className="text-[15px] font-bold" style={{ color: 'var(--stage-paused)' }}>
-                    {windowSummary({ state: t.windowState, by: t.windowBy, start: t.windowStart, end: t.windowEnd }, 'TRADE')}
-                  </p>
-                  {t.windowNote && <p className="mt-1 text-[15px]">&ldquo;{t.windowNote}&rdquo;</p>}
-                  <button type="button" onClick={() => patch(t.id, { windowAgree: true })}
-                          className="btn btn-filled mt-3 w-full !min-h-[48px] !text-[16px]">
-                    <TickIcon size={17} /> That works — agree it
-                  </button>
-                  <p className="mt-2 text-[13px] muted">
-                    Or set your own hours below, which sends it back to them.
-                  </p>
-                </div>
-              )}
-
-              {t.windowState === 'AGREED' && t.windowStart && (
-                <p className="mt-3 text-[15px] font-semibold" style={{ color: 'var(--stage-done)' }}>
-                  {windowHours({ start: t.windowStart, end: t.windowEnd })} — agreed with them
-                </p>
-              )}
-              {t.windowState === 'PROPOSED' && t.windowBy === 'TRADE' && (
-                <p className="mt-3 text-[15px] muted">
-                  {windowHours({ start: t.windowStart, end: t.windowEnd })} — sent, waiting on them
-                </p>
-              )}
 
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <label className="block text-[13px] muted">
@@ -432,8 +473,10 @@ export default function Console() {
                        onBlur={(e) => e.target.value !== (t.stageNote || '') && patch(t.id, { stageNote: e.target.value })}
                        className="field mt-1.5" />
               </label>
+              </>)}
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
 

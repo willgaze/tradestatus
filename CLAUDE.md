@@ -373,6 +373,17 @@ Each of these was live. Do not reintroduce them.
   script now. **When adding a step to a setup script, check what it needs has
   already happened** — these scripts are run once, by someone who cannot debug
   them, on the day everything else is also new.
+- **Everything on the dashboard was open at once.** Five jobs came to 7,826px
+  — nine and a quarter screens — with a 663px empty form above the work and
+  every job's link, hours, photos and notes expanded, about 1,068px each. The
+  trade scrolled a full screen per job to reach the one they were standing at.
+  It was never noticed because looking at the dashboard needs a database and
+  nobody had one. **A screen that cannot be run is a screen that does not get
+  reviewed**; `scripts/local-db.sh` exists so that is no longer true.
+- **The jobs list sorted by `updatedAt desc`.** Which sounds right and means
+  the job you have just tapped Done on jumps above the one you are driving to
+  next. The order a list is read in is part of what it says; `inRunOrder()` in
+  `src/app/api/dashboard/trackers/route.js` is the only place it is decided.
 - **The card said the stage and not the day.** A customer opening a job that
   was only booked got "Booked in", a rail they could already read, and the
   actual answer — Thursday 1 October — two taps down inside "The job",
@@ -488,6 +499,31 @@ one before changing the card**: it is the state the page spends most of its
 life in, it is already short because the note, the set-off time and the hours
 are all absent, and a change that reads well on a busy page can leave it
 saying nothing at all.
+
+**For the dashboard, run a database.** The fixture only covers the customer's
+page, and for several versions that meant the dashboard — the screen the trade
+actually uses, every day, on a driveway — simply went unexamined, while the
+customer's page got four passes. It had grown to 7,826px.
+
+```bash
+bash scripts/local-db.sh        # Postgres, the schema, a day's work, .env.local
+npm run build && npx next start
+```
+
+A day's work, not five tidy rows: one job finished, one running, one paused on
+a part that has not turned up, one where the customer has countered the hours
+and had no answer, one booked for next week. **A dashboard only ever seen with
+neat data is a dashboard whose awkward states nobody has looked at.** Every
+name and address in `scripts/seed-local.mjs` is invented, and the seed refuses
+to run unless `DATABASE_URL` points at localhost.
+
+It also makes the privacy boundary checkable for real rather than in the
+abstract — fetch `/api/status/<code>` on a seeded job that has a door, a dog,
+access notes and a presence answer, and confirm none of it comes back:
+
+```bash
+curl -s localhost:3000/api/status/K7M4PQRT | grep -c accessNotes   # 0
+```
 
 **Improve one real thing, not five speculative ones.** A nightly build that
 churns the interface is worse than one that fixes a defect. Look at what is

@@ -79,6 +79,10 @@ const run = async () => {
     await page.waitForTimeout(1000)
     const card = page.locator('section', { hasText: 'The wallet card' }).first()
     await card.scrollIntoViewIfNeeded()
+    // The showcase is shut by default now — 911px of a feature that does not
+    // exist yet does not belong open on a screen opened every morning.
+    const opener = card.getByRole('button', { name: /The wallet card/ })
+    if (await opener.count()) { await opener.first().click(); await page.waitForTimeout(400) }
     for (const [tab, name] of [['In the wallet', 'wallet-in-stack'],
                                ['Opened', 'wallet-opened'],
                                ['On its own', 'wallet-alone']]) {
