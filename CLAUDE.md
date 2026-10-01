@@ -139,7 +139,34 @@ button.
 
 **It is invisible until configured.** No `NEXT_PUBLIC_VAPID_PUBLIC_KEY` means
 the row does not render and nothing sends. That is the gate that lets this ship
-before the keys and the migration exist.
+before the keys and the migration exist. The gate has to be on the ROW, not
+inside it: for two versions `Notify` returned null without keys while the row
+above it still rendered, titled "Tell me when they set off" and promising
+"straight to your phone", and opened onto an empty drawer. `PUSH_CONFIGURED` is
+exported from `src/app/t/Notify.jsx` for exactly that.
+
+**Turning it on is one command, and it is not a command an assistant can run.**
+
+```bash
+bash scripts/enable-push.sh          # safe to re-run; keeps an existing pair
+bash scripts/enable-push.sh --rotate # replaces it, and stops every live sub
+```
+
+It generates the VAPID pair, sets the three variables, pushes the schema and
+redeploys. **Will runs it, not Claude**, and that is deliberate on two counts:
+
+- The Vercel connector available in a Claude session is **read-only for
+  environment variables** — `create_project_env` returns 403 and so does
+  listing them. This was tried. Do not try it again and do not report it as
+  done; there is no path to setting a Vercel environment variable from a
+  session, and the honest answer is to hand over the script.
+- Even if there were, a private key passed as a tool argument is a private key
+  in a transcript. The script never prints it: it goes from the machine that
+  made it to Vercel and nowhere else.
+
+A deploy is part of the script because `NEXT_PUBLIC_*` is **inlined at build
+time**. Setting the variable without rebuilding changes nothing, and the row
+stays missing while the dashboard says the key is set.
 
 ## The link is the credential
 
@@ -339,6 +366,19 @@ Each of these was live. Do not reintroduce them.
 - **Deployment protection.** `tradestatus.vercel.app` is open; the generated
   per-deployment URLs are behind Vercel's login. Never put a
   `tradestatus-<hash>-…` URL in front of a customer.
+- **`setup.sh` died on its first line of real work.** The push-key block read
+  `"${SCOPE_ARGS[@]}"` eighty lines before `SCOPE_ARGS` was defined, and under
+  `set -euo pipefail` an unbound variable exits. It also needed a logged-in
+  Vercel CLI that did not exist yet at that point. Push setup is its own
+  script now. **When adding a step to a setup script, check what it needs has
+  already happened** — these scripts are run once, by someone who cannot debug
+  them, on the day everything else is also new.
+- **The card said the stage and not the day.** A customer opening a job that
+  was only booked got "Booked in", a rail they could already read, and the
+  actual answer — Thursday 1 October — two taps down inside "The job",
+  truncated. A surface that does not say the thing the reader came for is the
+  same defect whatever the surface; it is worth asking of every new one, *what
+  did they open this for?*
 
 ## Stack and commands
 
@@ -442,6 +482,12 @@ an operator session, and the README says so when they are missing rather than
 leaving a silent gap. `playwright` is not a dependency — `npm install --no-save
 playwright`, and pass `CHROME_PATH` if the pre-installed browser is a different
 build.
+
+`/preview?stage=BOOKED` draws a job nothing has happened to yet. **Look at that
+one before changing the card**: it is the state the page spends most of its
+life in, it is already short because the note, the set-off time and the hours
+are all absent, and a change that reads well on a busy page can leave it
+saying nothing at all.
 
 **Improve one real thing, not five speculative ones.** A nightly build that
 churns the interface is worse than one that fixes a defect. Look at what is

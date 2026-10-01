@@ -28,22 +28,6 @@ say "Generating secrets"
 JWT_SECRET="$(openssl rand -base64 48 | tr -d '/+=' | head -c 48)"
 OPERATOR_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=lIO01' | head -c 14)"
 
-# The VAPID pair that signs push notifications. The public half ships to the
-# browser; the private half never leaves Vercel. Generated here for the same
-# reason as everything above: a key printed into a chat log is a key to rotate.
-# Re-running this makes a NEW pair, which silently invalidates every existing
-# subscription — so an existing pair is reused if one is already set.
-VAPID_EXISTING="$(npx --yes vercel@latest env pull /dev/stdout --environment=production "${SCOPE_ARGS[@]}" 2>/dev/null | grep '^VAPID_PRIVATE_KEY=' || true)"
-if [ -n "$VAPID_EXISTING" ]; then
-  echo "    Push keys already set — keeping them."
-  VAPID_PUBLIC_KEY=""
-  VAPID_PRIVATE_KEY=""
-else
-  VAPID_JSON="$(npx --yes web-push@3 generate-vapid-keys --json)"
-  VAPID_PUBLIC_KEY="$(node -e "process.stdout.write(JSON.parse(process.argv[1]).publicKey)" "$VAPID_JSON")"
-  VAPID_PRIVATE_KEY="$(node -e "process.stdout.write(JSON.parse(process.argv[1]).privateKey)" "$VAPID_JSON")"
-fi
-
 echo "    Your dashboard password will be shown at the end. Write it down then."
 
 # --- neon --------------------------------------------------------------------
@@ -141,13 +125,13 @@ set_env OPERATOR_PASSWORD           "$OPERATOR_PASSWORD"
 set_env NEXT_PUBLIC_TRADE_NAME      "$TRADE_NAME"
 set_env NEXT_PUBLIC_TRADE_PHONE     "$TRADE_PHONE"
 set_env NEXT_PUBLIC_TRADE_PHONE_TEL "$TRADE_PHONE_TEL"
-# Only on a first run; a re-run keeps the existing pair so live subscriptions
-# survive. Pushing an empty value would break them, so skip rather than clear.
-if [ -n "$VAPID_PRIVATE_KEY" ]; then
-  set_env NEXT_PUBLIC_VAPID_PUBLIC_KEY "$VAPID_PUBLIC_KEY"
-  set_env VAPID_PRIVATE_KEY            "$VAPID_PRIVATE_KEY"
-  set_env VAPID_SUBJECT                "mailto:${TRADE_EMAIL:-hello@mytradestatus.app}"
-fi
+# Push keys are NOT set here. They were, and the check for an existing pair ran
+# with $SCOPE_ARGS eighty lines before SCOPE_ARGS was defined — under `set -u`
+# that is an unbound variable and the whole script died on line one of real
+# work. It also needed a logged-in Vercel CLI, which does not exist that early.
+#
+# Push now has its own script, which can be run on its own, at any time, and is
+# safe to re-run: scripts/enable-push.sh.
 
 say "Deploying to production"
 DEPLOY_URL="$(npx --yes vercel@latest deploy --prod --yes "${SCOPE_ARGS[@]}" | tail -n 1)"

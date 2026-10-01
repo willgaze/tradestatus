@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.10.0'
-export const BUILD_DATE = '2026-09-30'
+export const VERSION = '1.11.0'
+export const BUILD_DATE = '2026-10-01'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 6
+export const THEME_INDEX = 7
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.11.0', date: '2026-10-01', notes: [
+    'A job that is only booked now says the day on the card, not two taps down',
+    'Agreed hours replace it once there are any \u2014 never both, the day is implied',
+    'One command turns push notifications on: bash scripts/enable-push.sh',
+  ] },
   { version: '1.10.0', date: '2026-09-30', notes: [
     'The page is a quarter shorter \u2014 less to scroll past before the thing that matters',
     'Tap any heading to open it; closed, each row says the one thing worth knowing',
