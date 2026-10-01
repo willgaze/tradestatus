@@ -51,3 +51,21 @@ export async function PATCH(request) {
     return NextResponse.json({ error: 'not_saved' }, { status: 503 })
   }
 }
+
+export async function DELETE(request) {
+  const operator = await requireOperator()
+  if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
+
+  // A public form collects junk, test rows and the odd bot, and a list that
+  // can only be added to stops being a list worth opening.
+  const id = new URL(request.url).searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'bad_id' }, { status: 400 })
+
+  try {
+    await prisma.waitlist.delete({ where: { id } })
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error('waitlist delete failed:', error?.code || error?.message)
+    return NextResponse.json({ error: 'not_deleted' }, { status: 503 })
+  }
+}

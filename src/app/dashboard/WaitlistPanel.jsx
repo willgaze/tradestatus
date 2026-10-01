@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { dayAndMonth } from '@/lib/when'
-import { ChevronIcon, TickIcon } from '@/components/icons'
+import { ChevronIcon, TickIcon, LinkOffIcon } from '@/components/icons'
 
 /**
  * Who has asked for this, so "I will let you know" is a thing that can be done.
@@ -27,6 +27,13 @@ export default function WaitlistPanel() {
     } catch { /* the section simply stays empty */ } finally { setLoaded(true) }
   }, [])
   useEffect(() => { load() }, [load])
+
+  const remove = async (row) => {
+    setRows((rs) => rs.filter((r) => r.id !== row.id))
+    try {
+      await fetch(`/api/dashboard/waitlist?id=${encodeURIComponent(row.id)}`, { method: 'DELETE' })
+    } finally { load() }
+  }
 
   const mark = async (row) => {
     setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, contacted: !r.contacted } : r)))
@@ -80,6 +87,11 @@ export default function WaitlistPanel() {
                         ? { color: 'var(--stage-done)', background: 'color-mix(in srgb, var(--stage-done) 15%, transparent)' }
                         : { color: 'var(--label-3)', background: 'rgb(var(--glass-line) / 0.1)' }}>
                 <TickIcon size={18} />
+              </button>
+              <button type="button" onClick={() => remove(r)} aria-label={`Remove ${r.email}`}
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full"
+                      style={{ color: 'var(--label-3)', background: 'rgb(var(--glass-line) / 0.1)' }}>
+                <LinkOffIcon size={17} />
               </button>
             </li>
           ))}

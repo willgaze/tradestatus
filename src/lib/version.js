@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.13.0'
+export const VERSION = '1.13.1'
 export const BUILD_DATE = '2026-10-01'
 
 export const THEMES = [
