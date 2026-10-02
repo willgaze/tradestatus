@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireOperator } from '@/lib/operator-auth'
-import { lookupVehicle } from '@/lib/dvla'
+import { lookupVehicle } from '@/lib/vehicle'
 
 export const dynamic = 'force-dynamic'
 

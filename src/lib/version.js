@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.13.1'
-export const BUILD_DATE = '2026-10-01'
+export const VERSION = '1.13.2'
+export const BUILD_DATE = '2026-10-02'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.13.2', date: '2026-10-02', notes: [
+    'Van lookup now uses the DVSA MOT history record \u2014 make, model AND colour from the plate',
+    'DVLA closed new registrations; it stays as the fallback for anyone who already has a key',
+    'The profile page says exactly which key to get, where, and that it must be used within 90 days',
+  ] },
   { version: '1.13.0', date: '2026-10-01', notes: [
     'It is called TurnUp now \u2014 renamed everywhere a person reads it',
     'A real homepage: what it is, what it will never do, and a working example to tap',
