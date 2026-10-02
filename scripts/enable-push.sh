@@ -18,7 +18,7 @@
 #
 set -euo pipefail
 
-PROJECT="tradestatus"
+PROJECT="turnup"   # renamed on Vercel 2 Oct 2026; the URL is still tradestatus.vercel.app
 VERCEL_SCOPE="${VERCEL_SCOPE:-willgazes-projects}"
 SCOPE_ARGS=(--scope "$VERCEL_SCOPE")
 SUBJECT="mailto:${TRADE_EMAIL:-hello@mytradestatus.app}"

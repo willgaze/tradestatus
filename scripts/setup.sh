@@ -11,7 +11,7 @@
 #
 set -euo pipefail
 
-PROJECT="tradestatus"
+PROJECT="turnup"   # renamed on Vercel 2 Oct 2026; the URL is still tradestatus.vercel.app
 TRADE_NAME="${TRADE_NAME:-Rosebourne Plumbing}"
 TRADE_PHONE="${TRADE_PHONE:-01264 502027}"
 TRADE_PHONE_TEL="${TRADE_PHONE_TEL:-01264502027}"
