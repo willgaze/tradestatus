@@ -6,7 +6,10 @@ import { StageIcon, TickIcon, ChevronIcon } from '@/components/icons'
 import Image from 'next/image'
 import Device from '@/components/Device'
 import WalletHero from '@/components/WalletHero'
-import { POSTERS } from '@/lib/posters'
+import { byGroup } from '@/lib/posters'
+import FrameStrip from '@/components/FrameStrip'
+import Walkthrough from './Walkthrough'
+import { PHASES } from '@/lib/roadmap'
 
 /**
  * The front door — the only page here a stranger is meant to find.
@@ -30,8 +33,8 @@ import { POSTERS } from '@/lib/posters'
 export const metadata = {
   title: 'TurnUp — your customer always knows where you are',
   description:
-    'One link, sent by text. Your customer sees whether you are booked in, on your way, on site or done — '
-    + 'without ringing you to ask. No app and no login for them.',
+    'One link per job, sent by text. Your customer sees booked in, on my way, on site, done — as it happens, '
+    + 'without ringing to ask. Nothing to download, nothing to log in to.',
   robots: { index: true, follow: true },
   openGraph: {
     title: 'TurnUp — your customer always knows where you are',
@@ -76,9 +79,8 @@ export default function Home() {
             Your customer always knows where you are.
           </h1>
           <p className="mt-5 text-[19px] leading-snug muted">
-            One link per job, sent by text. They open it and see whether you are booked in, on your way,
-            on site or done — without ringing you to find out. No app for them to download and nothing to
-            log in to.
+            One link per job, sent by text. They see booked in, on my way, on site, done &mdash; as it
+            happens, without ringing to ask. Nothing to download. Nothing to log in to.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#list" className="btn btn-filled !px-6">Get on the list</a>
@@ -148,23 +150,60 @@ export default function Home() {
           </ul>
         </section>
 
-        {/* --- how it goes, as a store listing would tell it ------------------
-            Six frames, the grammar of an App Store page: big line, quiet line,
-            the device running off the bottom. Rendered from the real screens by
-            /preview/posters and captured into public/home/store-N.webp, so they
-            are also the artwork for any listing or ad later. */}
-        <section className="mt-12">
-          <h2 className="text-[26px] font-bold tracking-[-0.02em]">How it goes</h2>
-          <p className="mt-2 text-[17px] muted">Swipe through. Every screen is the real thing.</p>
-          <ul className="-mx-5 mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {POSTERS.map((p, i) => (
-              <li key={p.n} className="w-[256px] shrink-0 snap-center sm:w-[232px]">
-                <Image src={`/home/store-${p.n}.webp`} alt={`${p.head.replace('\n', ' ')} ${p.sub}`}
-                       width={1242} height={2688} loading={i < 3 ? 'eager' : 'lazy'} sizes="256px"
-                       className="block h-auto w-full rounded-[22px] shadow-[0_18px_40px_-18px_rgba(0,0,0,.5)]" />
+        {/* --- two sides of one job -------------------------------------------
+            The product has two ends. A visitor is standing at one of them, and
+            a page that explains both at once explains neither. One switch. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Two sides of one job</h2>
+          <p className="mt-2 text-[17px] muted">The customer opens a link. You tap a button. Pick your side.</p>
+          <div className="mt-5">
+            <Walkthrough frames={{ customer: byGroup('customer'), trade: byGroup('trade') }} />
+          </div>
+        </section>
+
+        {/* --- either end --------------------------------------------------------
+            Not built yet, and badged so on the frames. It is on the page because
+            it is where this is going: the plumber is also somebody's customer. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Either end, any job</h2>
+          <p className="mt-2 text-[17px] leading-snug muted">
+            Today you send the link. Tomorrow you are the one waiting in &mdash; for a delivery, a mate with a
+            trailer, the electrician. One person moves, one waits, and either of you can be either. Same
+            page, other chair. <span className="font-semibold" style={{ color: 'var(--tint)' }}>Next.</span>
+          </p>
+          <FrameStrip frames={byGroup('either')} />
+        </section>
+
+        {/* --- everything it does today ------------------------------------------
+            The complete list, from the same file the in-app roadmap reads, so
+            this cannot drift from what is actually live. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Everything it does today</h2>
+          <p className="mt-2 text-[17px] muted">Live now, on every job. Nothing on this list is a promise.</p>
+          <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+            {PHASES.flatMap((ph) => ph.items).filter((it) => it.state === 'live').map((it) => (
+              <li key={it.key} className="glass r-outer flex items-start gap-3 px-4 py-3.5">
+                <span className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }}><TickIcon size={18} /></span>
+                <span className="min-w-0">
+                  <span className="block text-[16px] font-semibold leading-tight">{it.name}</span>
+                  {it.what && <span className="mt-0.5 block text-[14px] leading-snug muted">{it.what}</span>}
+                </span>
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* --- where it is going ----------------------------------------------------
+            Drawn, not captured, and every frame says NEXT. The app carries the
+            same list with a vote button; the page shows the six that change the
+            shape of the thing. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Where it is going</h2>
+          <p className="mt-2 text-[17px] leading-snug muted">
+            Not built yet, and marked so you cannot mistake it. The order is decided by the people using it:
+            every one of these has a vote button in the app.
+          </p>
+          <FrameStrip frames={byGroup('next')} />
         </section>
 
         {/* --- the part that is a promise about what it will NOT do --------

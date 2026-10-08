@@ -8,7 +8,7 @@ import Image from 'next/image'
  * frame is sized by width; the screen keeps the capture's own aspect and is
  * clipped at the bottom so it can run off the edge of a poster.
  */
-export default function Device({ screen, alt, width = 300, height, tilt = false, className = '', priority = false }) {
+export default function Device({ screen, alt, width = 300, height, tilt = false, className = '', priority = false, children }) {
   const h = height || Math.round(width * 2.05)
   return (
     <div className={`relative shrink-0 ${className}`}
@@ -18,8 +18,15 @@ export default function Device({ screen, alt, width = 300, height, tilt = false,
       <div className="absolute inset-0 rounded-[13%/6.4%] bg-[#0c0c0e] ring-1 ring-white/10"
            style={{ boxShadow: 'inset 0 0 0 2px #2a2a2e, inset 0 0 0 5px #0c0c0e' }} />
       <div className="absolute inset-[2.8%] overflow-hidden rounded-[11%/5.4%] bg-[#111]">
-        <Image src={screen} alt={alt} width={780} height={1560} priority={priority}
-               sizes={`${width}px`} className="block h-auto w-full" />
+        {children ? (
+          <div className="absolute inset-0 overflow-hidden bg-[#eef0f3]" aria-label={alt}>
+            {/* a 390-wide phone screen, drawn at natural size and scaled to fit the frame */}
+            <div className="origin-top-left" style={{ width: 390, height: Math.round(390 * h / width / 0.944), transform: `scale(${width * 0.944 / 390})` }}>{children}</div>
+          </div>
+        ) : (
+          <Image src={screen} alt={alt} width={780} height={1560} priority={priority}
+                 sizes={`${width}px`} className="block h-auto w-full" />
+        )}
         {/* status bar on a frosted strip, the way iOS keeps it legible over
             whatever has scrolled underneath */}
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[7.2%] bg-white/70 backdrop-blur-md"

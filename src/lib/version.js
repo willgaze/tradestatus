@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.13.4'
+export const VERSION = '1.14.0'
 export const BUILD_DATE = '2026-10-08'
 
 export const THEMES = [
@@ -48,6 +48,13 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.14.0', date: '2026-10-08', notes: [
+    'The homepage tells both sides: pick \u201cI\u2019m the customer\u201d or \u201cI do the work\u201d and walk through that side in eight frames',
+    'Either end, any job \u2014 the role swap is on the page, badged Next so nobody mistakes it for live',
+    'Everything it does today, as one list that reads from the same file as the in-app roadmap',
+    'Where it is going: six drawn frames, every one badged Next',
+    'Twenty-four App Store-sized frames in all, each a real screen or an honest drawing',
+  ] },
   { version: '1.13.4', date: '2026-10-08', notes: [
     'The wallet card on the homepage is pulled out of a stack in real 3D \u2014 the flat version stays in the dashboard',
     'Six App Store-style frames tell the story: sent by text, four words, will someone be in, find the door, your five buttons, in their wallet',
