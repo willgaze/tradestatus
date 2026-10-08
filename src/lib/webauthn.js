@@ -16,7 +16,7 @@ const CHALLENGE_COOKIE = 'mts-challenge'
 // production without a second config value.
 //
 // NOTE for a future move to a custom domain: passkeys enrolled against
-// tradestatus.vercel.app will NOT work on a future turnup domain. They are bound
+// tradestatus.vercel.app will NOT work on www.getturnup.com. They are bound
 // to the origin by design — that is what stops a lookalike site replaying one.
 // Enrol again on the new domain, and keep the password until that is done.
 export async function rpFromRequest() {

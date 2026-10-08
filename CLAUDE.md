@@ -5,7 +5,7 @@
 **Read this first, because the mistake has been made twice.**
 
 TurnUp (until v1.13.0 called My Trade Status; the GitHub repo `tradestatus`, the
-Vercel project `turnup`, the `tradestatus.vercel.app` URL, the Prisma models and
+Vercel project `turnup`, the old `tradestatus.vercel.app` URL, the Prisma models and
 the `mts-` CSS/cookie prefixes keep their old names because nobody reads them)
 is its own product, in its own repository, with its own database and its own
 Vercel project. Anywhere a person reads the name, it is **TurnUp**. Rosebourne Plumbing is a *customer* of it
@@ -366,7 +366,11 @@ Each of these was live. Do not reintroduce them.
 - **A time built in UTC came back an hour out.** Covered above under *A window
   is an arrangement*. `setUTCHours()` on a wall-clock time is always wrong for
   seven months of the year.
-- **Deployment protection.** `tradestatus.vercel.app` is open; the generated
+- **The address is https://www.getturnup.com** (since 8 Oct 2026; `getturnup.com` 308s to it,
+  bought on Hostinger, DNS at Vercel). `tradestatus.vercel.app` still serves every link already
+  sent and must keep doing so. Passkeys are bound to the host they were enrolled on, so a Face ID
+  set up on the old address does not sign in on the new one: enrol again there, once.
+- **Deployment protection.** The custom domains and `tradestatus.vercel.app` are open; the generated
   per-deployment URLs are behind Vercel's login. Never put a
   `tradestatus-<hash>-…` URL in front of a customer.
 - **`setup.sh` died on its first line of real work.** The push-key block read
@@ -435,7 +439,7 @@ table shipped fine" — that was a new table, which is the other case.
 One curl, and it is not optional:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' https://tradestatus.vercel.app/api/status/ZZZZZZZZ
+curl -s -o /dev/null -w '%{http_code}\n' https://www.getturnup.com/api/status/ZZZZZZZZ
 ```
 
 **404 is healthy** — the row was looked for and not found. **503 means the code
