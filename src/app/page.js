@@ -2,7 +2,9 @@ import Link from 'next/link'
 import Mark from '@/components/Mark'
 import Waitlist from './Waitlist'
 import { STAGE_ORDER, STAGES, stageOf } from '@/lib/trade-status'
-import { StageIcon, TickIcon, MessageIcon, PinIcon, BellIcon, ChevronIcon } from '@/components/icons'
+import { StageIcon, TickIcon, ChevronIcon } from '@/components/icons'
+import Phone from '@/components/Phone'
+import { StackView } from '@/components/PassCard'
 
 /**
  * The front door — the only page here a stranger is meant to find.
@@ -36,15 +38,19 @@ export const metadata = {
   },
 }
 
-const STEPS = [
-  { icon: <MessageIcon size={20} />, title: 'Book the job, send the link',
-    body: 'One tap sends a text with their link in it. They open it — no app, no account, no password.' },
-  { icon: <PinIcon size={20} />, title: 'Tap the stage as the day goes',
-    body: 'Booked in, on my way, on site, done. Five buttons on your phone, one-handed, next to the van.' },
-  { icon: <BellIcon size={20} />, title: 'Their page changes as you tap',
-    body: 'They stop ringing to ask, because the answer is already on their phone.' },
-  { icon: <TickIcon size={20} />, title: 'Running late? Say so once',
-    body: 'Pause it with a reason — "waiting on the cylinder" — and everyone waiting on you reads it.' },
+/* The job the pictures show. Same invented job as /demo and the diary, so a
+   visitor who taps "See what they see" lands on the page they just looked at. */
+const DEMO = {
+  stage: 'ON_MY_WAY', jobRef: '2718', customerName: 'Sarah Whitfield',
+  jobAddress: 'Church Lane, Burbage SN8', arrivingAt: '2026-10-01T07:00:00.000Z',
+}
+
+/* The same page, four times, as the day goes. */
+const DAY = [
+  { src: '/home/customer-booked.webp',    alt: 'The customer page the night before: Booked in', caption: 'The night before' },
+  { src: '/home/customer-on-my-way.webp', alt: 'The customer page when the van sets off: On my way, set off at 08:00, between 09:00 and 11:00, you are 2nd today', caption: 'Van sets off' },
+  { src: '/home/customer-on-site.webp',   alt: 'The customer page on arrival: On site', caption: 'At the door' },
+  { src: '/home/customer-done.webp',      alt: 'The customer page at the end: Job done', caption: 'Done' },
 ]
 
 export default function Home() {
@@ -87,6 +93,25 @@ export default function Home() {
           </div>
         </section>
 
+        {/* --- what it looks like ------------------------------------------
+            Shown before it is explained. A page of words about a visual
+            product is a page nobody finishes; the two pictures below are the
+            customer's phone and the customer's wallet, and they do the rest. */}
+        <section className="mt-12 grid items-start gap-8 sm:grid-cols-2">
+          <Phone src="/home/customer-on-my-way.webp" priority className="mx-auto w-[240px] sm:w-[250px]"
+                 alt="The page your customer opens from the text: Hello Sarah, On my way, set off at 08:00, between 09:00 and 11:00"
+                 caption="What they open from the text. No app, no login." />
+          <figure className="mx-auto w-full max-w-[320px]">
+            <div className="rounded-[30px] bg-black px-5 pb-6 pt-7">
+              <StackView tracker={DEMO} logo={null} tradeName="Sam Hale Plumbing" />
+            </div>
+            <figcaption className="mt-2.5 text-center text-[14px] leading-snug muted">
+              And the same job as a card in their wallet, updating on the lock screen.
+              Built; waiting on Apple&rsquo;s signing certificate.
+            </figcaption>
+          </figure>
+        </section>
+
         {/* --- the thing it is actually for -------------------------------- */}
         <section className="glass r-outer mt-12 p-6">
           <p className="text-[17px] leading-relaxed">
@@ -126,23 +151,51 @@ export default function Home() {
           </ul>
         </section>
 
-        {/* --- how a day goes ---------------------------------------------- */}
+        {/* --- how a day goes, in pictures ---------------------------------- */}
         <section className="mt-12">
           <h2 className="text-[26px] font-bold tracking-[-0.02em]">How it goes</h2>
-          <ol className="mt-5 grid gap-3">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="glass r-outer flex items-start gap-4 p-5">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-[15px] font-bold"
-                      style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
-                  {i + 1}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[17px] font-semibold">{step.title}</span>
-                  <span className="mt-1 block text-[16px] leading-snug muted">{step.body}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
+
+          {/* 1. your side */}
+          <div className="glass r-outer mt-5 grid items-center gap-5 p-5 sm:grid-cols-[1fr_200px]">
+            <div>
+              <p className="text-[15px] font-bold" style={{ color: 'var(--tint)' }}>1 · Your phone</p>
+              <h3 className="mt-1 text-[20px] font-semibold leading-tight">Book the job, send the link</h3>
+              <p className="mt-2 text-[16px] leading-snug muted">
+                One tap texts them their link. Then, as the day goes, you tap the stage: five buttons,
+                one-handed, next to the van. That is all you ever do.
+              </p>
+            </div>
+            <Phone src="/home/dashboard.webp" height={1260} className="mx-auto w-[200px]"
+                   alt="Your job card: Sarah Whitfield, On my way, with the five stage buttons and Navigate" />
+          </div>
+
+          {/* 2. their side, as the day goes */}
+          <div className="glass r-outer mt-4 p-5">
+            <p className="text-[15px] font-bold" style={{ color: 'var(--tint)' }}>2 · Their phone</p>
+            <h3 className="mt-1 text-[20px] font-semibold leading-tight">The same page, changing as you tap</h3>
+            <p className="mt-2 text-[16px] leading-snug muted">
+              They open it once and leave it open. It changes on its own. Nobody rings to ask.
+            </p>
+            <div className="-mx-5 mt-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-3 sm:overflow-visible sm:px-0">
+              {DAY.map((d) => (
+                <Phone key={d.src} src={d.src} alt={d.alt} caption={d.caption} className="w-[180px] snap-center sm:w-auto" />
+              ))}
+            </div>
+          </div>
+
+          {/* 3. the honest one */}
+          <div className="glass r-outer mt-4 grid items-center gap-5 p-5 sm:grid-cols-[200px_1fr]">
+            <Phone src="/home/customer-paused.webp" className="mx-auto w-[200px] sm:order-none"
+                   alt="The customer page when the job is paused, with the reason shown" />
+            <div>
+              <p className="text-[15px] font-bold" style={{ color: 'var(--tint)' }}>3 · When it goes wrong</p>
+              <h3 className="mt-1 text-[20px] font-semibold leading-tight">Running late? Say so once</h3>
+              <p className="mt-2 text-[16px] leading-snug muted">
+                Pause it with a reason &mdash; &ldquo;waiting on the cylinder&rdquo; &mdash; and everyone
+                waiting on you reads it. No excuses invented on your behalf, no time it then has to walk back.
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* --- the part that is a promise about what it will NOT do --------

@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.13.2'
-export const BUILD_DATE = '2026-10-02'
+export const VERSION = '1.13.3'
+export const BUILD_DATE = '2026-10-08'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.13.3', date: '2026-10-08', notes: [
+    'The homepage finally shows the thing: the customer\u2019s page and the wallet card, before any words',
+    '\u201cHow it goes\u201d is pictures now \u2014 your job card, their page changing across the day, and a paused job',
+    'The wallet card is one drawing shared by the homepage and the dashboard, so it cannot drift from the real pass',
+  ] },
   { version: '1.13.2', date: '2026-10-02', notes: [
     'Van lookup now uses the DVSA MOT history record \u2014 make, model AND colour from the plate',
     'DVLA closed new registrations; it stays as the fallback for anyone who already has a key',
