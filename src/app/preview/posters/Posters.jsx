@@ -179,6 +179,29 @@ function Mock({ kind }) {
       <div className="rounded-[18px] bg-white px-4 py-4 shadow-sm"><p className="text-[15px] font-semibold">Happy with it?</p><p className="mt-1 text-[13px] text-[#5f6672]">A review takes a minute and means a lot to a one-person firm.</p><span className="mt-3 inline-block rounded-full bg-[#ff9500] px-4 py-2 text-[14px] font-semibold text-white">Leave a review</span></div>
     </Screen>
   )
+  if (kind === 'record') return (
+    <Screen eyebrow="14 Church Lane" title="What has been done here">
+      {[['Unvented cylinder, 210 L', 'Sam Hale Plumbing · Oct 2026', 'G3 certificate · 25-year shell warranty · 6 photos', true],
+        ['Consumer unit', 'R. Patel Electrical · Mar 2025', 'EICR · Part P notified'],
+        ['Boiler service', 'Hale & Sons Heating · Feb 2026', 'Next due Feb 2027'],
+        ['Roof repair, rear valley', 'Downs Roofing · Aug 2024', '4 photos']].map(([t, w, d, on]) => (
+        <div key={t} className={`rounded-[18px] px-4 py-3.5 ${on ? 'bg-white shadow-sm' : 'bg-white/70'}`}>
+          <p className="text-[15px] font-semibold">{t}</p><p className="text-[13px] text-[#5f6672]">{w}</p><p className="mt-0.5 text-[12px]" style={{ color: 'var(--tint)' }}>{d}</p>
+        </div>
+      ))}
+      <p className="px-1 pt-1 text-[13px] text-[#5f6672]">Stays with the house. The next trade reads it before they arrive.</p>
+    </Screen>
+  )
+  if (kind === 'manage') return (
+    <Screen eyebrow="Job 2718 · Sarah Whitfield" title="Quote to invoice">
+      {[['Quote', '£1,840 · accepted 12 Sep', true], ['Booked', 'Thursday 1 October, 9–11', true], ['Done', '1 October, 13:40 · 6 photos', true], ['Invoice', '£1,840 · paid 2 October', true], ['Next service', 'Cylinder check · October 2027', false]].map(([t, d, done]) => (
+        <div key={t} className="flex items-center gap-3 rounded-[18px] bg-white px-4 py-3.5 shadow-sm">
+          <span className={`grid h-7 w-7 place-items-center rounded-full ${done ? 'bg-[#34c759] text-white' : 'border-2 border-[#5f6672]/40'}`}>{done ? <TickIcon size={14} /> : null}</span>
+          <span className="min-w-0"><span className="block text-[15px] font-semibold">{t}</span><span className="block text-[13px] text-[#5f6672]">{d}</span></span>
+        </div>
+      ))}
+    </Screen>
+  )
   if (kind === 'pickup') return (
     <Screen eyebrow="Thursday" title="Two ends, one journey">
       <Row icon={<PinIcon size={19} />} title="Pick up · 14 Church Lane" sub="Sarah is in until 2 — side gate" on />

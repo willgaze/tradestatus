@@ -53,7 +53,7 @@ export const CHANGELOG = [
     'Either end, any job \u2014 the role swap is on the page, badged Next so nobody mistakes it for live',
     'Everything it does today, as one list that reads from the same file as the in-app roadmap',
     'Where it is going: six drawn frames, every one badged Next',
-    'Twenty-four App Store-sized frames in all, each a real screen or an honest drawing',
+    'Twenty-six App Store-sized frames in all, each a real screen or an honest drawing \u2014 including a record of your home, and the step from tracker to the job itself',
   ] },
   { version: '1.13.4', date: '2026-10-08', notes: [
     'The wallet card on the homepage is pulled out of a stack in real 3D \u2014 the flat version stays in the dashboard',
