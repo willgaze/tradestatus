@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.13.3'
+export const VERSION = '1.13.4'
 export const BUILD_DATE = '2026-10-08'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.13.4', date: '2026-10-08', notes: [
+    'The wallet card on the homepage is pulled out of a stack in real 3D \u2014 the flat version stays in the dashboard',
+    'Six App Store-style frames tell the story: sent by text, four words, will someone be in, find the door, your five buttons, in their wallet',
+    'Every frame is rendered from the real screens, in a drawn phone with a status bar, from /preview/posters',
+  ] },
   { version: '1.13.3', date: '2026-10-08', notes: [
     'The homepage finally shows the thing: the customer\u2019s page and the wallet card, before any words',
     '\u201cHow it goes\u201d is pictures now \u2014 your job card, their page changing across the day, and a paused job',

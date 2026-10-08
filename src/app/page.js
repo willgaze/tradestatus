@@ -3,8 +3,10 @@ import Mark from '@/components/Mark'
 import Waitlist from './Waitlist'
 import { STAGE_ORDER, STAGES, stageOf } from '@/lib/trade-status'
 import { StageIcon, TickIcon, ChevronIcon } from '@/components/icons'
-import Phone from '@/components/Phone'
-import { StackView } from '@/components/PassCard'
+import Image from 'next/image'
+import Device from '@/components/Device'
+import WalletHero from '@/components/WalletHero'
+import { POSTERS } from '@/lib/posters'
 
 /**
  * The front door — the only page here a stranger is meant to find.
@@ -45,13 +47,6 @@ const DEMO = {
   jobAddress: 'Church Lane, Burbage SN8', arrivingAt: '2026-10-01T07:00:00.000Z',
 }
 
-/* The same page, four times, as the day goes. */
-const DAY = [
-  { src: '/home/customer-booked.webp',    alt: 'The customer page the night before: Booked in', caption: 'The night before' },
-  { src: '/home/customer-on-my-way.webp', alt: 'The customer page when the van sets off: On my way, set off at 08:00, between 09:00 and 11:00, you are 2nd today', caption: 'Van sets off' },
-  { src: '/home/customer-on-site.webp',   alt: 'The customer page on arrival: On site', caption: 'At the door' },
-  { src: '/home/customer-done.webp',      alt: 'The customer page at the end: Job done', caption: 'Done' },
-]
 
 export default function Home() {
   return (
@@ -98,15 +93,17 @@ export default function Home() {
             product is a page nobody finishes; the two pictures below are the
             customer's phone and the customer's wallet, and they do the rest. */}
         <section className="mt-12 grid items-start gap-8 sm:grid-cols-2">
-          <Phone src="/home/customer-on-my-way.webp" priority className="mx-auto w-[240px] sm:w-[250px]"
-                 alt="The page your customer opens from the text: Hello Sarah, On my way, set off at 08:00, between 09:00 and 11:00"
-                 caption="What they open from the text. No app, no login." />
-          <figure className="mx-auto w-full max-w-[320px]">
-            <div className="rounded-[30px] bg-black px-5 pb-6 pt-7">
-              <StackView tracker={DEMO} logo={null} tradeName="Sam Hale Plumbing" />
-            </div>
+          <figure className="mx-auto">
+            <Device screen="/home/customer-on-my-way.webp" width={250} tilt priority className="mx-auto"
+                    alt="The page your customer opens from the text: Hello Sarah, On my way, set off at 08:00, between 09:00 and 11:00" />
+            <figcaption className="mt-4 text-center text-[14px] leading-snug muted">
+              What they open from the text. No app, no login.
+            </figcaption>
+          </figure>
+          <figure className="mx-auto w-full max-w-[340px]" style={{ '--tint': '#5856d6' }}>
+            <WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" />
             <figcaption className="mt-2.5 text-center text-[14px] leading-snug muted">
-              And the same job as a card in their wallet, updating on the lock screen.
+              The same job as a card in their wallet, updating on the lock screen.
               Built; waiting on Apple&rsquo;s signing certificate.
             </figcaption>
           </figure>
@@ -151,51 +148,23 @@ export default function Home() {
           </ul>
         </section>
 
-        {/* --- how a day goes, in pictures ---------------------------------- */}
+        {/* --- how it goes, as a store listing would tell it ------------------
+            Six frames, the grammar of an App Store page: big line, quiet line,
+            the device running off the bottom. Rendered from the real screens by
+            /preview/posters and captured into public/home/store-N.webp, so they
+            are also the artwork for any listing or ad later. */}
         <section className="mt-12">
           <h2 className="text-[26px] font-bold tracking-[-0.02em]">How it goes</h2>
-
-          {/* 1. your side */}
-          <div className="glass r-outer mt-5 grid items-center gap-5 p-5 sm:grid-cols-[1fr_200px]">
-            <div>
-              <p className="text-[15px] font-bold" style={{ color: 'var(--tint)' }}>1 · Your phone</p>
-              <h3 className="mt-1 text-[20px] font-semibold leading-tight">Book the job, send the link</h3>
-              <p className="mt-2 text-[16px] leading-snug muted">
-                One tap texts them their link. Then, as the day goes, you tap the stage: five buttons,
-                one-handed, next to the van. That is all you ever do.
-              </p>
-            </div>
-            <Phone src="/home/dashboard.webp" height={1260} className="mx-auto w-[200px]"
-                   alt="Your job card: Sarah Whitfield, On my way, with the five stage buttons and Navigate" />
-          </div>
-
-          {/* 2. their side, as the day goes */}
-          <div className="glass r-outer mt-4 p-5">
-            <p className="text-[15px] font-bold" style={{ color: 'var(--tint)' }}>2 · Their phone</p>
-            <h3 className="mt-1 text-[20px] font-semibold leading-tight">The same page, changing as you tap</h3>
-            <p className="mt-2 text-[16px] leading-snug muted">
-              They open it once and leave it open. It changes on its own. Nobody rings to ask.
-            </p>
-            <div className="-mx-5 mt-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-3 sm:overflow-visible sm:px-0">
-              {DAY.map((d) => (
-                <Phone key={d.src} src={d.src} alt={d.alt} caption={d.caption} className="w-[180px] snap-center sm:w-auto" />
-              ))}
-            </div>
-          </div>
-
-          {/* 3. the honest one */}
-          <div className="glass r-outer mt-4 grid items-center gap-5 p-5 sm:grid-cols-[200px_1fr]">
-            <Phone src="/home/customer-paused.webp" className="mx-auto w-[200px] sm:order-none"
-                   alt="The customer page when the job is paused, with the reason shown" />
-            <div>
-              <p className="text-[15px] font-bold" style={{ color: 'var(--tint)' }}>3 · When it goes wrong</p>
-              <h3 className="mt-1 text-[20px] font-semibold leading-tight">Running late? Say so once</h3>
-              <p className="mt-2 text-[16px] leading-snug muted">
-                Pause it with a reason &mdash; &ldquo;waiting on the cylinder&rdquo; &mdash; and everyone
-                waiting on you reads it. No excuses invented on your behalf, no time it then has to walk back.
-              </p>
-            </div>
-          </div>
+          <p className="mt-2 text-[17px] muted">Swipe through. Every screen is the real thing.</p>
+          <ul className="-mx-5 mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {POSTERS.map((p, i) => (
+              <li key={p.n} className="w-[256px] shrink-0 snap-center sm:w-[232px]">
+                <Image src={`/home/store-${p.n}.webp`} alt={`${p.head.replace('\n', ' ')} ${p.sub}`}
+                       width={1242} height={2688} loading={i < 3 ? 'eager' : 'lazy'} sizes="256px"
+                       className="block h-auto w-full rounded-[22px] shadow-[0_18px_40px_-18px_rgba(0,0,0,.5)]" />
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* --- the part that is a promise about what it will NOT do --------
