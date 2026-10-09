@@ -33,6 +33,9 @@ const HOOKS = `${BASE}/webhook_subscriptions/event`
 export const EVENTS = ['job.status_changed', 'job.checked_in', 'job.checked_out', 'job.completed', 'job.updated']
 const STALE_MS = 60_000
 const TIMEOUT_MS = 6_000     // ServiceM8 wants a 2xx inside 10s; leave room
+// The one note this file writes. It is also the one it is allowed to erase:
+// a pause we announced must not outlive the pause.
+const AWAY_NOTE = 'Away from site for now — back to finish.'
 
 export const sm8Configured = () => Boolean(process.env.SM8_API_KEY)
 export const webhookToken = () => process.env.SM8_WEBHOOK_TOKEN || null
@@ -92,7 +95,7 @@ export function deriveStage({ job, activities, current }) {
   if (open) return { stage: 'ON_SITE', why: 'checked in' }
   const latest = activities[0]
   if (latest && !isNull(latest.end_date) && current === 'ON_SITE') {
-    return { stage: 'PAUSED', why: 'checked out, job not finished', note: 'Away from site for now — back to finish.' }
+    return { stage: 'PAUSED', why: 'checked out, job not finished', note: AWAY_NOTE }
   }
   if (status === 'Work Order') {
     if (['ON_MY_WAY', 'PAUSED', 'BOOKED', 'ON_SITE'].includes(current)) return { stage: current, why: 'work order, nothing new' }
@@ -119,7 +122,8 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
     const { stage, why, note } = deriveStage({ job, activities, current: tracker.stage })
     let outcome = 'unchanged'
     if (stage !== tracker.stage) {
-      const data = { stage, stageNote: note ? cleanText(note) : tracker.stageNote, events: { create: { stage, note: `From ServiceM8: ${why}` } } }
+      const keep = tracker.stageNote === AWAY_NOTE ? null : tracker.stageNote
+      const data = { stage, stageNote: note ? cleanText(note) : keep, events: { create: { stage, note: `From ServiceM8: ${why}` } } }
       // Same rule as the stage button: setting off is stamped on the way into
       // On my way only, and cleared only by going back to Booked in.
       if (stage === 'ON_MY_WAY') data.arrivingAt = new Date()
