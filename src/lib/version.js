@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.18.0'
+export const VERSION = '1.19.0'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 12
+export const THEME_INDEX = 13
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.19.0', date: '2026-10-09', notes: [
+    'The plan has a spine: three moats a big firm cannot build in a sprint, six moves in order with a gate each, five rivals with the move that beats each, and seven sectors where a regulator already prices a missed visit.',
+    'Pricing turned round a third time, and this one holds: free for every sender, homes, trades and small firms, no cap and no activation. An enterprise pays per card. Why they pay is Ofgem, Ofcom, Ofwat and the Ombudsman, not the card.',
+    'Seventeen sections now. The ask for the friend is one line: read it and say what is wrong.',
+  ] },
   { version: '1.18.0', date: '2026-10-09', notes: [
     'Pricing turned round: the card and the job are free with no cap. A trade who is a month in and past a number of jobs pays a small activation charge and a small yearly one, card details on file. Everything else is a bundle (Get paid, Look the part, Run the day) or a tier, paid monthly or weekly.',
     'Get paid takes the payment on the job, with a small margin on top of the processor. Referrals earn free jobs before activation, the Dropbox way.',

@@ -2,8 +2,8 @@
 import { ChevronIcon, TickIcon, WalletIcon } from '@/components/icons'
 
 import { VERSION } from '@/lib/version'
-import { BEFORE_AFTER, FLOW, PLAN_META, PROBLEM_STATS, PRODUCT, ROADMAP_COUNTS, STAGES, STATUS, WAITING_ON_OWNER, WALLET } from '@/lib/plan'
-import { Eyebrow, Hero, Light, Section, Steps, Sub, Table } from './ui'
+import { BEFORE_AFTER, FLOW, MOATS, PLAN_META, PROBLEM_STATS, PRODUCT, ROADMAP_COUNTS, STAGES, STATUS, WAITING_ON_OWNER, WALLET } from '@/lib/plan'
+import { Eyebrow, Hero, Light, Section, Steps, Sub, Table, Tag } from './ui'
 
 /* The first five sections: what it is, where it stands, the problem, the
    product, and the wallet card the product is pointing at. */
@@ -199,6 +199,39 @@ export function Wallet() {
         Until a pass is signed, this is a link, not a card, and the customer page says so.
         <a href={PLAN_META.walletDocUrl} target="_blank" rel="noreferrer" className="ml-1 underline">The Apple steps, written down</a>
       </p>
+    </Section>
+  )
+}
+
+/** The three moats: what a big firm cannot build in a sprint, and how much of each exists. */
+export function Moats() {
+  return (
+    <Section kicker="The moats" title="Three things a big firm cannot build in a sprint">
+      <div className="grid gap-3 lg:grid-cols-3">
+        {MOATS.map((m) => (
+          <div key={m.n} className="glass r-inner p-5">
+            <Eyebrow>Moat {m.n}</Eyebrow>
+            <div className="mt-1 text-[22px] font-bold leading-tight">{m.name}</div>
+            <div className="mt-1 text-[14px] muted">{m.line}</div>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[.08] dark:bg-white/[.1]">
+                <div className="h-2 rounded-full bg-stage-done" style={{ width: `${m.pct}%` }} />
+              </div>
+              <span className="text-[13px] font-semibold tabular-nums muted">{m.pct}%</span>
+            </div>
+            <div className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-stage-done">Today</div>
+            <ul className="mt-1 grid gap-1 text-[14px]">
+              {m.today.map((t) => <li key={t} className="flex gap-2"><span className="mt-0.5 shrink-0 text-stage-done"><TickIcon size={16} /></span>{t}</li>)}
+            </ul>
+            <div className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-stage-onway">Missing</div>
+            <ul className="mt-1 grid gap-1 text-[14px]">
+              {m.missing.map((t) => <li key={t} className="flex gap-2"><ChevronIcon size={14} style={{ color: 'var(--label-3)', marginTop: 4 }} />{t}</li>)}
+            </ul>
+            <div className="mt-3 rounded-full px-3 py-2 text-[12px] font-semibold text-white accent-fill">Gate: {m.gate}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-[13px] muted"><Tag kind="estimate" /> The percentages are a working guess at how much of each moat exists. The lists under them are read from the roadmap.</div>
     </Section>
   )
 }

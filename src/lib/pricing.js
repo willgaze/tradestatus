@@ -1,131 +1,94 @@
 /**
- * Pricing: the card and the job are free, forever. Money comes from three
- * places, none of them the card.
+ * Pricing: free for everyone sending to a home. Enterprise pays per card.
  *
- * Shaped by the owner on 9 Oct 2026, replacing the per-month Trade plan of
- * the same morning:
+ * Decided by the owner on 9 Oct 2026, after two earlier shapes the same day
+ * (a monthly Trade plan, then an activation fee with bundles). Both went,
+ * for one reason: the card has to spread, and anything that charges a small
+ * sender slows the spread. Only an enterprise pays for cards and for several
+ * touch points with a customer, because only an enterprise is already paying
+ * for missed appointments.
  *
- *   1. The person WAITING never pays and never has an account. The card is a
- *      link they open. Nothing on this page can ever charge them.
- *   2. The person SENDING gets the card, the stages, the window, "will someone
- *      be in", the calendar and the job itself for nothing, with no cap.
- *      Cards are how it spreads; charging for them would slow the spread.
- *   3. A trade who is clearly living in it (a month in, and more than a
- *      number of jobs) pays a small ACTIVATION charge and a small ANNUAL fee.
- *      Not to make money: to put a card on file and cover the first year's
- *      hosting. From then on, everything else is an upsell.
- *   4. Upsells are FEATURES, sold as bundles, or as three tiers for anyone
- *      who would rather not pick. Paid monthly or weekly, their choice.
- *   5. One bundle is TAKING PAYMENTS on the job. The processor takes its
- *      percentage; TurnUp adds a small margin on top. That is the line that
- *      can grow with the trade's turnover instead of with our price list.
- *   6. REFERRALS earn free jobs before the activation charge, the way Dropbox
- *      once earned storage. The unit is jobs, because that is the thing a
- *      trade is counting towards.
+ *   1. The person WAITING never pays and never has an account.
+ *   2. The person SENDING, if they are a home, a trade or a small firm, never
+ *      pays either. No cap, no card details, no activation.
+ *   3. An ENTERPRISE pays per card at volume: a carrier, an energy supplier, a
+ *      broadband provider, a water company, a housing association. They get
+ *      the card in both wallets, the update loop, push, SMS fallback, the
+ *      privacy rules, their logo, an API and an SLA.
  *
- * Every figure below is PROPOSED. Nothing is charged today, nothing is wired
- * to a payment provider, and the open ones are decisions on the plan.
+ * Why they pay is not the card. It is the regulator: Ofgem, Ofcom and Ofwat
+ * each put a fixed price on a missed appointment, and the Housing Ombudsman
+ * rules on them one by one. A card that records the slot was confirmed, the
+ * stage was shown and the door was answered is cheaper than one miss.
+ *
+ * Every figure below is PROPOSED. Nothing is charged today and nothing is
+ * wired to a payment provider.
  */
 
-/** What is free, with no cap and no bank card. The whole card as it is today. */
-export const FREE_CORE = [
+/** Who never pays. */
+export const FREE_FOR = [
+  { who: 'Homes and families', why: 'A mate dropping something off. Either end can be either' },
+  { who: 'One-van trades', why: 'Customer zero. The card is how it spreads' },
+  { who: 'Small firms, up to the enterprise line', why: 'A cleaner with four staff is not an enterprise' },
+]
+
+/** What is never charged for, whoever sends. */
+export const NEVER_CHARGED = [
   'One link per job, four stages',
   'The job itself: name, address, when, notes',
-  'Text or WhatsApp in one tap',
   'Agree the window, do not announce it',
   'Will someone be in?',
-  'Add to calendar',
-  'Phone buzzes when they set off',
-  'Your name on the card',
+  'Which door, the dog, access notes',
+  'Add to calendar, text or WhatsApp in one tap',
+  'The card in the wallet, when it exists',
 ]
+
+/** The enterprise line, and what sits above it. */
+export const ENTERPRISE = {
+  line: 'A firm with a contact centre, a regulator, or more than fifty vans',
+  perCardPence: 25,       // decision: 10 / 25 / 50 pence a card
+  minimumMonthly: 250,    // placeholder, pounds
+  gets: [
+    'Their logo and name on the card, both wallets',
+    'The update loop: the card changes when the job does',
+    'Push to the lock screen, SMS where there is no wallet',
+    'The privacy rules, written down and kept',
+    'An API their scheduler calls, or a webhook we listen to',
+    'Attendance and confirmation records, per visit',
+    'An SLA and a person to ring',
+  ],
+  why: 'A missed appointment already costs them money by regulation. A card costs pence.',
+}
 
 /**
- * When the small charge arrives. Both conditions, so a one-off job never
- * trips it and a busy first week does not either.
+ * What a missed appointment costs, by sector, under the rules as found on
+ * 9 Oct 2026. These are the sales deck. Each one names who owns the
+ * appointment today and the system it lives in, because that is who the
+ * card sits beside, not who it replaces.
  */
-export const ACTIVATION = {
-  afterMonths: 1,
-  afterJobs: 25,          // decision: 20 / 30 / 50
-  fee: 12,                // decision: 10 / 12 / 15, one-off
-  annual: 12,             // decision: 0 / 12 / 24 / 36, a year
-  what: 'A card on file, consent given once, charged on activation and then yearly',
-}
-
-/** The upsells, grouped the way a trade would buy them. */
-export const BUNDLES = [
-  {
-    key: 'paid',
-    name: 'Get paid',
-    tone: 'done',
-    price: 6,
-    line: 'Take the payment on the job, from the card',
-    features: ['Card payment on the job, from the customer page', 'Deposit before the day', 'Pay link in the text', 'Paid stamp on the card', 'Pays out to your bank'],
-    note: 'The processor takes its percentage. TurnUp adds a small margin on top of that, not on top of the job.',
-  },
-  {
-    key: 'look',
-    name: 'Look the part',
-    tone: 'onsite',
-    price: 4,
-    line: 'Your firm on the card, not ours',
-    features: ['Your logo and photo', 'Van from the number plate', 'Who is coming and what they drive', 'The card in Apple and Google Wallet, branded'],
-  },
-  {
-    key: 'day',
-    name: 'Run the day',
-    tone: 'onway',
-    price: 8,
-    line: 'The card moves itself, the day runs itself',
-    features: ['ServiceM8 moves the card', 'Where they are in the day', 'Several vans, one dashboard', 'Industry stage names: RIBA, building control', 'CarPlay and Android Auto'],
-  },
+export const WEDGES = [
+  { sector: 'Social housing repairs', perMiss: '£20 to £50', rule: 'Housing Ombudsman rulings, case by case', owns: 'The landlord and its contractor', system: 'Repairs scheduling: Totalmobile and the like', ours: 'The resident card beside their system. Confirmation and attendance fed back', state: 'green',
+    href: 'https://www.housing-ombudsman.org.uk/decisions/london-borough-of-tower-hamlets-202419479/' },
+  { sector: 'Energy suppliers', perMiss: '£30, and £30 more if unpaid in 10 days', rule: 'Ofgem Guaranteed Standards, 2015 regulations', owns: 'The supplier and its field contractor', system: 'Field service platforms; Localz at British Gas, OVO', ours: 'The customer card their SMS could open. British Gas paid £1.1m in redress for missed appointments', state: 'green',
+    href: 'https://www.ofgem.gov.uk/publications/british-gas-pays-ps11m-compensate-customers-after-agents-missed-appointments' },
+  { sector: 'Broadband and landline', perMiss: '£32.31 from April 2026, was £25', rule: 'Ofcom automatic compensation; BT, Sky, TalkTalk, Virgin, Zen', owns: 'The provider; Openreach does the visit', system: 'Glympse at Virgin Media, provider portals', ours: 'One card across provider and Openreach, who the customer cannot tell apart', state: 'green',
+    href: 'https://selectra.co.uk/tv-broadband/news/broadband-outage-compensation-ofcom-what-provider-owes' },
+  { sector: 'Water companies', perMiss: '£50 England, £20 Wales, from July 2025', rule: 'Ofwat Guaranteed Standards Scheme', owns: 'The water company', system: 'Their own scheduling; metering contractors', ours: 'Metering and repair visits. The GSS was just rewritten; the standard is fresh in their minds', state: 'amber',
+    href: 'https://www.ccw.org.uk/faq/what-standards-are-guaranteed-by-water-and-sewerage-companies/' },
+  { sector: 'White goods and furniture delivery', perMiss: 'No fixed sum. Goodwill vouchers, refunds under the Consumer Rights Act', rule: 'Consumer Rights Act 2015; Which? and MSE guidance', owns: 'The retailer; a two-person delivery crew', system: 'Retailer delivery platforms', ours: 'The slot, the two-person crew and the install on one card. Weaker: no regulator sets the price', state: 'amber',
+    href: 'https://www.which.co.uk/news/article/my-sofa.com-delivery-hasnt-turned-up-aKD2b1N8Td6P' },
+  { sector: 'Parcel carriers', perMiss: 'Nothing to the recipient. The retailer carries it', rule: 'Contract is with the retailer', owns: 'The carrier', system: 'Follow My Parcel and the carrier apps', ours: 'Last. Offer the pass as a tick-box once the household holds the card for everything else', state: 'gray',
+    href: 'https://app.dpdgroup.co.uk/content/products_services/followmyparcel.jsp' },
+  { sector: 'Insurance claims and retrofit', perMiss: 'No fixed sum. Four firms, four phone numbers', rule: 'Contractor networks; PAS 2035 for retrofit', owns: 'The insurer or the retrofit coordinator', system: 'Claims platforms; TrustMark lodgement', ours: 'Several firms on one card. The multi-party product, later', state: 'gray',
+    href: 'https://github.com/willgaze/tradestatus/blob/main/docs/research/formal-processes.md' },
 ]
-
-/**
- * For anyone who would rather not pick. Each tier is bundles stacked, and
- * the weekly price is the monthly one over four, rounded up, for the trade
- * who is paid on a Friday.
- */
-export const TIERS = [
-  { key: 'free', name: 'Free', bundles: [], monthly: 0, vans: 1, line: 'The card and the job. Always.' },
-  { key: 'starter', name: 'Starter', bundles: ['one'], monthly: 6, vans: 1, line: 'Any one bundle' },
-  { key: 'pro', name: 'Pro', bundles: ['paid', 'look', 'day'], monthly: 15, vans: 1, line: 'All three' },
-  { key: 'crew', name: 'Crew', bundles: ['paid', 'look', 'day'], monthly: 29, vans: 5, line: 'All three, five vans' },
-]
-
-export const weekly = (monthly) => Math.ceil(monthly / 4)
-
-/** Taking payments. The margin is the open decision; the processor rate is Stripe's published UK card rate, Oct 2026, and may change. */
-export const PAYMENTS = {
-  processorPct: 1.5,
-  processorPence: 20,
-  marginPct: 0.5,         // decision: 0.25 / 0.5 / 1
-  needs: 'A payment platform account held by the Ltd. The processor is the regulated party; TurnUp takes an application fee.',
-}
-
-/** Referrals, the Dropbox way. The unit is free jobs before activation. */
-export const REFERRALS = {
-  perReferral: 10,        // decision: 5 / 10 / 20 free jobs, both sides
-  waiveYearAt: 3,         // referrals that waive the first annual fee
-  bundleYearAt: 10,       // referrals that earn a bundle for a year
-  how: 'A trade sends a mate a link from the dashboard. When the mate sends their first card, both get the jobs.',
-}
 
 /** Why the line sits where it does. */
 export const PRICING_RULES = [
   { rule: 'The waiting end never pays', why: 'No account, no card details, ever' },
-  { rule: 'The card and the job are free, no cap', why: 'Charging for cards slows the spread, and the spread is the product' },
-  { rule: 'Activation is small and late', why: 'A month in and twenty-odd jobs means they are staying. Then a card on file' },
-  { rule: 'Features are the business', why: 'Bundles a trade can name, or a tier for the ones who will not pick' },
-  { rule: 'Payments grow with their turnover', why: 'A small margin on every job paid through the card, not a bigger price list' },
-  { rule: 'Weekly or monthly, their choice', why: 'Trades get paid on a Friday. Billing should fit the week it is spent in' },
-  { rule: 'Referrals pay in jobs', why: 'Free jobs before activation is the thing a new trade is counting towards' },
-]
-
-/** What happens at the activation line, written down before it is built. */
-export const AT_ACTIVATION = [
-  'Cards already sent keep working. Nothing a customer holds ever goes dark',
-  'The next job after the line asks for a card on file, once, with the fee and the yearly amount shown',
-  'No countdown, no nagging, no feature switched off mid-job',
-  'Say no and the card still works; new jobs wait until the fee is paid',
-  'From here the dashboard shows the bundles. Nothing is pushed',
+  { rule: 'Small senders never pay', why: 'The spread is the product. A free card from the plumber is the enterprise sale' },
+  { rule: 'Enterprise pays per card', why: 'Cards are what they send, and what their regulator counts' },
+  { rule: 'Price against the miss, not the card', why: 'Ofgem £30, Ofcom £32, Ofwat £50. Pence a card is nothing beside one of those' },
+  { rule: 'They buy the integration, not the pass', why: 'Both wallets, the loop, push, SMS, privacy rules, an API. PassKit sells the pass; nobody sells the day' },
+  { rule: 'The standard is public', why: 'Adopting TurnUp has to look like adopting a standard, not a vendor' },
 ]

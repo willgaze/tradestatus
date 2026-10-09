@@ -5,8 +5,8 @@ import { ChevronIcon, CopyIcon } from '@/components/icons'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { DECISIONS, PLAN_META } from '@/lib/plan'
-import { Cover, Problem, Product, Wallet, WhereWeAre } from './sections-now'
-import { Alternatives, Financials, Market, Pricing } from './sections-market'
+import { Cover, Moats, Problem, Product, Wallet, WhereWeAre } from './sections-now'
+import { Alternatives, Financials, Market, Pricing, Rivals } from './sections-market'
 import { Decide, Facts, GoToMarket, Risks, Team, Timeline } from './sections-plan'
 
 /*
@@ -31,8 +31,10 @@ const SECTIONS = [
   { key: 'problem', nav: 'Problem', C: Problem },
   { key: 'product', nav: 'Product', C: Product },
   { key: 'wallet', nav: 'The wallet card', C: Wallet },
+  { key: 'moats', nav: 'Three moats', C: Moats },
   { key: 'alternatives', nav: 'Alternatives', C: Alternatives },
   { key: 'market', nav: 'Market', C: Market },
+  { key: 'rivals', nav: 'Rivals', C: Rivals },
   { key: 'pricing', nav: 'Pricing', C: Pricing },
   { key: 'calc', nav: 'Financials', C: Financials },
   { key: 'gtm', nav: 'Go to market', C: GoToMarket },

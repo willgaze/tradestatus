@@ -9,12 +9,12 @@ import { Check, Chips, Eyebrow, Light, Section, Sub, Table, Tag } from './ui'
 
 export function GoToMarket() {
   return (
-    <Section kicker="Go to market" title="Gates, not dates">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <Section kicker="Go to market" title="Six moves, each with a gate">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {GTM_PHASES.map((p) => (
           <div key={p.phase} className="glass r-inner p-5">
-            <div className="flex items-center justify-between"><Eyebrow>Phase {p.phase}</Eyebrow><Light state={p.state} /></div>
-            <div className="text-[20px] font-bold">{p.label}</div>
+            <div className="flex items-center justify-between"><Eyebrow>Move {p.phase}</Eyebrow><Light state={p.state} /></div>
+            <div className="text-[18px] font-bold leading-tight">{p.label}</div>
             <div className="text-[13px] muted">{p.when}</div>
             <div className="mt-3 rounded-full px-3 py-2 text-[12px] font-semibold text-white accent-fill">Gate: {p.gate}</div>
             <ul className="mt-3 grid gap-1 text-[14px]">

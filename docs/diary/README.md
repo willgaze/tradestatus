@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.19.0](./v1.19.0/) | 2026-10-09 | Teal — three moats, six moves, five rivals, seven wedges; free for every sender, enterprise per card |
 | [v1.18.0](./v1.18.0/) | 2026-10-09 | Indigo — the card is free; activation, bundles and a payments margin are the business |
 | [v1.17.0](./v1.17.0/) | 2026-10-09 | Clay — the plan grew up: pricing, the wallet card, a share link |
 | [v1.16.0](./v1.16.0/) | 2026-10-09 | Slate — the business plan lives at /plan |
