@@ -17,7 +17,7 @@ export default function robots() {
     rules: [{
       userAgent: '*',
       allow: '/',
-      disallow: ['/t/', '/dashboard', '/login', '/demo', '/preview', '/api/'],
+      disallow: ['/t/', '/dashboard', '/plan', '/login', '/demo', '/preview', '/api/'],
     }],
   }
 }
