@@ -53,7 +53,7 @@ export const STATUS = [
   { item: 'Apple Wallet card', state: 'amber', note: 'signing built, needs Apple Developer' },
   { item: 'Google Wallet card', state: 'red', note: 'not built, needs an issuer account' },
   { item: 'Paying customers', state: 'red', note: `none, ${TRADE_NAME} is customer zero` },
-  { item: 'Pricing', state: 'amber', note: 'homes free to 5 cards a month, Trade 5 pounds, decided 9 Oct 2026, not yet charged' },
+  { item: 'Pricing', state: 'amber', note: 'card and job free, activation fee plus bundles, decided 9 Oct 2026, nothing charged yet' },
   { item: 'Legal entity', state: 'amber', note: 'a new Ltd, decided 9 Oct 2026, not yet formed' },
 ]
 
@@ -148,12 +148,12 @@ export const MARKET_STATS = [
 
 /** Who sends a card. Segments from the roadmap's bigger idea; order is a working guess. */
 export const SEGMENTS = [
-  { who: 'One-van trades', why: 'Customer zero. The dashboard is built for a driveway', plan: 'Trade', kind: 'estimate' },
-  { who: 'Homes and families', why: 'A mate dropping something off, a neighbour with a key. Either end can be either', plan: 'Home', kind: 'estimate' },
-  { who: 'Multi-van firms on job software', why: 'The card moves itself from ServiceM8. No tapping', plan: 'Crew', kind: 'estimate' },
-  { who: 'Couriers, removals, pickups', why: 'Same question, same two ends. A failed delivery costs more than a wasted visit', plan: 'Crew', kind: 'estimate' },
+  { who: 'One-van trades', why: 'Customer zero. The dashboard is built for a driveway', plan: 'Free, then Get paid', kind: 'estimate' },
+  { who: 'Homes and families', why: 'A mate dropping something off, a neighbour with a key. Either end can be either', plan: 'Free', kind: 'estimate' },
+  { who: 'Multi-van firms on job software', why: 'The card moves itself from ServiceM8. No tapping', plan: 'Run the day, Crew', kind: 'estimate' },
+  { who: 'Couriers, removals, pickups', why: 'Same question, same two ends. A failed delivery costs more than a wasted visit', plan: 'Run the day', kind: 'estimate' },
   { who: 'Retrofit and insurance claims', why: 'Four or five firms on one job and the householder gets a phone number for each', plan: 'Partners', kind: 'estimate' },
-  { who: 'Architects and building control', why: 'RIBA 0 to 7 and inspection stages already have names. The card speaks them', plan: 'Crew', kind: 'estimate' },
+  { who: 'Architects and building control', why: 'RIBA 0 to 7 and inspection stages already have names. The card speaks them', plan: 'Run the day', kind: 'estimate' },
 ]
 
 /** Formal processes the card could speak. From docs/research/formal-processes.md. */
@@ -171,13 +171,13 @@ export const TEMPLATES = [
 ]
 
 /** Calculator defaults. Assumptions, not forecasts; every one is editable on the page. */
-export const CALC_DEFAULTS = { paid: 0, newPaid: 5, price: 5, churnPct: 4, hosting: 40, months: 12 }
+export const CALC_DEFAULTS = { trades: 0, newTrades: 5, activatePct: 60, bundlePct: 30, bundlePrice: 6, payPct: 20, jobsPerMonth: 25, jobValue: 180, churnPct: 3, hosting: 40, months: 12 }
 
 /** Go to market as gates. A phase opens when the gate before it is passed. */
 export const GTM_PHASES = [
   { phase: '0', label: 'Customer zero', gate: `${TRADE_NAME} on the ServiceM8 connector`, moves: ['Connect ServiceM8', 'Every job gets a card', 'First real wallet pass'], when: 'Now', state: 'amber' },
-  { phase: '1', label: 'Homes and one-van trades', gate: '10 businesses sending cards', moves: ['Home plan live, free', 'Trade plan live, first payment', 'Trade groups, demo link'], when: 'Q4 2026', state: 'gray' },
-  { phase: '2', label: 'Crews and templates', gate: '3 templates live, 1 crew paying', moves: ['RIBA 0 to 7 first', 'ServiceM8 add-on listing', 'Google Wallet'], when: '2027 H1', state: 'gray' },
+  { phase: '1', label: 'Homes and one-van trades', gate: '10 businesses sending cards', moves: ['Referral link live', 'First activation fee taken', 'Trade groups, demo link'], when: 'Q4 2026', state: 'gray' },
+  { phase: '2', label: 'Bundles and crews', gate: 'First bundle paid, first job paid through the card', moves: ['Get paid bundle, with the Ltd', 'RIBA 0 to 7 first', 'ServiceM8 add-on listing'], when: '2027 H1', state: 'gray' },
   { phase: '3', label: 'Partners', gate: 'One retrofit or claim job end to end', moves: ['Four firms, one card', 'Whoever is next updates it', 'Householder gets one link'], when: '2027 H2', state: 'gray' },
 ]
 
@@ -196,7 +196,8 @@ export const RISKS = [
   { label: 'Apple never signs the pass', likelihood: 'low', answer: 'The link works without it. The card is the upgrade, not the floor', kind: 'estimate' },
   { label: 'ServiceM8 ships the same thing', likelihood: 'medium', answer: 'Homes, templates and multi-party, not one app', kind: 'estimate' },
   { label: 'Trades will not tap', likelihood: 'medium', answer: 'Webhooks tap for them', kind: 'estimate' },
-  { label: 'Free tier costs more than it earns', likelihood: 'medium', answer: 'A card is a row and a page. Hosting is in the calculator', kind: 'estimate' },
+  { label: 'Free cards cost more than activation earns', likelihood: 'medium', answer: 'A card is a row and a page. Hosting and activation are both in the calculator', kind: 'estimate' },
+  { label: 'Payments margin needs the Ltd first', likelihood: 'high', answer: 'Form it before the Get paid bundle. Everything else can ship without it', kind: 'estimate' },
   { label: 'Name clash on TurnUp', likelihood: 'medium', answer: 'Trademark check before spending on the name', kind: 'estimate' },
   { label: 'Single founder', likelihood: 'high', answer: 'Code on GitHub, a diary per build', kind: 'estimate' },
   { label: 'Customer data on a public link', likelihood: 'low', answer: 'Stage only. Answers never leave the device', kind: 'estimate' },
@@ -221,9 +222,12 @@ export const THE_ASK = {
 }
 
 export const DECISIONS = [
-  { key: 'pricing', question: 'Who pays?', options: ['Nobody, for now', 'Homes free, trades pay', 'Everyone pays', 'Per card for all'], decided: 'Homes free, trades pay', decidedAt: '9 Oct 2026' },
-  { key: 'freeCap', question: 'Free cards a month, per sender?', options: ['5', '10', '20', '30'], decided: '5', decidedAt: '9 Oct 2026' },
-  { key: 'tradePrice', question: 'Trade plan, pounds a month?', options: ['5', '9', '12', '15'], decided: '5', decidedAt: '9 Oct 2026' },
+  { key: 'pricing', question: 'Who pays?', options: ['Nobody, for now', 'Trades: activation, then features', 'Trades: a monthly plan', 'Per card for all'], decided: 'Trades: activation, then features', decidedAt: '9 Oct 2026', note: 'Changed the same day from a monthly Trade plan. The card and the job stay free.' },
+  { key: 'activationJobs', question: 'Activation after a month and how many jobs?', options: ['20', '30', '50'] },
+  { key: 'activationFee', question: 'Activation charge, pounds, one-off?', options: ['10', '12', '15'] },
+  { key: 'annualFee', question: 'Then a year, pounds?', options: ['0', '12', '24', '36'] },
+  { key: 'paymentMargin', question: 'Margin on payments, percent on top of the processor?', options: ['0.25', '0.5', '1'] },
+  { key: 'referralJobs', question: 'Free jobs per referral, both sides?', options: ['5', '10', '20'] },
   { key: 'entity', question: 'Which company owns TurnUp?', options: ['New Ltd', 'Existing dormant Ltd', 'Sole trader for now', 'Ask the accountant first'], decided: 'New Ltd', decidedAt: '9 Oct 2026' },
   { key: 'raise', question: 'Raise money at all?', options: ['No, bootstrap', 'Friends and family', 'Angel after 10 customers', 'Undecided'], decided: 'Undecided', decidedAt: '9 Oct 2026' },
   { key: 'firstTemplate', question: 'First template after ServiceM8?', options: ['Building control', 'RIBA', 'Certificate issued', 'PAS 2035'], decided: 'RIBA', decidedAt: '9 Oct 2026' },

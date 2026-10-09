@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.18.0](./v1.18.0/) | 2026-10-09 | Indigo — the card is free; activation, bundles and a payments margin are the business |
 | [v1.17.0](./v1.17.0/) | 2026-10-09 | Clay — the plan grew up: pricing, the wallet card, a share link |
 | [v1.16.0](./v1.16.0/) | 2026-10-09 | Slate — the business plan lives at /plan |
 | [v1.9.0](./v1.9.0/) | 2026-09-30 | Teal — a window is something you agree, not announce |
