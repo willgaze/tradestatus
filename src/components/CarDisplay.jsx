@@ -1,63 +1,168 @@
-import { VanIcon, HouseIcon, PauseIcon, CheckIcon } from '@/components/icons'
+import { VanIcon, HouseIcon, PauseIcon, CheckIcon, PhoneIcon, CompassIcon } from '@/components/icons'
 
 /**
- * A car's screen, not a phone's. Landscape head unit in a dark dash, drawn
- * two ways: CarPlay (sidebar on the left: time, signal, home) and Android
- * Auto (bar along the bottom). Both show the same four things a driver may
- * press: On my way, On site, Paused, Done — and nothing that needs reading.
+ * A head unit in a dash, seen from the driver's seat (right-hand drive).
+ *
+ * `vehicle` draws the cab: a van sits upright with a flat screen and a tall
+ * dash; a car slopes, with the screen lower and wider. `ui` draws what is on
+ * the screen: CarPlay (black, the status column on the left, list rows) or
+ * Android Auto (Coolwalk: the map underneath, cards floating on it, the bar
+ * along the bottom). Both carry the two things a driver needs: navigate to
+ * the address, and the stage buttons. Nothing to read.
  */
-const JOB = { who: 'Sarah Whitfield', where: 'Church Lane, Burbage', when: '09:00–11:00' }
-const BUTTONS = [
-  { label: 'On my way', bg: '#5856d6', Icon: VanIcon },
+const JOB = { who: 'Sarah Whitfield', where: 'Church Lane, Burbage', mins: 14 }
+const STAGES = [
+  { label: 'On my way', bg: '#5856d6', Icon: VanIcon, on: true },
   { label: 'On site', bg: '#007aff', Icon: HouseIcon },
   { label: 'Paused', bg: '#ff9500', Icon: PauseIcon },
   { label: 'Done', bg: '#34c759', Icon: CheckIcon },
 ]
 
-export default function CarDisplay({ variant = 'carplay', width = 560, className = '' }) {
-  const h = Math.round(width * 0.52)
-  const android = variant === 'android'
+/* A small map: roads on a pale ground, a blue route, a pin. */
+function MapArt({ dark = false, className = '' }) {
+  const ground = dark ? '#1f2a2a' : '#e9ecef', road = dark ? '#3a4a4a' : '#ffffff', green = dark ? '#243a2e' : '#d7ead9'
   return (
-    <div className={`relative shrink-0 ${className}`} style={{ width, height: h, fontSize: width / 560 * 16 }}>
-      {/* the dash it sits in */}
-      <div aria-hidden="true" className="absolute -inset-x-[6%] -bottom-[14%] -top-[8%] rounded-[16%/40%] bg-[#0d0f12]" style={{ boxShadow: '0 40px 60px -30px rgba(0,0,0,.8)' }} />
-      {/* bezel */}
-      <div className="absolute inset-0 rounded-[1.2em] bg-[#06070a] ring-1 ring-white/10" style={{ boxShadow: 'inset 0 0 0 0.35em #15181d' }} />
-      {/* screen */}
-      <div className={`absolute inset-[0.6em] overflow-hidden rounded-[0.8em] ${android ? 'bg-[#1b1e24]' : 'bg-[#0b0d12]'} text-white`}>
-        <div className={`flex h-full ${android ? 'flex-col' : ''}`}>
-          {!android && (
-            <aside className="flex w-[14%] flex-col items-center justify-between border-r border-white/10 py-[1em] text-[0.7em]">
-              <div className="text-center"><p className="font-semibold">08:42</p><p className="mt-[0.3em] text-white/50">●●●● 5G</p></div>
-              <div className="grid gap-[0.9em] text-white/60"><span className="mx-auto h-[2.4em] w-[2.4em] rounded-[0.7em] bg-white/10" /><span className="mx-auto h-[2.4em] w-[2.4em] rounded-[0.7em] bg-white/10" /><span className="mx-auto h-[2.4em] w-[2.4em] rounded-[0.7em] bg-[#2e6b4b]" /></div>
-              <span className="mx-auto h-[2em] w-[2em] rounded-full border border-white/40" />
-            </aside>
-          )}
-          <main className="flex min-w-0 flex-1 flex-col px-[1.2em] py-[1em]">
-            <div className="flex items-baseline justify-between">
-              <p className="truncate text-[1.05em] font-semibold">{JOB.who} <span className="font-normal text-white/55">· {JOB.where}</span></p>
-              <p className="shrink-0 text-[0.8em] text-white/55">Next · {JOB.when}</p>
-            </div>
-            <div className="mt-[0.8em] grid flex-1 grid-cols-4 gap-[0.7em]">
-              {BUTTONS.map(({ label, bg, Icon }, i) => (
-                <div key={label} className="flex flex-col items-center justify-center rounded-[1em] text-center"
-                     style={{ background: i === 0 ? bg : `color-mix(in srgb, ${bg} 22%, #14171d)`, outline: i === 0 ? '0.18em solid rgba(255,255,255,.5)' : 'none' }}>
-                  <Icon size={Math.round(width / 560 * 30)} />
-                  <p className="mt-[0.5em] text-[0.9em] font-bold leading-tight">{label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-[0.7em] text-center text-[0.72em] text-white/50">
-              {android ? '“Hey Google, tell TurnUp I’m on my way.”' : '“Hey Siri, tell TurnUp I’m on my way.”'}
-            </p>
-          </main>
-          {android && (
-            <nav className="flex items-center justify-between border-t border-white/10 px-[1.2em] py-[0.5em] text-[0.7em] text-white/60">
-              <span className="flex items-center gap-[0.8em]"><span className="h-[1.8em] w-[1.8em] rounded-full bg-white/15" /><span className="h-[1.8em] w-[1.8em] rounded-[0.5em] bg-white/15" /><span className="h-[1.8em] w-[1.8em] rounded-[0.5em] bg-[#2e6b4b]" /></span>
-              <span>08:42 · 5G ▲▲▲</span>
-            </nav>
-          )}
+    <svg viewBox="0 0 320 200" className={`block h-full w-full ${className}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="320" height="200" fill={ground} />
+      <rect x="0" y="120" width="130" height="80" fill={green} />
+      <rect x="200" y="0" width="120" height="70" fill={green} />
+      <path d="M0 150 L320 90" stroke={road} strokeWidth="14" />
+      <path d="M90 0 L140 200" stroke={road} strokeWidth="10" />
+      <path d="M0 60 L320 40" stroke={road} strokeWidth="8" />
+      <path d="M20 190 C 80 160, 120 150, 160 120 S 230 70, 262 56" fill="none" stroke="#1a73e8" strokeWidth="7" strokeLinecap="round" />
+      <circle cx="20" cy="190" r="7" fill="#1a73e8" stroke="#fff" strokeWidth="3" />
+      <g transform="translate(262 40)"><path d="M0 16 C -8 6, -8 -6, 0 -10 C 8 -6, 8 6, 0 16 Z" fill="#ea4335" /><circle r="3.5" cy="-1" fill="#fff" /></g>
+    </svg>
+  )
+}
+
+function CarPlayUI({ w }) {
+  const fs = w / 560 * 16
+  return (
+    <div className="flex h-full bg-black text-white" style={{ fontSize: fs }}>
+      <aside className="flex w-[13%] flex-col items-center justify-between py-[0.9em] text-[0.68em]">
+        <div className="text-center leading-tight"><p className="font-semibold text-[1.15em]">08:42</p><p className="mt-[0.2em] text-white/60">▂▄▆█ 5G</p></div>
+        <div className="grid gap-[0.7em]">
+          <span className="grid h-[2.6em] w-[2.6em] place-items-center rounded-[0.75em] bg-[#34c759]"><CompassIcon size={fs * 1.2} /></span>
+          <span className="grid h-[2.6em] w-[2.6em] place-items-center rounded-[0.75em] bg-[#34c759]/30"><PhoneIcon size={fs * 1.1} /></span>
+          <span className="grid h-[2.6em] w-[2.6em] place-items-center rounded-[0.75em] bg-[#2e6b4b]"><span className="h-[1.1em] w-[1.1em] rounded-full border-[0.15em] border-white" /></span>
         </div>
+        <span className="h-[1.6em] w-[1.6em] rounded-full border-[0.14em] border-white/70" />
+      </aside>
+      <main className="flex min-w-0 flex-1 gap-[0.6em] p-[0.6em] pl-0">
+        {/* navigation card */}
+        <section className="relative w-[46%] overflow-hidden rounded-[0.9em]">
+          <MapArt />
+          <div className="absolute inset-x-[0.6em] top-[0.6em] rounded-[0.6em] bg-black/75 px-[0.8em] py-[0.6em] backdrop-blur">
+            <p className="text-[0.62em] uppercase tracking-wide text-white/60">Next job</p>
+            <p className="truncate text-[0.95em] font-semibold">{JOB.where}</p>
+            <p className="text-[0.75em] text-white/70">{JOB.mins} min · 6.2 mi</p>
+          </div>
+          <div className="absolute inset-x-[0.6em] bottom-[0.6em] flex items-center justify-center gap-[0.5em] rounded-[0.6em] bg-[#007aff] py-[0.6em] text-[0.9em] font-bold">
+            <CompassIcon size={fs * 1.1} /> Navigate
+          </div>
+        </section>
+        {/* stage list */}
+        <section className="flex min-w-0 flex-1 flex-col rounded-[0.9em] bg-[#1c1c1e]">
+          <header className="flex items-center justify-between px-[0.9em] py-[0.55em] text-[0.72em] text-white/60"><span>TurnUp</span><span className="truncate pl-[0.5em]">{JOB.who}</span></header>
+          <ul className="flex flex-1 flex-col divide-y divide-white/10 border-t border-white/10">
+            {STAGES.map(({ label, bg, Icon, on }) => (
+              <li key={label} className={`flex flex-1 items-center gap-[0.8em] px-[0.9em] ${on ? 'bg-white/[.08]' : ''}`}>
+                <span className="grid h-[2.1em] w-[2.1em] shrink-0 place-items-center rounded-[0.55em]" style={{ background: bg }}><Icon size={fs * 1.1} /></span>
+                <span className={`flex-1 text-[1em] ${on ? 'font-bold' : 'font-medium text-white/85'}`}>{label}</span>
+                {on ? <CheckIcon size={fs * 1.05} className="text-[#34c759]" /> : <span className="text-white/35">›</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function AndroidAutoUI({ w }) {
+  const fs = w / 560 * 16
+  return (
+    <div className="relative h-full overflow-hidden bg-[#1b1f1f] text-white" style={{ fontSize: fs }}>
+      <MapArt dark className="absolute inset-0" />
+      {/* navigation card, top left */}
+      <div className="absolute left-[0.7em] top-[0.7em] w-[42%] rounded-[1em] bg-[#202124]/95 p-[0.8em] shadow-xl">
+        <p className="text-[0.62em] uppercase tracking-wide text-white/55">Next job · {JOB.who}</p>
+        <p className="mt-[0.15em] truncate text-[0.95em] font-semibold">{JOB.where}</p>
+        <p className="text-[0.75em] text-[#8ab4f8]">{JOB.mins} min · 6.2 mi · A338</p>
+        <div className="mt-[0.6em] flex items-center justify-center gap-[0.5em] rounded-full bg-[#8ab4f8] py-[0.5em] text-[0.85em] font-bold text-[#0b1f3a]"><CompassIcon size={fs} /> Navigate</div>
+      </div>
+      {/* TurnUp card, right */}
+      <div className="absolute bottom-[3.1em] right-[0.7em] top-[0.7em] w-[40%] rounded-[1em] bg-[#202124]/95 p-[0.7em] shadow-xl">
+        <p className="text-[0.7em] text-white/60">TurnUp</p>
+        <div className="mt-[0.5em] grid grid-cols-2 gap-[0.5em]">
+          {STAGES.map(({ label, bg, Icon, on }) => (
+            <div key={label} className="flex flex-col items-center justify-center rounded-[0.8em] py-[0.7em] text-center" style={{ background: on ? bg : '#2b2f33', outline: on ? '0.15em solid rgba(255,255,255,.5)' : 'none' }}>
+              <Icon size={fs * 1.3} /><p className="mt-[0.3em] text-[0.78em] font-semibold leading-tight">{label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* bottom bar */}
+      <nav className="absolute inset-x-0 bottom-0 flex h-[2.6em] items-center justify-between bg-[#202124] px-[0.9em] text-[0.7em] text-white/70">
+        <span className="flex items-center gap-[0.9em]"><span className="grid h-[1.7em] w-[1.7em] grid-cols-2 gap-[0.15em]"><i className="rounded-sm bg-white/70" /><i className="rounded-sm bg-white/70" /><i className="rounded-sm bg-white/70" /><i className="rounded-sm bg-white/70" /></span><span className="h-[1.7em] w-[1.7em] rounded-full bg-[#8ab4f8]" /></span>
+        <span>08:42 · ▂▄▆ · 5G · 86%</span>
+      </nav>
+    </div>
+  )
+}
+
+/**
+ * The cab. Right-hand drive: wheel on the right, head unit centre-left of
+ * the driver, the road ahead through the glass. The screen is an HTML box
+ * positioned over the SVG so the UI stays crisp text, not a picture of text.
+ */
+export default function CarDisplay({ vehicle = 'van', ui = 'carplay', width = 560, className = '' }) {
+  const van = vehicle === 'van'
+  const H = Math.round(width * 0.78)
+  // screen box, as fractions of the scene
+  const scr = van ? { l: 0.10, t: 0.37, w: 0.52, h: 0.30 } : { l: 0.08, t: 0.44, w: 0.56, h: 0.27 }
+  const sw = width * scr.w
+  return (
+    <div className={`relative shrink-0 ${className}`} style={{ width, height: H }}>
+      <svg viewBox="0 0 560 437" className="absolute inset-0 h-full w-full" aria-hidden="true">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#9fc3e6" /><stop offset="1" stopColor="#e9f0f5" /></linearGradient>
+          <linearGradient id="dash" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2a2d31" /><stop offset="1" stopColor="#141618" /></linearGradient>
+          <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6b7078" /><stop offset="1" stopColor="#3f434a" /></linearGradient>
+        </defs>
+        {/* windscreen: sky, hedges, road */}
+        <rect width="560" height="437" fill="url(#sky)" />
+        <path d={van ? 'M0 150 Q 140 120 280 135 T 560 140 V 200 H 0 Z' : 'M0 170 Q 140 140 280 155 T 560 160 V 220 H 0 Z'} fill="#5f8a55" />
+        <path d="M250 200 L310 200 L560 437 L0 437 Z" fill="url(#road)" />
+        <path d="M280 200 L280 437" stroke="#e8e2c8" strokeWidth="4" strokeDasharray="14 22" />
+        {/* A-pillars and glass edge */}
+        <path d="M0 0 L70 0 L22 437 L0 437 Z" fill="#111317" />
+        <path d="M560 0 L490 0 L538 437 L560 437 Z" fill="#111317" />
+        {/* dash */}
+        <path d={van
+          ? 'M0 437 V 250 Q 90 225 200 232 Q 330 225 560 262 V 437 Z'
+          : 'M0 437 V 300 Q 120 262 280 268 Q 440 262 560 300 V 437 Z'} fill="url(#dash)" />
+        {van && <rect x="0" y="250" width="560" height="6" fill="#0d0f11" opacity=".6" />}
+        {/* vents */}
+        {[0.03, 0.70].map((x, i) => (
+          <g key={i} transform={`translate(${x * 560} ${van ? 268 : 306})`}><rect width="34" height="12" rx="3" fill="#0b0c0e" /><rect x="4" y="3" width="26" height="2" fill="#3a3f45" /><rect x="4" y="7" width="26" height="2" fill="#3a3f45" /></g>
+        ))}
+        {/* instrument binnacle, right */}
+        <path d={van ? 'M392 258 Q 468 236 544 262 L 536 300 Q 468 282 400 300 Z' : 'M392 292 Q 468 272 544 298 L 536 330 Q 468 312 400 330 Z'} fill="#0b0c0e" />
+        <circle cx="440" cy={van ? 280 : 312} r="9" fill="none" stroke="#5ec6ff" strokeWidth="2" /><circle cx="496" cy={van ? 280 : 312} r="9" fill="none" stroke="#5ec6ff" strokeWidth="2" />
+        {/* steering wheel, right-hand drive */}
+        <g transform={van ? 'translate(468 392)' : 'translate(468 410)'}>
+          <ellipse rx="118" ry={van ? 86 : 70} fill="none" stroke="#1a1c1f" strokeWidth="22" />
+          <ellipse rx="118" ry={van ? 86 : 70} fill="none" stroke="#2c3034" strokeWidth="14" />
+          <path d={van ? 'M-104 20 L-28 8 M104 20 L28 8 M0 84 L0 16' : 'M-104 16 L-28 6 M104 16 L28 6 M0 68 L0 14'} stroke="#2c3034" strokeWidth="18" strokeLinecap="round" />
+          <circle r="26" fill="#202327" /><circle r="7" fill="#2e6b4b" />
+        </g>
+        {/* head unit bezel */}
+        <rect x={scr.l * 560 - 8} y={scr.t * 437 - 8} width={scr.w * 560 + 16} height={scr.h * 437 + 16} rx="12" fill="#07080a" stroke="#2b2f34" strokeWidth="2" />
+      </svg>
+      <div className="absolute overflow-hidden rounded-[6px] bg-black" style={{ left: scr.l * width, top: scr.t * H, width: sw, height: scr.h * H }}>
+        {ui === 'android' ? <AndroidAutoUI w={sw} /> : <CarPlayUI w={sw} />}
       </div>
     </div>
   )

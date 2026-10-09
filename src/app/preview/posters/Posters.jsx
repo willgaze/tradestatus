@@ -41,9 +41,9 @@ export function Poster({ p, scale = 1 }) {
         <p className="whitespace-pre-line text-[3.05em] font-bold leading-[1.02] tracking-[-0.035em]">{p.head}</p>
         <p className="mt-[1.1em] max-w-[17em] text-[1.22em] leading-snug text-white/82">{p.sub}</p>
       </div>
-      <div className={`absolute inset-x-0 flex justify-center ${p.wallet ? 'inset-y-0 items-start pt-[17em]' : p.car ? 'inset-y-0 items-center pt-[10em]' : 'bottom-0'}`}>
+      <div className={`absolute inset-x-0 flex justify-center ${p.wallet ? 'inset-y-0 items-start pt-[17em]' : p.car ? 'inset-y-0 items-end overflow-hidden' : 'bottom-0'}`}>
         {p.car ? (
-          <CarDisplay variant={p.car} width={560 * scale} />
+          <CarDisplay vehicle={p.car.vehicle} ui={p.car.ui} width={820 * scale} className="-mb-[3em]" />
         ) : p.wallet ? (
           <div className="w-[36em] scale-[1.18]"><WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" className="!rounded-[2.4em] !bg-transparent" /></div>
         ) : (

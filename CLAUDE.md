@@ -447,6 +447,18 @@ So: **columns on an existing table are not shippable until the migration has
 run.** Either run it first, or hold the commit. Do not reason from "the push
 table shipped fine" — that was a new table, which is the other case.
 
+### New tables are created by the build
+
+Since 9 Oct 2026 `npm run build` runs `prisma db push` before `next build` (see
+package.json). An additive change — a new table, a new nullable column — lands
+in the live database as part of the deploy, which is how `Sm8Link` and
+`Sm8Event` got there. A destructive change is refused by `db push` without
+`--accept-data-loss`, the step is allowed to fail (`|| true`), and the build
+carries on; so a destructive change still needs a human and still needs the
+check below. The v1.9.0 rule stands: a NEW COLUMN that code reads is only safe
+because the build now creates it first — if the push step ever fails, every
+link is down. Read the build log.
+
 ### The check after any deploy that touches the schema
 
 One curl, and it is not optional:

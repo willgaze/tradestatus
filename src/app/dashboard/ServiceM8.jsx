@@ -67,10 +67,14 @@ export default function ServiceM8({ onChanged }) {
         <div className="px-6 pb-6">
           {!s.configured ? (
             <div className="r-inner px-4 py-3.5 text-[14px]" style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
-              <p className="font-semibold">Connect it in one go.</p>
-              <p className="mt-1">In ServiceM8: Settings → API Keys → create one. Then on your Mac, in the repo:</p>
-              <pre className="mt-2 overflow-x-auto rounded-xl bg-black/80 px-3 py-2 font-mono text-[12px] text-white">bash scripts/connect-servicem8.sh</pre>
-              <p className="mt-2 muted">It stores the key and a webhook secret in Vercel, creates the two tables, redeploys, and comes back here to switch on listening. Until then this panel does nothing and nothing else is affected.</p>
+              <p className="font-semibold">Connect it: one setting in Vercel.</p>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-5">
+                <li>In ServiceM8: <b>Settings → API Keys → Create</b>. Copy the key.</li>
+                <li>Open <a className="underline" href="https://vercel.com/willgazes-projects/turnup/settings/environment-variables" target="_blank" rel="noreferrer">Vercel → turnup → Environment Variables</a>. Press <b>Add</b>: Key <code className="font-mono">SM8_API_KEY</code>, Value the key, Environment <b>Production</b>. Save.</li>
+                <li>Open <a className="underline" href="https://vercel.com/willgazes-projects/turnup/deployments" target="_blank" rel="noreferrer">Deployments</a> → <b>⋯</b> on the top one → <b>Redeploy</b>. About a minute.</li>
+                <li>Come back here and press <b>Start listening</b>.</li>
+              </ol>
+              <p className="mt-2 muted">That is all. The webhook secret is derived, and the tables are created on deploy. Until the key is in, this panel does nothing and nothing else is affected.</p>
             </div>
           ) : (
             <>

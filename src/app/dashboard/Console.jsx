@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
 import Mark from '@/components/Mark'
@@ -195,7 +196,10 @@ export default function Console() {
       <div className="stage-wash" aria-hidden="true" />
       <main className="relative z-10 mx-auto max-w-3xl px-4 pb-16 pt-safe">
       <div className="flex items-center justify-between pt-2">
-        <Mark className="h-7 w-auto" id="dash" />
+        <Link href="/" aria-label="TurnUp home" className="inline-flex min-h-[44px] items-center gap-2 pr-2">
+          <Mark className="h-7 w-auto" id="dash" />
+          <span className="text-[17px] font-bold tracking-[-0.02em]">TurnUp</span>
+        </Link>
         <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
                 className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
       </div>

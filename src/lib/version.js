@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.15.1'
+export const VERSION = '1.15.2'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.15.2', date: '2026-10-09', notes: [
+    'CarPlay in the van and Android Auto in the car, drawn from the driver\u2019s seat: the map, Navigate to the address, the four stage buttons',
+    'The TurnUp mark on the dashboard goes to the homepage, and the homepage\u2019s Sign in comes back',
+    'ServiceM8 needs one setting in Vercel now: the webhook secret is derived and new tables are created on deploy',
+  ] },
   { version: '1.15.1', date: '2026-10-09', notes: [
     'Move my sign-in: the address you are signed in on vouches for you on the new one \u2014 no password, 90 seconds, this browser only',
     'The sign-in page says plainly that Face ID is per address, and points at the move',

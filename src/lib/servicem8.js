@@ -24,6 +24,7 @@
 import { prisma } from './prisma'
 import { notifyStage } from './push'
 import { cleanText } from './clean-text'
+import { createHmac } from 'node:crypto'
 
 // SM8_API_BASE exists so a test can stand a fake ServiceM8 up on localhost.
 // Production never sets it.
@@ -38,7 +39,15 @@ const TIMEOUT_MS = 6_000     // ServiceM8 wants a 2xx inside 10s; leave room
 const AWAY_NOTE = 'Away from site for now — back to finish.'
 
 export const sm8Configured = () => Boolean(process.env.SM8_API_KEY)
-export const webhookToken = () => process.env.SM8_WEBHOOK_TOKEN || null
+// The webhook URL's secret. Set SM8_WEBHOOK_TOKEN if you want to choose it;
+// otherwise it is derived from JWT_SECRET, so connecting ServiceM8 needs one
+// env var, not two. Changing JWT_SECRET therefore changes the URL — press
+// Start listening again after.
+export const webhookToken = () => {
+  if (process.env.SM8_WEBHOOK_TOKEN) return process.env.SM8_WEBHOOK_TOKEN
+  if (!process.env.JWT_SECRET) return null
+  return createHmac('sha256', process.env.JWT_SECRET).update('sm8-webhook').digest('hex').slice(0, 40)
+}
 
 const UUID = /^[0-9a-f-]{32,36}$/i
 const isNull = (d) => !d || String(d).startsWith('0000-00-00')
