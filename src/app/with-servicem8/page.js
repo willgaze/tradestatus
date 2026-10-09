@@ -116,14 +116,14 @@ export default function WithServiceM8() {
           <h2 className="text-[24px] font-bold tracking-[-0.02em]">The one line</h2>
           <p className="mt-2 text-[16px] muted">The link is your ServiceM8 job number, which every template already knows. The number alone shows nobody anything: the customer types the last four digits of the mobile the text came to, once.</p>
           <ol className="mt-5 grid gap-4">
-            <Step n="1" title="Edit your booking confirmation template" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="template" host={host} /><Drawn /></div>}>
-              <a href="https://go.servicem8.com/" target="_blank" rel="noopener">ServiceM8 online</a> → Settings → <b>SMS Templates</b> → edit <b>Booking Confirmation</b> (or add one). Replace the message with this, or add the last sentence to yours:
-              <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-black/10 bg-white/60 p-3.5 font-mono text-[13px] leading-snug text-slate-800 dark:bg-black/30 dark:text-slate-100">{SM8_LINE(host)}</pre>
-              The curly fields are ServiceM8’s own and fill themselves in. Keep the link exactly as written. <b>{'{job.next_booking_time}'}</b> prints a window, not a minute, when the booking is made in an allocation window or your account has an Arrival Window set; the card shows the same window.
+            <Step n="1" title="Open the Booking Confirmation automation" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="automation" /><Drawn /></div>}>
+              <a href="https://go.servicem8.com/" target="_blank" rel="noopener">ServiceM8 online</a> → Settings → <b>Automations</b> → <b>Booking Confirmation</b> → switch on → Edit. On the <b>Method</b> step tick <b>Send text message confirmation</b>, and <b>Send email confirmation</b> too if you email.
+              <span className="mt-1.5 block text-[13px]">The automation keeps its own message, with its own field names. It does not read your SMS Templates list.</span>
             </Step>
-            <Step n="2" title="Make ServiceM8 send it when you book" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="automation" /><Drawn /></div>}>
-              Settings → <b>Automations</b> → <b>Booking Confirmation</b> → switch on, Edit, tick <b>Send text message confirmation</b> and pick that template. Tick <b>Send email confirmation</b> too if you email: put the same link in your <b>Booking Confirmation</b> email template (Settings → Email Templates), as a line of its own so it is tappable:
-              <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-black/10 bg-white/60 p-3.5 font-mono text-[13px] leading-snug text-slate-800 dark:bg-black/30 dark:text-slate-100">{`Follow the job as the day goes — it says when I set off, when I arrive and when I am done:\nhttps://${host}/j/{job.generated_job_id}`}</pre>
+            <Step n="2" title="Put the line in the Message step" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="template" host={host} /><Drawn /></div>}>
+              On the <b>Message</b> step, replace the text message with:
+              <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-black/10 bg-white/60 p-3.5 font-mono text-[13px] leading-snug text-slate-800 dark:bg-black/30 dark:text-slate-100">{`Hi {recipient_first}, your booking with {vendor.name} is confirmed for {booking_date}, arriving {booking_time}. Follow the job here — it says when I set off, when I arrive and when I am done:\nhttps://${host}/j/{job.generated_job_id}`}</pre>
+              Use <b>Insert Field</b> for the job number rather than typing it: pick the Job Number entry and let it write the field, then put the link around it. In the email message, the same link on a line of its own. Delete ServiceM8’s line about texting an estimated time of arrival: the page does that job without promising a minute.
             </Step>
             <Step n="3" title="Tick it once when you book" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="booking" /><Drawn /></div>}>
               When you schedule a job from the job card (Schedule on the desktop, Add Booking on the app), tick <b>Send Booking Confirmation</b>. ServiceM8 remembers the tick.
