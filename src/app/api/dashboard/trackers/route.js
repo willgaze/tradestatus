@@ -4,7 +4,7 @@ import { requireOperator } from '@/lib/operator-auth'
 import { generateCode, isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
-import { sm8Configured, fetchJob, fetchJobContact, syncTracker } from '@/lib/servicem8'
+import { sm8Configured, fetchJob, fetchJobContact, syncTracker, fieldsFromJob } from '@/lib/servicem8'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,14 +76,7 @@ export async function POST(request) {
       const job = await fetchJob({ number: body.sm8JobNumber }).catch(() => null)
       if (!job) return NextResponse.json({ error: 'sm8_job_not_found' }, { status: 404 })
       const contact = await fetchJobContact(job.uuid).catch(() => null)
-      fromSm8 = {
-        externalId: job.uuid,
-        jobRef: String(job.generated_job_id || body.sm8JobNumber),
-        customerName: [contact?.first, contact?.last].filter(Boolean).join(' ') || null,
-        customerPhone: contact?.mobile || contact?.phone || null,
-        jobAddress: String(job.job_address || '').replace(/\s*\n\s*/g, ', ') || null,
-        jobSummary: String(job.job_description || '').split('\n')[0].slice(0, 120) || null,
-      }
+      fromSm8 = fieldsFromJob(job, contact)
     }
 
     const stageNote = cleanText(body.stageNote)

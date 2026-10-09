@@ -180,6 +180,13 @@ export default function Home() {
         <section className="mt-14">
           <h2 className="text-[26px] font-bold tracking-[-0.02em]">Everything it does today</h2>
           <p className="mt-2 text-[17px] muted">Live now, on every job. Nothing on this list is a promise.</p>
+          <Link href="/with-servicem8" className="glass r-outer mt-4 flex items-center justify-between gap-3 px-4 py-3.5">
+            <span className="min-w-0">
+              <span className="block text-[16px] font-semibold leading-tight">Using it with ServiceM8</span>
+              <span className="mt-0.5 block text-[14px] leading-snug muted">One line in your booking text, and the card follows the job. Setup and a ten-minute test.</span>
+            </span>
+            <span className="shrink-0 text-[15px] font-medium" style={{ color: 'var(--tint)' }}>Read →</span>
+          </Link>
           <ul className="mt-5 grid gap-2 sm:grid-cols-2">
             {PHASES.flatMap((ph) => ph.items).filter((it) => it.state === 'live').map((it) => (
               <li key={it.key} className="glass r-outer flex items-start gap-3 px-4 py-3.5">
@@ -253,7 +260,7 @@ export default function Home() {
         <footer className="mt-12 text-center">
           <Mark className="mx-auto h-6 w-auto opacity-60" id="foot" />
           <p className="mt-2 text-[13px]" style={{ color: 'var(--label-3)' }}>
-            TurnUp — live job tracking for trades
+            TurnUp — live job tracking for trades · <Link href="/with-servicem8" className="underline">With ServiceM8</Link>
           </p>
         </footer>
       </main>

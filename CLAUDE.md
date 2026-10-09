@@ -475,6 +475,20 @@ perfectly good status code.
 Checking the theme colour changed is not this check. The theme comes from a
 constant in the bundle and is green while the database is on fire.
 
+## The link ServiceM8 sends (`/j/<job number>`)
+
+ServiceM8 templates can merge the job number and the mobile, and nothing
+unguessable (the field list has no uuid or link; checked 9 Oct 2026). So the
+booking text carries `/j/{job.generated_job_id}`, and that page shows nothing
+until the visitor gives the last four digits of the job contact's mobile or
+phone (`phoneMatches` in `src/lib/servicem8.js`). `/j/<number>/<mobile>` skips
+the question when the mobile matches, which a template could write too, but
+a mobile saved with spaces ends the link early in an SMS, so the page
+recommends the plain form. Ten misses on one number rest it for fifteen
+minutes, counted in `Sm8Event` (`claim.miss`) so it holds across instances. The tracker is created on first proof
+(`findOrCreateForJob`), linked at birth and synced. `/with-servicem8` is the
+public how-to and must stay true to what the connector does today.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.

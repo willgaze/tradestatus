@@ -1,21 +1,18 @@
-# v1.19.0 — Teal
+# v1.19.0 — Indigo
 
-**2026-10-09** · background `#f2f9f9` · accent `#1f6f72`
+**2026-10-09** · background `#f5f5fc` · accent `#463a94`
 
-- The plan has a spine: three moats, six moves with gates, five rivals and the move that beats each, seven regulated wedges
-- Pricing, third shape of the day: free for every sender, enterprise pays per card. The regulator is why they pay
-- Seventeen sections. The ask for the friend is one line
-
-### plan-moats
-
-![plan-moats](./plan-moats.webp)
+- Pricing turned round: the card and the job are free, no cap. Activation charge and a small yearly fee once a trade is a month in and past a jobs threshold, card details on file
+- Three bundles on top: Get paid, Look the part, Run the day. Or a tier. Monthly or weekly
+- Get paid carries a small margin on top of the processor. Referrals earn free jobs before activation
+- Five pricing decisions open on the plan; the calculator stacks activations, annual fees, bundles and payments margin
 
 ### plan-pricing
 
 ![plan-pricing](./plan-pricing.webp)
 
-### plan-rivals
+### plan-financials
 
-![plan-rivals](./plan-rivals.webp)
+![plan-financials](./plan-financials.webp)
 
 The customer, wallet and dashboard shots are not in this folder: this build was made away from a server with a tracking code, and the next capture fills them in.

@@ -24,6 +24,7 @@
 import { prisma } from './prisma'
 import { notifyStage } from './push'
 import { cleanText } from './clean-text'
+import { generateCode } from './trade-status'
 import { createHmac } from 'node:crypto'
 
 // SM8_API_BASE exists so a test can stand a fake ServiceM8 up on localhost.
@@ -100,6 +101,35 @@ export async function fetchActivities(jobUuid) {
 }
 
 /** The person on the job, for pre-filling a new tracker. */
+/**
+ * ServiceM8 stamps times in the account's local time, with no offset:
+ * "2026-10-16 09:00:00" is nine in the morning in the UK. On a server that
+ * runs in UTC, new Date() on that string is an hour out all summer. So the
+ * London offset for that instant is worked out and applied.
+ */
+export function londonDate(stamp) {
+  const m = String(stamp || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/)
+  if (!m) return null
+  const [, Y, M, D, h, mi, sec] = m.map(Number)
+  const guess = Date.UTC(Y, M - 1, D, h, mi, sec || 0)
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'shortOffset' }).formatToParts(new Date(guess))
+  const tz = parts.find((p) => p.type === 'timeZoneName')?.value || 'GMT'
+  const off = /([+-])(\d{1,2})(?::?(\d{2}))?/.exec(tz)
+  const minutes = off ? (off[1] === '-' ? -1 : 1) * (Number(off[2]) * 60 + Number(off[3] || 0)) : 0
+  return new Date(guess - minutes * 60_000)
+}
+
+/** The next booking on a job: the earliest scheduled visit that has not ended. */
+export async function fetchNextBooking(jobUuid) {
+  const rows = await api(`jobactivity.json?${filter('job_uuid', jobUuid)}`)
+  const now = Date.now() - 6 * 3600_000 // a visit that started this morning still counts
+  return (Array.isArray(rows) ? rows : [])
+    .filter((a) => Number(a.active ?? 1) === 1 && Number(a.activity_was_scheduled ?? 0) === 1 && !isNull(a.start_date))
+    .map((a) => ({ start: londonDate(a.start_date), end: isNull(a.end_date) ? null : londonDate(a.end_date) }))
+    .filter((b) => b.start && (b.end || b.start).getTime() >= now)
+    .sort((a, b) => a.start - b.start)[0] || null
+}
+
 export async function fetchJobContact(jobUuid) {
   const rows = await api(`jobcontact.json?${filter('job_uuid', jobUuid)}`)
   const list = Array.isArray(rows) ? rows.filter((c) => Number(c.active ?? 1) === 1) : []
@@ -136,10 +166,26 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
   const jobUuid = tracker.externalId
   if (!jobUuid || !UUID.test(jobUuid)) return { outcome: 'unlinked' }
   try {
-    const [job, activities] = await Promise.all([fetchJob({ uuid: jobUuid }), fetchActivities(jobUuid)])
+    const [job, activities, booking] = await Promise.all([fetchJob({ uuid: jobUuid }), fetchActivities(jobUuid), fetchNextBooking(jobUuid).catch(() => null)])
     if (!job) { await log({ event: source, jobUuid, tradeStatusId: tracker.id, outcome: 'job_missing' }); return { outcome: 'job_missing' } }
     const { stage, why, note } = deriveStage({ job, activities, current: tracker.stage })
     let outcome = 'unchanged'
+
+    // The booking window travels too. A booking in ServiceM8 is an arrangement
+    // the trade made with the customer, so it lands as AGREED by the trade —
+    // "Between 09:00 and 11:00" on the card, the same thing the confirmation
+    // text said. Left alone while the customer has a counter-offer open on
+    // TurnUp: ServiceM8 does not know about that conversation.
+    const same = (a, b) => (a ? new Date(a).getTime() : 0) === (b ? b.getTime() : 0)
+    if (booking && tracker.stage !== 'DONE' && !(tracker.windowState === 'PROPOSED' && tracker.windowBy === 'CUSTOMER')
+        && !(same(tracker.windowStart, booking.start) && same(tracker.windowEnd, booking.end) && tracker.windowState === 'AGREED')) {
+      await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
+        scheduledFor: booking.start, windowStart: booking.start, windowEnd: booking.end,
+        windowState: 'AGREED', windowBy: 'TRADE', windowAt: new Date(),
+      } })
+      outcome = 'window'
+    }
+
     if (stage !== tracker.stage) {
       const keep = tracker.stageNote === AWAY_NOTE ? null : tracker.stageNote
       const data = { stage, stageNote: note ? cleanText(note) : keep, events: { create: { stage, note: `From ServiceM8: ${why}` } } }
@@ -149,7 +195,7 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
       else if (stage === 'BOOKED') data.arrivingAt = null
       const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data })
       notifyStage(updated, stage).catch(() => {})
-      outcome = `moved:${stage}`
+      outcome = outcome === 'window' ? `moved:${stage}+window` : `moved:${stage}`
     }
     await prisma.sm8Link.upsert({
       where: { tradeStatusId: tracker.id },
@@ -163,6 +209,67 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
     await log({ event: source, jobUuid, tradeStatusId: tracker.id, outcome })
     return { outcome }
   }
+}
+
+/* ------------------------------------------------------------------------ */
+/* A tracker from a job                                                      */
+/* ------------------------------------------------------------------------ */
+
+/** The tracker fields a ServiceM8 job and its contact fill in. */
+export function fieldsFromJob(job, contact) {
+  return {
+    externalId: job.uuid,
+    jobRef: job.generated_job_id ? String(job.generated_job_id) : null,
+    customerName: [contact?.first, contact?.last].filter(Boolean).join(' ') || null,
+    customerPhone: contact?.mobile || contact?.phone || null,
+    jobAddress: String(job.job_address || '').replace(/\s*\n\s*/g, ', ') || null,
+    jobSummary: String(job.job_description || '').split('\n')[0].slice(0, 120) || null,
+  }
+}
+
+/** The digits of a phone number, so "07979 350 201" and "+447979350201" agree on their tail. */
+export const phoneDigits = (v) => String(v || '').replace(/\D/g, '')
+
+/**
+ * Does what the customer typed belong to this job's contact? Accepts the last
+ * four digits, or the whole number in any spacing. Checks mobile and landline.
+ */
+export function phoneMatches(contact, given) {
+  const g = phoneDigits(given)
+  if (g.length < 4) return false
+  return [contact?.mobile, contact?.phone].map(phoneDigits).filter((d) => d.length >= 4).some((d) =>
+    g.length <= 4 ? d.endsWith(g) : d.slice(-10) === g.slice(-10))
+  // Why the tail: a number stored as 01264 502027 and typed as +441264502027
+  // share their last ten digits and nothing before.
+}
+
+/**
+ * The tracker that follows this job, made if it does not exist yet. This is
+ * how a link ServiceM8 wrote into its own booking text becomes a card: the
+ * customer taps it, the job is looked up, and the tracker appears, linked at
+ * birth and synced straight away so it shows the job's real state.
+ */
+export async function findOrCreateForJob(job, contact) {
+  const existing = await prisma.tradeStatus.findFirst({ where: { externalId: job.uuid, isActive: true } })
+  if (existing) return { tracker: existing, created: false }
+  const fields = fieldsFromJob(job, contact)
+  const stage = job.status === 'Completed' ? 'DONE' : 'BOOKED'
+  let tracker = null
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      tracker = await prisma.tradeStatus.create({
+        data: { ...fields, stage, code: generateCode(), events: { create: { stage, note: 'From ServiceM8: booked' } } },
+      })
+      break
+    } catch (error) {
+      const collided = error?.code === 'P2002' && String(error?.meta?.target ?? '').includes('code')
+      if (!collided) throw error
+    }
+  }
+  if (!tracker) throw new Error('code_collision')
+  await syncTracker(tracker, { source: 'sync.link' })
+  const fresh = await prisma.tradeStatus.findUnique({ where: { id: tracker.id } })
+  return { tracker: fresh || tracker, created: true }
 }
 
 /** Find the tracker following a ServiceM8 job uuid, then sync it. */

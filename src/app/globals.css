@@ -314,6 +314,46 @@ body {
 
   .segment:active { transform: scale(0.95); }
 
+  /* The stage control: one track, five equal cells, icon over a short label.
+     Five separate pills in 390px wrapped "On way" onto two lines and clipped
+     the ends; a track keeps every cell the same size and the labels on one
+     line at any width. The chosen cell is the only filled thing on the card. */
+  .stages {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgb(var(--glass-line) / 0.09);
+  }
+  .stage-seg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 3.5rem;
+    min-width: 0;
+    padding: 0.4rem 0.1rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--mts-text);
+    opacity: 0.72;
+    transition: transform 220ms var(--spring), background 220ms var(--spring), opacity 220ms var(--spring);
+  }
+  .stage-seg:active { transform: scale(0.95); }
+  .stage-seg-on {
+    opacity: 1;
+    background: var(--tint);
+    color: #fff;
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--tint) 75%, transparent);
+  }
+
+
   .segment-on {
     background: var(--tint);
     color: #fff;

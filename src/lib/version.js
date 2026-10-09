@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.19.0'
+export const VERSION = '1.20.0'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 13
+export const THEME_INDEX = 14
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,27 +48,46 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.19.0', date: '2026-10-09', notes: [
+  { version: '1.20.0', date: '2026-10-09', notes: [
     'The plan has a spine: three moats a big firm cannot build in a sprint, six moves in order with a gate each, five rivals with the move that beats each, and seven sectors where a regulator already prices a missed visit.',
     'Pricing turned round a third time, and this one holds: free for every sender, homes, trades and small firms, no cap and no activation. An enterprise pays per card. Why they pay is Ofgem, Ofcom, Ofwat and the Ombudsman, not the card.',
     'Seventeen sections now. The ask for the friend is one line: read it and say what is wrong.',
   ] },
-  { version: '1.18.0', date: '2026-10-09', notes: [
+  { version: '1.19.0', date: '2026-10-09', notes: [
     'Pricing turned round: the card and the job are free with no cap. A trade who is a month in and past a number of jobs pays a small activation charge and a small yearly one, card details on file. Everything else is a bundle (Get paid, Look the part, Run the day) or a tier, paid monthly or weekly.',
     'Get paid takes the payment on the job, with a small margin on top of the processor. Referrals earn free jobs before activation, the Dropbox way.',
     'Five pricing decisions open on the page: the jobs threshold, the activation charge, the yearly fee, the payments margin, the referral reward. The calculator stacks all four revenue lines.',
   ] },
-  { version: '1.17.1', date: '2026-10-09', notes: [
+  { version: '1.18.1', date: '2026-10-09', notes: [
     'Two more decisions landed: Home is free to five cards a month, and Trade is five pounds a month. The tiles, the chips and the calculator follow.',
   ] },
-  { version: '1.17.0', date: '2026-10-09', notes: [
+  { version: '1.18.0', date: '2026-10-09', notes: [
     'The plan grew up: fifteen sections, a wallet-card page, a timeline read from this changelog, and an ask written for one person who builds apps.',
     'Pricing has a shape: Home is free forever up to a number of cards a month, Trade and Crew pay for the trade features, Partners is quoted. The cap and the Trade price are decisions on the page, and nothing is charged yet.',
     'A share link: /plan/<code> opens the plan read-only with no sign-in. Copy it from the rail. Set PLAN_SHARE_CODE to off to stop it.',
     'The financials chart drew no bars and the big figures overflowed their tiles. Fixed.',
   ] },
-  { version: '1.16.1', date: '2026-10-09', notes: [
+  { version: '1.17.2', date: '2026-10-09', notes: [
     'Four decisions landed on the plan: free while customer zero, a new Ltd will own it, RIBA is the first template after ServiceM8, and raising money stays undecided.',
+  { version: '1.17.1', date: '2026-10-09', notes: [
+    'A card that follows a ServiceM8 job now carries the booking window too: "Between 09:00 and 11:00" from the ServiceM8 booking, agreed, and moved when the booking moves. ServiceM8 stamps times in UK local time with no offset, so they are read as Europe/London rather than trusted as UTC.',
+  ] },
+  { version: '1.17.0', date: '2026-10-09', notes: [
+    'Paid on the same page: a new idea on the roadmap and a frame under Where it is going. When the card says Job done, the bill is under it and Apple Pay settles it there; the receipt stays with the job.',
+    'The trade-side homepage frames are re-captured with the new stage control.',
+  ] },
+  { version: '1.16.3', date: '2026-10-09', notes: [
+    'The stage control on a job card is one track with five equal cells, icon over a short label, instead of five pills that wrapped and clipped at phone width. Will: "the buttons lose their integrity".',
+  ] },
+  { version: '1.16.2', date: '2026-10-09', notes: [
+    '/with-servicem8 has a screen beside every sentence: real captures where the screen is TurnUp\'s, drawings of ServiceM8\'s own screens where it is theirs, and a What you get row at the top.',
+    'A dashboard card that follows a ServiceM8 job now says so.',
+  ] },
+  { version: '1.16.1', date: '2026-10-09', notes: [
+    'The link ServiceM8 can send itself. /j/<job number> goes in the booking confirmation template; the customer proves it is their booking with the last four digits of their mobile, once, and the card appears on the dashboard already linked to the job.',
+    '/with-servicem8: the page that says what the connector does in its current form, the exact template line, and a ten-minute test. Linked from the homepage.',
+    'Two ideas logged from Will: a diary on every job, and WhatsApp as the place bookings actually arrive.',
+  ] },
   ] },
   { version: '1.16.0', date: '2026-10-09', notes: [
     'The business plan lives here now, at /plan, behind the same sign-in as Jobs. Twelve sections, arrow keys to move, P to present. Every figure says whether it is a fact with a source, a working estimate, or a decision only the owner can make.',
