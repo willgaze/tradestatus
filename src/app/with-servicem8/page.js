@@ -57,7 +57,7 @@ function Step({ n, title, visual, children }) {
 }
 
 const STAGES = [
-  ['Booked in', 'booked', 'The job is a Work Order in ServiceM8 and the confirmation text has gone. The link works from that moment.', 'sms'],
+  ['Booked in', 'booked', 'The job is a Work Order in ServiceM8 and the confirmation text has gone. The card carries the booking window from ServiceM8 — “Between 09:00 and 11:00”, never a time on the dot — and follows it if you move the booking.', 'sms'],
   ['On my way', 'onway', 'Your tap, on the TurnUp dashboard. ServiceM8 has no event for setting off that the API exposes, so this one stays yours for now.', 'dashboard-stage'],
   ['On site', 'onsite', 'You check in on the ServiceM8 app. TurnUp hears it and moves the card.', 'checkin'],
   ['Paused', 'paused', 'You check out before the job is complete. The card says you are away from site and coming back.', 'checkout'],
@@ -119,7 +119,7 @@ export default function WithServiceM8() {
             <Step n="1" title="Edit your booking confirmation template" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="template" host={host} /><Drawn /></div>}>
               <a href="https://go.servicem8.com/" target="_blank" rel="noopener">ServiceM8 online</a> → Settings → <b>SMS Templates</b> → edit <b>Booking Confirmation</b> (or add one). Replace the message with this, or add the last sentence to yours:
               <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-black/10 bg-white/60 p-3.5 font-mono text-[13px] leading-snug text-slate-800 dark:bg-black/30 dark:text-slate-100">{SM8_LINE(host)}</pre>
-              The curly fields are ServiceM8’s own and fill themselves in. Keep the link exactly as written.
+              The curly fields are ServiceM8’s own and fill themselves in. Keep the link exactly as written. <b>{'{job.next_booking_time}'}</b> prints a window, not a minute, when the booking is made in an allocation window or your account has an Arrival Window set; the card shows the same window.
             </Step>
             <Step n="2" title="Make ServiceM8 send it when you book" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="automation" /><Drawn /></div>}>
               Settings → <b>Automations</b> → <b>Booking Confirmation</b> → switch on, Edit, choose SMS and pick that template.

@@ -101,6 +101,35 @@ export async function fetchActivities(jobUuid) {
 }
 
 /** The person on the job, for pre-filling a new tracker. */
+/**
+ * ServiceM8 stamps times in the account's local time, with no offset:
+ * "2026-10-16 09:00:00" is nine in the morning in the UK. On a server that
+ * runs in UTC, new Date() on that string is an hour out all summer. So the
+ * London offset for that instant is worked out and applied.
+ */
+export function londonDate(stamp) {
+  const m = String(stamp || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/)
+  if (!m) return null
+  const [, Y, M, D, h, mi, sec] = m.map(Number)
+  const guess = Date.UTC(Y, M - 1, D, h, mi, sec || 0)
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'shortOffset' }).formatToParts(new Date(guess))
+  const tz = parts.find((p) => p.type === 'timeZoneName')?.value || 'GMT'
+  const off = /([+-])(\d{1,2})(?::?(\d{2}))?/.exec(tz)
+  const minutes = off ? (off[1] === '-' ? -1 : 1) * (Number(off[2]) * 60 + Number(off[3] || 0)) : 0
+  return new Date(guess - minutes * 60_000)
+}
+
+/** The next booking on a job: the earliest scheduled visit that has not ended. */
+export async function fetchNextBooking(jobUuid) {
+  const rows = await api(`jobactivity.json?${filter('job_uuid', jobUuid)}`)
+  const now = Date.now() - 6 * 3600_000 // a visit that started this morning still counts
+  return (Array.isArray(rows) ? rows : [])
+    .filter((a) => Number(a.active ?? 1) === 1 && Number(a.activity_was_scheduled ?? 0) === 1 && !isNull(a.start_date))
+    .map((a) => ({ start: londonDate(a.start_date), end: isNull(a.end_date) ? null : londonDate(a.end_date) }))
+    .filter((b) => b.start && (b.end || b.start).getTime() >= now)
+    .sort((a, b) => a.start - b.start)[0] || null
+}
+
 export async function fetchJobContact(jobUuid) {
   const rows = await api(`jobcontact.json?${filter('job_uuid', jobUuid)}`)
   const list = Array.isArray(rows) ? rows.filter((c) => Number(c.active ?? 1) === 1) : []
@@ -137,10 +166,26 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
   const jobUuid = tracker.externalId
   if (!jobUuid || !UUID.test(jobUuid)) return { outcome: 'unlinked' }
   try {
-    const [job, activities] = await Promise.all([fetchJob({ uuid: jobUuid }), fetchActivities(jobUuid)])
+    const [job, activities, booking] = await Promise.all([fetchJob({ uuid: jobUuid }), fetchActivities(jobUuid), fetchNextBooking(jobUuid).catch(() => null)])
     if (!job) { await log({ event: source, jobUuid, tradeStatusId: tracker.id, outcome: 'job_missing' }); return { outcome: 'job_missing' } }
     const { stage, why, note } = deriveStage({ job, activities, current: tracker.stage })
     let outcome = 'unchanged'
+
+    // The booking window travels too. A booking in ServiceM8 is an arrangement
+    // the trade made with the customer, so it lands as AGREED by the trade —
+    // "Between 09:00 and 11:00" on the card, the same thing the confirmation
+    // text said. Left alone while the customer has a counter-offer open on
+    // TurnUp: ServiceM8 does not know about that conversation.
+    const same = (a, b) => (a ? new Date(a).getTime() : 0) === (b ? b.getTime() : 0)
+    if (booking && tracker.stage !== 'DONE' && !(tracker.windowState === 'PROPOSED' && tracker.windowBy === 'CUSTOMER')
+        && !(same(tracker.windowStart, booking.start) && same(tracker.windowEnd, booking.end) && tracker.windowState === 'AGREED')) {
+      await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
+        scheduledFor: booking.start, windowStart: booking.start, windowEnd: booking.end,
+        windowState: 'AGREED', windowBy: 'TRADE', windowAt: new Date(),
+      } })
+      outcome = 'window'
+    }
+
     if (stage !== tracker.stage) {
       const keep = tracker.stageNote === AWAY_NOTE ? null : tracker.stageNote
       const data = { stage, stageNote: note ? cleanText(note) : keep, events: { create: { stage, note: `From ServiceM8: ${why}` } } }
@@ -150,7 +195,7 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
       else if (stage === 'BOOKED') data.arrivingAt = null
       const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data })
       notifyStage(updated, stage).catch(() => {})
-      outcome = `moved:${stage}`
+      outcome = outcome === 'window' ? `moved:${stage}+window` : `moved:${stage}`
     }
     await prisma.sm8Link.upsert({
       where: { tradeStatusId: tracker.id },

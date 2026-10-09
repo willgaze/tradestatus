@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.17.0'
+export const VERSION = '1.17.1'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.17.1', date: '2026-10-09', notes: [
+    'A card that follows a ServiceM8 job now carries the booking window too: "Between 09:00 and 11:00" from the ServiceM8 booking, agreed, and moved when the booking moves. ServiceM8 stamps times in UK local time with no offset, so they are read as Europe/London rather than trusted as UTC.',
+  ] },
   { version: '1.17.0', date: '2026-10-09', notes: [
     'Paid on the same page: a new idea on the roadmap and a frame under Where it is going. When the card says Job done, the bill is under it and Apple Pay settles it there; the receipt stays with the job.',
     'The trade-side homepage frames are re-captured with the new stage control.',
