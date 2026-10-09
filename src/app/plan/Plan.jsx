@@ -20,6 +20,7 @@ import {
  */
 
 const STORAGE_KEY = 'mts-plan-answers'
+const PRICING_DECIDED = DECISIONS.find((d) => d.key === 'pricing').decided
 
 const LIGHT = { green: 'bg-stage-done', amber: 'bg-stage-onway', red: 'bg-stage-paused', gray: 'bg-stage-booked/40' }
 
@@ -266,10 +267,10 @@ function Market() {
 
 function Pricing({ answers, set }) {
   return (
-    <Section kicker="Business model" title="Pricing: not decided">
+    <Section kicker="Business model" title="Free while customer zero, then one of these">
       <div className="grid gap-3 sm:grid-cols-3">
         {PRICING_OPTIONS.map((p) => {
-          const chosen = answers.pricing === p.label
+          const chosen = (answers.pricing || PRICING_DECIDED) === p.label
           return (
             <button key={p.key} type="button" onClick={() => set('pricing', p.label)}
                     className="glass r-inner p-5 text-left"
@@ -284,7 +285,7 @@ function Pricing({ answers, set }) {
           )
         })}
       </div>
-      <div className="mt-4 text-[15px]">Chosen: <b>{answers.pricing || 'nothing yet'}</b></div>
+      <div className="mt-4 text-[15px]">Chosen: <b>{answers.pricing || PRICING_DECIDED}</b> <span className="muted">(decided 9 Oct 2026)</span></div>
     </Section>
   )
 }
@@ -395,9 +396,10 @@ function Decide({ answers, set }) {
           <div key={d.key} className="glass r-inner p-5">
             <Tag kind="decision" />
             <div className="mt-2 text-[18px] font-bold">{d.question}</div>
+            {d.decided && <div className="mt-1 text-[13px] muted">Decided {d.decidedAt}. Tap another to change it on this device.</div>}
             <div className="mt-3 flex flex-wrap gap-2">
               {d.options.map((o) => {
-                const on = answers[d.key] === o
+                const on = (answers[d.key] || d.decided) === o
                 return (
                   <button key={o} type="button" onClick={() => set(d.key, o)}
                           className={`inline-flex min-h-[44px] items-center rounded-full px-4 text-[14px] font-semibold ${on ? 'accent-fill' : 'bg-black/[.06] dark:bg-white/[.08]'}`}>{o}</button>
@@ -446,7 +448,7 @@ export default function Plan() {
   const [i, setI] = useState(0)
   const [present, setPresent] = useState(false)
   const [answers, set] = useAnswers()
-  const decided = DECISIONS.filter((d) => answers[d.key]).length
+  const decided = DECISIONS.filter((d) => answers[d.key] || d.decided).length
 
   useEffect(() => {
     const onKey = (e) => {

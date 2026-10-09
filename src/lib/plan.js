@@ -40,8 +40,8 @@ export const STATUS = [
   { item: 'Van lookup (DVSA MOT API)', state: 'amber', note: 'key applied 2 Oct' },
   { item: 'Apple Wallet card', state: 'amber', note: 'built, needs Apple Developer' },
   { item: 'Paying customers', state: 'red', note: `none, ${TRADE_NAME} is customer zero` },
-  { item: 'Pricing', state: 'red', note: 'not decided' },
-  { item: 'Legal entity', state: 'red', note: 'not decided' },
+  { item: 'Pricing', state: 'amber', note: 'free while customer zero, decided 9 Oct 2026' },
+  { item: 'Legal entity', state: 'amber', note: 'a new Ltd, decided 9 Oct 2026, not yet formed' },
 ]
 
 /** The three things only the owner can move, each with the link and the step. */
@@ -123,7 +123,7 @@ export const TEMPLATES = [
   { process: 'NHS referral', stages: 'Referral to treatment', feed: 'None usable', fit: 'red', call: 'No. Regulated data' },
 ]
 
-/** Pricing is not decided. Three shapes; the figures are calculator placeholders, not prices. */
+/** Decided 9 Oct 2026: free while customer zero. The three shapes below are what comes after, and the figures are calculator placeholders, not prices. */
 export const PRICING_OPTIONS = [
   { key: 'flat', label: 'Flat per business', shape: 'Monthly, unlimited cards', pro: 'Simple to sell, simple to bill', con: 'Big firms pay the same as one van', placeholder: 19, unit: 'per business a month' },
   { key: 'perVan', label: 'Per van', shape: 'Monthly, per staff member', pro: 'Grows with the customer', con: 'Counting vans is a support ticket', placeholder: 9, unit: 'per van a month' },
@@ -136,7 +136,7 @@ export const CALC_DEFAULTS = { customers: 50, pricePerMonth: 19, monthlyChurnPct
 export const GTM_PHASES = [
   { phase: '0', label: 'Customer zero', gate: `${TRADE_NAME} on the ServiceM8 connector`, moves: ['Connect ServiceM8', 'Every job gets a card', 'Count customer taps'], when: 'Now', state: 'amber' },
   { phase: '1', label: 'ServiceM8 trades', gate: '10 businesses on the connector', moves: ['ServiceM8 add-on listing', 'Trade groups, demo link', 'First price charged'], when: 'Q4 2026', state: 'gray' },
-  { phase: '2', label: 'Templates', gate: '3 templates live', moves: ['Building control stages', 'RIBA 0 to 7', 'Certificate issued stage'], when: '2027 H1', state: 'gray' },
+  { phase: '2', label: 'Templates', gate: '3 templates live', moves: ['RIBA 0 to 7 first', 'Building control stages', 'Certificate issued stage'], when: '2027 H1', state: 'gray' },
   { phase: '3', label: 'Multi-party cards', gate: 'One retrofit or claim job end to end', moves: ['Four firms, one card', 'Whoever is next updates it', 'Householder gets one link'], when: '2027 H2', state: 'gray' },
 ]
 
@@ -151,10 +151,10 @@ export const RISKS = [
 ]
 
 export const DECISIONS = [
-  { key: 'pricing', question: 'Which pricing shape?', options: ['Flat per business', 'Per van', 'Per card', 'Free while customer zero'] },
-  { key: 'entity', question: 'Which company owns TurnUp?', options: ['New Ltd', 'Existing dormant Ltd', 'Sole trader for now', 'Ask the accountant first'] },
-  { key: 'raise', question: 'Raise money at all?', options: ['No, bootstrap', 'Friends and family', 'Angel after 10 customers', 'Undecided'] },
-  { key: 'firstTemplate', question: 'First template after ServiceM8?', options: ['Building control', 'RIBA', 'Certificate issued', 'PAS 2035'] },
+  { key: 'pricing', question: 'Which pricing shape?', options: ['Flat per business', 'Per van', 'Per card', 'Free while customer zero'], decided: 'Free while customer zero', decidedAt: '9 Oct 2026' },
+  { key: 'entity', question: 'Which company owns TurnUp?', options: ['New Ltd', 'Existing dormant Ltd', 'Sole trader for now', 'Ask the accountant first'], decided: 'New Ltd', decidedAt: '9 Oct 2026' },
+  { key: 'raise', question: 'Raise money at all?', options: ['No, bootstrap', 'Friends and family', 'Angel after 10 customers', 'Undecided'], decided: 'Undecided', decidedAt: '9 Oct 2026' },
+  { key: 'firstTemplate', question: 'First template after ServiceM8?', options: ['Building control', 'RIBA', 'Certificate issued', 'PAS 2035'], decided: 'RIBA', decidedAt: '9 Oct 2026' },
 ]
 
 export const FACTS_TABLE = [
