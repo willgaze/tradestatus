@@ -24,6 +24,7 @@
 import { prisma } from './prisma'
 import { notifyStage } from './push'
 import { cleanText } from './clean-text'
+import { generateCode } from './trade-status'
 import { createHmac } from 'node:crypto'
 
 // SM8_API_BASE exists so a test can stand a fake ServiceM8 up on localhost.
@@ -163,6 +164,67 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
     await log({ event: source, jobUuid, tradeStatusId: tracker.id, outcome })
     return { outcome }
   }
+}
+
+/* ------------------------------------------------------------------------ */
+/* A tracker from a job                                                      */
+/* ------------------------------------------------------------------------ */
+
+/** The tracker fields a ServiceM8 job and its contact fill in. */
+export function fieldsFromJob(job, contact) {
+  return {
+    externalId: job.uuid,
+    jobRef: job.generated_job_id ? String(job.generated_job_id) : null,
+    customerName: [contact?.first, contact?.last].filter(Boolean).join(' ') || null,
+    customerPhone: contact?.mobile || contact?.phone || null,
+    jobAddress: String(job.job_address || '').replace(/\s*\n\s*/g, ', ') || null,
+    jobSummary: String(job.job_description || '').split('\n')[0].slice(0, 120) || null,
+  }
+}
+
+/** The digits of a phone number, so "07979 350 201" and "+447979350201" agree on their tail. */
+export const phoneDigits = (v) => String(v || '').replace(/\D/g, '')
+
+/**
+ * Does what the customer typed belong to this job's contact? Accepts the last
+ * four digits, or the whole number in any spacing. Checks mobile and landline.
+ */
+export function phoneMatches(contact, given) {
+  const g = phoneDigits(given)
+  if (g.length < 4) return false
+  return [contact?.mobile, contact?.phone].map(phoneDigits).filter((d) => d.length >= 4).some((d) =>
+    g.length <= 4 ? d.endsWith(g) : d.slice(-10) === g.slice(-10))
+  // Why the tail: a number stored as 01264 502027 and typed as +441264502027
+  // share their last ten digits and nothing before.
+}
+
+/**
+ * The tracker that follows this job, made if it does not exist yet. This is
+ * how a link ServiceM8 wrote into its own booking text becomes a card: the
+ * customer taps it, the job is looked up, and the tracker appears, linked at
+ * birth and synced straight away so it shows the job's real state.
+ */
+export async function findOrCreateForJob(job, contact) {
+  const existing = await prisma.tradeStatus.findFirst({ where: { externalId: job.uuid, isActive: true } })
+  if (existing) return { tracker: existing, created: false }
+  const fields = fieldsFromJob(job, contact)
+  const stage = job.status === 'Completed' ? 'DONE' : 'BOOKED'
+  let tracker = null
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      tracker = await prisma.tradeStatus.create({
+        data: { ...fields, stage, code: generateCode(), events: { create: { stage, note: 'From ServiceM8: booked' } } },
+      })
+      break
+    } catch (error) {
+      const collided = error?.code === 'P2002' && String(error?.meta?.target ?? '').includes('code')
+      if (!collided) throw error
+    }
+  }
+  if (!tracker) throw new Error('code_collision')
+  await syncTracker(tracker, { source: 'sync.link' })
+  const fresh = await prisma.tradeStatus.findUnique({ where: { id: tracker.id } })
+  return { tracker: fresh || tracker, created: true }
 }
 
 /** Find the tracker following a ServiceM8 job uuid, then sync it. */

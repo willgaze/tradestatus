@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.16.0'
+export const VERSION = '1.16.1'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.16.1', date: '2026-10-09', notes: [
+    'The link ServiceM8 can send itself. /j/<job number> goes in the booking confirmation template; the customer proves it is their booking with the last four digits of their mobile, once, and the card appears on the dashboard already linked to the job.',
+    '/with-servicem8: the page that says what the connector does in its current form, the exact template line, and a ten-minute test. Linked from the homepage.',
+    'Two ideas logged from Will: a diary on every job, and WhatsApp as the place bookings actually arrive.',
+  ] },
   { version: '1.16.0', date: '2026-10-09', notes: [
     'The business plan lives here now, at /plan, behind the same sign-in as Jobs. Twelve sections, arrow keys to move, P to present. Every figure says whether it is a fact with a source, a working estimate, or a decision only the owner can make.',
     'Pricing, the owning company and whether to raise money are open questions on the page, not answers.',
