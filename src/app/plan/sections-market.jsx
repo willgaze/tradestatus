@@ -60,8 +60,8 @@ const CAP_Q = DECISIONS.find((d) => d.key === 'freeCap')
 const PRICE_Q = DECISIONS.find((d) => d.key === 'tradePrice')
 
 export function Pricing({ answers, set, readOnly }) {
-  const cap = Number(answers.freeCap || FREE_CARDS_PER_MONTH)
-  const tradePrice = Number(answers.tradePrice || TIERS[1].price)
+  const cap = Number(answers.freeCap || CAP_Q.decided || FREE_CARDS_PER_MONTH)
+  const tradePrice = Number(answers.tradePrice || PRICE_Q.decided || TIERS[1].price)
   const price = (t) => {
     if (t.key === 'home') return 'Free'
     if (t.key === 'trade') return `£${tradePrice}`
@@ -88,14 +88,14 @@ export function Pricing({ answers, set, readOnly }) {
         <div className="glass r-inner p-5">
           <Tag kind="decision" />
           <div className="mt-2 text-[17px] font-bold">{CAP_Q.question}</div>
-          <div className="mt-3"><Chips options={CAP_Q.options} value={answers.freeCap} onPick={(o) => set('freeCap', o)} readOnly={readOnly} /></div>
-          <div className="mt-2 text-[12px] muted">Default {FREE_CARDS_PER_MONTH} until picked. The Home tile above follows it.</div>
+          <div className="mt-3"><Chips options={CAP_Q.options} value={answers.freeCap || CAP_Q.decided} onPick={(o) => set('freeCap', o)} readOnly={readOnly} /></div>
+          <div className="mt-2 text-[12px] muted">Decided {CAP_Q.decidedAt}. The Home tile above follows it.</div>
         </div>
         <div className="glass r-inner p-5">
           <Tag kind="decision" />
           <div className="mt-2 text-[17px] font-bold">{PRICE_Q.question}</div>
-          <div className="mt-3"><Chips options={PRICE_Q.options} value={answers.tradePrice} onPick={(o) => set('tradePrice', o)} readOnly={readOnly} /></div>
-          <div className="mt-2 text-[12px] muted">Default {TIERS[1].price} until picked. The calculator follows it.</div>
+          <div className="mt-3"><Chips options={PRICE_Q.options} value={answers.tradePrice || PRICE_Q.decided} onPick={(o) => set('tradePrice', o)} readOnly={readOnly} /></div>
+          <div className="mt-2 text-[12px] muted">Decided {PRICE_Q.decidedAt}. The calculator follows it.</div>
         </div>
       </div>
 
@@ -134,7 +134,7 @@ export function Pricing({ answers, set, readOnly }) {
 /** Every figure comes from the inputs. The chart is drawn in pixels so it cannot be empty. */
 export function Financials({ answers }) {
   const [v, setV] = useState(CALC_DEFAULTS)
-  const price = Number(answers.tradePrice || v.price)
+  const price = Number(answers.tradePrice || PRICE_Q.decided || v.price)
   const rows = useMemo(() => {
     const out = []
     let paid = v.paid

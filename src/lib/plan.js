@@ -53,7 +53,7 @@ export const STATUS = [
   { item: 'Apple Wallet card', state: 'amber', note: 'signing built, needs Apple Developer' },
   { item: 'Google Wallet card', state: 'red', note: 'not built, needs an issuer account' },
   { item: 'Paying customers', state: 'red', note: `none, ${TRADE_NAME} is customer zero` },
-  { item: 'Pricing', state: 'amber', note: 'free for homes, paid plans proposed, decided 9 Oct 2026' },
+  { item: 'Pricing', state: 'amber', note: 'homes free to 5 cards a month, Trade 5 pounds, decided 9 Oct 2026, not yet charged' },
   { item: 'Legal entity', state: 'amber', note: 'a new Ltd, decided 9 Oct 2026, not yet formed' },
 ]
 
@@ -171,7 +171,7 @@ export const TEMPLATES = [
 ]
 
 /** Calculator defaults. Assumptions, not forecasts; every one is editable on the page. */
-export const CALC_DEFAULTS = { paid: 0, newPaid: 5, price: 9, churnPct: 4, hosting: 40, months: 12 }
+export const CALC_DEFAULTS = { paid: 0, newPaid: 5, price: 5, churnPct: 4, hosting: 40, months: 12 }
 
 /** Go to market as gates. A phase opens when the gate before it is passed. */
 export const GTM_PHASES = [
@@ -222,8 +222,8 @@ export const THE_ASK = {
 
 export const DECISIONS = [
   { key: 'pricing', question: 'Who pays?', options: ['Nobody, for now', 'Homes free, trades pay', 'Everyone pays', 'Per card for all'], decided: 'Homes free, trades pay', decidedAt: '9 Oct 2026' },
-  { key: 'freeCap', question: 'Free cards a month, per sender?', options: ['5', '10', '20', '30'] },
-  { key: 'tradePrice', question: 'Trade plan, pounds a month?', options: ['5', '9', '12', '15'] },
+  { key: 'freeCap', question: 'Free cards a month, per sender?', options: ['5', '10', '20', '30'], decided: '5', decidedAt: '9 Oct 2026' },
+  { key: 'tradePrice', question: 'Trade plan, pounds a month?', options: ['5', '9', '12', '15'], decided: '5', decidedAt: '9 Oct 2026' },
   { key: 'entity', question: 'Which company owns TurnUp?', options: ['New Ltd', 'Existing dormant Ltd', 'Sole trader for now', 'Ask the accountant first'], decided: 'New Ltd', decidedAt: '9 Oct 2026' },
   { key: 'raise', question: 'Raise money at all?', options: ['No, bootstrap', 'Friends and family', 'Angel after 10 customers', 'Undecided'], decided: 'Undecided', decidedAt: '9 Oct 2026' },
   { key: 'firstTemplate', question: 'First template after ServiceM8?', options: ['Building control', 'RIBA', 'Certificate issued', 'PAS 2035'], decided: 'RIBA', decidedAt: '9 Oct 2026' },

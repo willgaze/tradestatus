@@ -16,12 +16,12 @@
  * job-software connector and a team of vans are things a home never asks for.
  *
  * Every price below is PROPOSED. Nothing is charged today (customer zero is
- * free) and nothing here is wired to a payment provider. The cap and the
- * Trade price are open decisions on the plan; the figures are the defaults
- * the calculator uses until the owner picks.
+ * free) and nothing here is wired to a payment provider. The cap (5) and the
+ * Trade price (5 pounds) were decided by the owner on 9 Oct 2026; the Crew
+ * and Partners figures are still placeholders.
  */
 
-export const FREE_CARDS_PER_MONTH = 10
+export const FREE_CARDS_PER_MONTH = 5
 
 export const TIERS = [
   {
@@ -37,7 +37,7 @@ export const TIERS = [
   {
     key: 'trade',
     name: 'Trade',
-    price: 9,
+    price: 5,
     per: 'a month',
     who: 'One van',
     cards: 'Unlimited cards',
