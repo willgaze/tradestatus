@@ -276,6 +276,14 @@ export default function Console() {
                 <div className="min-w-0 flex-1 break-words">
                   <p className="text-[19px] font-semibold tracking-[-0.01em]">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="mt-0.5 text-[15px] muted">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
+                  {/* Linked at birth to a ServiceM8 job: the card moves on its own. Worth
+                      saying on the card, because the stage buttons below still work and
+                      a trade should know which cards follow the job and which are theirs. */}
+                  {t.externalId && (
+                    <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold" style={{ color: 'var(--tint)' }}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />Follows ServiceM8 job {t.jobRef ? `#${t.jobRef}` : ''}
+                    </p>
+                  )}
                 </div>
                 <p className="inline-flex shrink-0 items-center gap-1.5 text-[14px] font-semibold"
                    style={{ color: 'var(--tint)' }}>
