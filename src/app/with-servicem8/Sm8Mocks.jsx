@@ -135,7 +135,7 @@ export function Sm8Phone({ kind }) {
 /* The text as it lands, with the link in it. */
 export function SmsMock({ host = 'www.getturnup.com', from = 'Sam Hale Plumbing' }) {
   return (
-    <div className="min-h-full bg-white pt-[52px] text-[#15161a]">
+    <div className="relative min-h-full bg-white pt-[52px] text-[#15161a]">
       <div className="border-b border-black/10 pb-3 text-center">
         <div className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-[#8e8e93] text-[16px] font-semibold text-white">{from.split(' ').map((w) => w[0]).slice(0, 2).join('')}</div>
         <p className="mt-1 text-[12px]">{from} ›</p>
@@ -146,6 +146,14 @@ export function SmsMock({ host = 'www.getturnup.com', from = 'Sam Hale Plumbing'
           Hi Sarah, your booking with {from} is confirmed for Thursday 16 October, arriving 09:00–11:00. Follow the job here — it moves as the day does: <span className="underline" style={{ color: '#0a84ff' }}>{host}/j/2718</span> — Sam
         </div>
         <p className="ml-2 mt-1 text-[11px] text-[#8e8e93]">Sent by ServiceM8 · Booking Confirmation</p>
+      </div>
+      {/* the compose bar, pinned where iOS keeps it, so the phone reads as a phone and not a sheet of paper */}
+      <div className="absolute inset-x-0 bottom-0 border-t border-black/5 bg-[#f6f6f7] px-3 pb-7 pt-2.5">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#e9e9eb] text-[18px] text-[#8e8e93]">+</span>
+          <span className="flex min-h-[34px] flex-1 items-center rounded-full border border-black/10 bg-white px-3.5 text-[14px] text-[#8e8e93]">Text Message</span>
+        </div>
+        <div className="mx-auto mt-3 h-1.5 w-32 rounded-full bg-black/80" />
       </div>
     </div>
   )
