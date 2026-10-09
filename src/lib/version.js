@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.16.3'
+export const VERSION = '1.17.0'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.17.0', date: '2026-10-09', notes: [
+    'Paid on the same page: a new idea on the roadmap and a frame under Where it is going. When the card says Job done, the bill is under it and Apple Pay settles it there; the receipt stays with the job.',
+    'The trade-side homepage frames are re-captured with the new stage control.',
+  ] },
   { version: '1.16.3', date: '2026-10-09', notes: [
     'The stage control on a job card is one track with five equal cells, icon over a short label, instead of five pills that wrapped and clipped at phone width. Will: "the buttons lose their integrity".',
   ] },

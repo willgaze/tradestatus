@@ -215,6 +215,20 @@ function Mock({ kind }) {
       ))}
     </Screen>
   )
+  if (kind === 'pay') return (
+    <Screen eyebrow="Job done · 14 Church Lane" title="Your bill">
+      <div className="rounded-[18px] bg-white px-4 py-4 shadow-sm">
+        <div className="flex items-baseline justify-between"><p className="text-[15px] font-semibold">Unvented cylinder swap</p><p className="text-[22px] font-bold tracking-[-0.02em]">£1,840</p></div>
+        {[['Labour, one day', '£695'], ['Megaflo Eco 210 L', '£986'], ['Fittings and sundries', '£159']].map(([t, v]) => (
+          <div key={t} className="mt-2 flex justify-between border-t border-black/5 pt-2 text-[13px] text-[#5f6672]"><span>{t}</span><span>{v}</span></div>
+        ))}
+        <p className="mt-2 text-[12px] text-[#5f6672]">Includes VAT · as quoted on 12 September</p>
+      </div>
+      <span className="flex items-center justify-center gap-2 rounded-full bg-black px-4 py-3.5 text-[16px] font-semibold text-white"><span className="text-[18px]"></span>Pay £1,840</span>
+      <span className="flex items-center justify-center rounded-full bg-white px-4 py-3.5 text-[15px] font-semibold shadow-sm" style={{ color: 'var(--tint)' }}>Pay by card</span>
+      <Row icon={<TickIcon size={19} />} title="Receipt kept with the job" sub="12-month workmanship guarantee · 25 years on the cylinder" on />
+    </Screen>
+  )
   if (kind === 'pickup') return (
     <Screen eyebrow="Thursday" title="Two ends, one journey">
       <Row icon={<PinIcon size={19} />} title="Pick up · 14 Church Lane" sub="Sarah is in until 2 — side gate" on />

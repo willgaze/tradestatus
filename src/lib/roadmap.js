@@ -128,6 +128,8 @@ export const PHASES = [
         what: 'What happened and who said what, in one thread on the job: the stages, the customer\u2019s answers, your notes, the texts \u2014 the way a ServiceM8 job diary reads, but shared with the person it is about.' },
       { key: 'whatsapp', name: 'WhatsApp, where the bookings actually come from', state: 'idea',
         what: 'Half the jobs start as a WhatsApp with a photo, a video and a pin. Today that gets retyped into the job system and the pictures stay in the chat. The link sent back through WhatsApp, and the photos, the pin and the thread kept with the job \u2014 without running the business inside WhatsApp.' },
+      { key: 'payments', name: 'Paid on the same page', state: 'idea',
+        what: 'When the card says Job done, the bill is under it and Apple Pay or a card settles it there, the way ServiceM8 Pay does on an invoice. A deposit at booking if you take one. The receipt stays with the job, so the customer never hunts an email and you never chase. Needs a Stripe account and takes their fee.' },
       { key: 'quoting', name: 'Quotes and invoices', state: 'idea',
         what: 'Only worth doing once the card is in a hundred wallets.' },
     ],
