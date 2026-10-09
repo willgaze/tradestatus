@@ -272,7 +272,7 @@ export const THE_ASK = {
 
 export const DECISIONS = [
   { key: 'pricing', question: 'Who pays?', options: ['Nobody, for now', 'Free for every sender; enterprise per card', 'Trades: a monthly plan', 'Trades: activation, then features'], decided: 'Free for every sender; enterprise per card', decidedAt: '9 Oct 2026', note: 'Third shape of the day. The card has to spread; only an enterprise is already paying for missed visits.' },
-  { key: 'firstMoat', question: 'Which moat first?', options: ['The household end', 'Recognition: customer-invite', 'One integration: the API and spec'] },
+  { key: 'firstMoat', question: 'Which moat first?', options: ['The household end', 'Recognition: customer-invite', 'One integration: the API and spec'], decided: 'The household end', decidedAt: '9 Oct 2026' },
   { key: 'firstWedge', question: 'First enterprise wedge?', options: ['Social housing', 'Energy supplier', 'Broadband provider', 'Water company'] },
   { key: 'googleWallet', question: 'Google Wallet: build on a pass platform, or our own?', options: ['On a pass platform, faster', 'Our own, like Apple', 'Apple only until there is money'] },
   { key: 'perCard', question: 'Enterprise price per card, pence?', options: ['10', '25', '50'] },
