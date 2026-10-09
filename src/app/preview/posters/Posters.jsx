@@ -43,7 +43,7 @@ export function Poster({ p, scale = 1 }) {
       </div>
       <div className={`absolute inset-x-0 flex justify-center ${p.wallet ? 'inset-y-0 items-start pt-[17em]' : p.car ? 'inset-y-0 items-end overflow-hidden' : 'bottom-0'}`}>
         {p.car ? (
-          <CarDisplay vehicle={p.car.vehicle} ui={p.car.ui} width={820 * scale} className="-mb-[3em]" />
+          <CarDisplay vehicle={p.car.vehicle} ui={p.car.ui} width={760 * scale} className="-mb-[2.5em] translate-x-[3.2em]" />
         ) : p.wallet ? (
           <div className="w-[36em] scale-[1.18]"><WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" className="!rounded-[2.4em] !bg-transparent" /></div>
         ) : (
