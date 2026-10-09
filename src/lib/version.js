@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.14.0'
-export const BUILD_DATE = '2026-10-08'
+export const VERSION = '1.15.0'
+export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -48,6 +48,13 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.15.0', date: '2026-10-09', notes: [
+    'ServiceM8 connector: add a job by its ServiceM8 number and the card follows the job \u2014 check in is On site, complete is Job done, check out early is Paused',
+    'Robust by design: a webhook is only a doorbell; every event is checked against the job itself, every sync is idempotent, and a customer opening their page pulls the truth too',
+    'A ServiceM8 panel on the dashboard: connected, listening, and what it did lately',
+    'One command connects it: scripts/connect-servicem8.sh',
+    'CarPlay on the roadmap, with its frame',
+  ] },
   { version: '1.14.0', date: '2026-10-08', notes: [
     'The homepage tells both sides: pick \u201cI\u2019m the customer\u201d or \u201cI do the work\u201d and walk through that side in eight frames',
     'Either end, any job \u2014 the role swap is on the page, badged Next so nobody mistakes it for live',

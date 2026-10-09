@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
 import { publicProfile, publicBrand } from '@/lib/profile'
+import { syncIfStale } from '@/lib/servicem8'
 
 // Public on purpose — the customer has no account and never will. The code is
 // the credential, so it is unguessable and revocable, and this hands back only
@@ -25,6 +26,12 @@ export async function GET(request, { params }) {
     // so counting a view per response meant a customer who left the tab open
     // logged 120 "views" an hour and the number meant nothing. The page itself
     // counts the visit; this route only answers the poll.
+
+    // Pull on read: if this job follows a ServiceM8 job and we have not looked
+    // for a minute, look — AFTER the response has gone, so the page is never a
+    // millisecond slower or a byte wronger for it. The poll every 30 seconds
+    // picks up whatever moved.
+    after(() => syncIfStale(row))
 
     const status = publicShape(row)
     const arriving = status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE'

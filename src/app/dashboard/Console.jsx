@@ -10,6 +10,7 @@ import Profile from './Profile'
 import WalletShowcase from './WalletShowcase'
 import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
+import ServiceM8 from './ServiceM8'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
@@ -37,7 +38,7 @@ const STAGE_BUTTONS = ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']
 // customerPhone belongs here even though nothing sets it initially: the form
 // renders an input bound to form.customerPhone, and a value of undefined makes
 // React treat it as uncontrolled and then complain the moment it is typed in.
-const EMPTY = { customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
+const EMPTY = { sm8JobNumber: '', customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
 
 export default function Console() {
   const [trackers, setTrackers] = useState([])
@@ -220,6 +221,7 @@ export default function Console() {
 
       {showForm && (
       <form onSubmit={create} className="glass r-outer mt-6 grid gap-4 p-5 sm:grid-cols-2">
+        {field('sm8JobNumber', 'ServiceM8 job number — fills the rest in, and the card then follows the job', '2718')}
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
         {field('customerPhone', 'Their mobile', '07700 900123', 'tel')}
         {field('jobSummary', 'Job', 'Unvented cylinder swap')}
@@ -483,6 +485,7 @@ export default function Console() {
 
       <WaitlistPanel />
       <WalletShowcase tracker={trackers[0]} />
+      <ServiceM8 onChanged={load} />
       <Profile />
       <Passkeys />
       <Roadmap />

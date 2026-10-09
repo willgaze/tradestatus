@@ -179,6 +179,25 @@ function Mock({ kind }) {
       <div className="rounded-[18px] bg-white px-4 py-4 shadow-sm"><p className="text-[15px] font-semibold">Happy with it?</p><p className="mt-1 text-[13px] text-[#5f6672]">A review takes a minute and means a lot to a one-person firm.</p><span className="mt-3 inline-block rounded-full bg-[#ff9500] px-4 py-2 text-[14px] font-semibold text-white">Leave a review</span></div>
     </Screen>
   )
+  if (kind === 'carplay') return (
+    <div className="min-h-full bg-[#0b0f14] px-3 pt-[52px] text-white">
+      <div className="flex items-center justify-between px-1 text-[12px] text-white/60"><span>CarPlay</span><span>08:42</span></div>
+      <div className="mt-3 rounded-[22px] bg-[#161c24] p-3">
+        <p className="px-1 text-[12px] font-semibold uppercase tracking-wide text-white/55">Next · Sarah Whitfield · Church Lane</p>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="grid aspect-square place-items-center rounded-[20px] bg-[#5856d6] text-center"><div><TruckIcon size={34} /><p className="mt-2 text-[17px] font-bold leading-tight">On my<br/>way</p></div></div>
+          <div className="grid aspect-square place-items-center rounded-[20px] bg-[#007aff] text-center"><div><HouseIcon size={34} /><p className="mt-2 text-[17px] font-bold leading-tight">On<br/>site</p></div></div>
+        </div>
+        <div className="mt-3 flex items-center gap-3 rounded-[16px] bg-white/[.06] px-4 py-3">
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#5856d6] to-[#34c759]" />
+          <p className="text-[14px] text-white/85">“Hey Siri, tell TurnUp I’m on my way.”</p>
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-4 gap-2 px-1 text-center text-[11px] text-white/50">
+        {['Maps', 'Music', 'Phone', 'TurnUp'].map((n, i) => <div key={n}><div className={`mx-auto mb-1 h-11 w-11 rounded-[12px] ${i === 3 ? 'bg-[#2e6b4b]' : 'bg-white/10'}`} />{n}</div>)}
+      </div>
+    </div>
+  )
   if (kind === 'record') return (
     <Screen eyebrow="14 Church Lane" title="What has been done here">
       {[['Unvented cylinder, 210 L', 'Sam Hale Plumbing · Oct 2026', 'G3 certificate · 25-year shell warranty · 6 photos', true],
