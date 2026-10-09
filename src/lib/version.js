@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.15.2'
+export const VERSION = '1.15.3'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.15.3', date: '2026-10-09', notes: [
+    'The CarPlay and Android Auto frames are photographs from the driver\u2019s seat now, with the app on the real screen \u2014 the UI pressed onto the glass in its perspective, still crisp text',
+  ] },
   { version: '1.15.2', date: '2026-10-09', notes: [
     'CarPlay in the van and Android Auto in the car, drawn from the driver\u2019s seat: the map, Navigate to the address, the four stage buttons',
     'The TurnUp mark on the dashboard goes to the homepage, and the homepage\u2019s Sign in comes back',

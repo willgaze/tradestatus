@@ -1,7 +1,7 @@
 'use client'
 import Device from '@/components/Device'
 import WalletHero from '@/components/WalletHero'
-import CarDisplay from '@/components/CarDisplay'
+import { CabPhoto } from '@/components/CarDisplay'
 import { FRAMES } from '@/lib/posters'
 import { TickIcon, PinIcon, HouseIcon, VanIcon as TruckIcon, EyeIcon as CameraIcon, StageIcon } from '@/components/icons'
 
@@ -24,6 +24,14 @@ const DEMO = {
 
 const BADGE = { ready: 'Built · awaiting Apple', next: 'Next' }
 
+/* How much of the cab photograph a poster shows. Wider than the canvas, so
+ * the screen is big enough to read, shifted right so the glass sits
+ * left-of-centre with the binnacle and the rim of the wheel on the right —
+ * the driver's own view, not a brochure's. The overflow is clipped by the
+ * wrapper below; the top fifth of the photo is masked so it rises out of the
+ * poster's colour instead of meeting it on a line. */
+const CAB_FIT = { van: { width: 1000, shift: '5.6em' }, car: { width: 1060, shift: '4.7em' } }
+
 export function Poster({ p, scale = 1 }) {
   const badge = BADGE[p.state]
   return (
@@ -43,7 +51,9 @@ export function Poster({ p, scale = 1 }) {
       </div>
       <div className={`absolute inset-x-0 flex justify-center ${p.wallet ? 'inset-y-0 items-start pt-[17em]' : p.car ? 'inset-y-0 items-end overflow-hidden' : 'bottom-0'}`}>
         {p.car ? (
-          <CarDisplay vehicle={p.car.vehicle} ui={p.car.ui} width={760 * scale} className="-mb-[2.5em] translate-x-[3.2em]" />
+          <div className="relative shrink-0" style={{ transform: `translateX(${CAB_FIT[p.car.vehicle].shift})` }}>
+            <CabPhoto vehicle={p.car.vehicle} ui={p.car.ui} width={CAB_FIT[p.car.vehicle].width * scale} fadeTop={0.22} />
+          </div>
         ) : p.wallet ? (
           <div className="w-[36em] scale-[1.18]"><WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" className="!rounded-[2.4em] !bg-transparent" /></div>
         ) : (

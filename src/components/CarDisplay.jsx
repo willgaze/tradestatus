@@ -51,11 +51,11 @@ function CarPlayUI({ w }) {
       </aside>
       <main className="flex min-w-0 flex-1 gap-[0.6em] p-[0.6em] pl-0">
         {/* navigation card */}
-        <section className="relative w-[46%] overflow-hidden rounded-[0.9em]">
+        <section className="relative w-[49%] overflow-hidden rounded-[0.9em]">
           <MapArt />
           <div className="absolute inset-x-[0.6em] top-[0.6em] rounded-[0.6em] bg-black/75 px-[0.8em] py-[0.6em] backdrop-blur">
             <p className="text-[0.62em] uppercase tracking-wide text-white/60">Next job</p>
-            <p className="truncate text-[0.95em] font-semibold">{JOB.where}</p>
+            <p className="truncate text-[0.9em] font-semibold">{JOB.where}</p>
             <p className="text-[0.75em] text-white/70">{JOB.mins} min · 6.2 mi</p>
           </div>
           <div className="absolute inset-x-[0.6em] bottom-[0.6em] flex items-center justify-center gap-[0.5em] rounded-[0.6em] bg-[#007aff] py-[0.6em] text-[0.9em] font-bold">
@@ -112,10 +112,89 @@ function AndroidAutoUI({ w }) {
   )
 }
 
+/* ------------------------------------------------------------------------ */
+/* The photographed cab.                                                     */
+
 /**
- * The cab. Right-hand drive: wheel on the right, head unit centre-left of
- * the driver, the road ahead through the glass. The screen is an HTML box
- * positioned over the SVG so the UI stays crisp text, not a picture of text.
+ * Solve the projective transform that takes the rectangle (0,0)–(w,h) onto
+ * the quadrilateral [tl, tr, br, bl] and return it as a CSS matrix3d().
+ * Eight unknowns, eight equations, Gaussian elimination. The element it is
+ * applied to needs `transform-origin: 0 0`.
+ */
+export function homography(w, h, [tl, tr, br, bl]) {
+  const src = [[0, 0], [w, 0], [w, h], [0, h]], dst = [tl, tr, br, bl]
+  const A = [], B = []
+  for (let i = 0; i < 4; i++) {
+    const [x, y] = src[i], [u, v] = dst[i]
+    A.push([x, y, 1, 0, 0, 0, -x * u, -y * u]); B.push(u)
+    A.push([0, 0, 0, x, y, 1, -x * v, -y * v]); B.push(v)
+  }
+  for (let c = 0; c < 8; c++) {
+    let p = c
+    for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r
+    ;[A[c], A[p]] = [A[p], A[c]]; [B[c], B[p]] = [B[p], B[c]]
+    for (let r = 0; r < 8; r++) {
+      if (r === c) continue
+      const f = A[r][c] / A[c][c]
+      for (let k = c; k < 8; k++) A[r][k] -= f * A[c][k]
+      B[r] -= f * B[c]
+    }
+  }
+  const [a, b, c, d, e, f, g, hh] = B.map((v, i) => v / A[i][i])
+  // column-major: x' = ax + by + c, y' = dx + ey + f, w' = gx + hh·y + 1
+  return `matrix3d(${a},${d},0,${g},${b},${e},0,${hh},0,0,1,0,${c},${f},0,1)`
+}
+
+/**
+ * Two photographs from the driver's seat, right-hand drive, the head unit
+ * switched off. The four corners of the glass, measured by eye against a
+ * grid and checked with a coloured quad, as fractions of the photo so any
+ * render width works: top-left, top-right, bottom-right, bottom-left.
+ * `aspect` is the screen's own width:height, which the UI is laid out at
+ * before it is pressed onto the glass.
+ */
+export const CABS = {
+  van: { src: '/home/cab-van.jpg', w: 1600, h: 1195, aspect: 1.436,
+         quad: [[0.1445, 0.4705], [0.4945, 0.4315], [0.4935, 0.7275], [0.1465, 0.8225]] },
+  car: { src: '/home/cab-car.jpg', w: 1600, h: 1195, aspect: 1.867,
+         quad: [[0.1775, 0.5030], [0.4928, 0.4685], [0.4935, 0.6695], [0.1830, 0.7535]] },
+}
+
+/**
+ * The cab as a photograph, with the app on the real screen. The UI is laid
+ * out flat at a natural size and then mapped onto the photographed glass by
+ * the homography above, so it takes the screen's perspective while staying
+ * HTML: crisp text, not a picture of text. A faint reflection and an inner
+ * shadow make it a lit panel behind glass rather than a sticker on top.
+ * `fadeTop` masks the top of the photograph to transparent over that
+ * fraction of its height, so it rises out of whatever sits behind it.
+ */
+export function CabPhoto({ vehicle = 'van', ui = 'carplay', width = 620, fadeTop = 0, className = '' }) {
+  const cab = CABS[vehicle] || CABS.van
+  const H = width * cab.h / cab.w
+  const quad = cab.quad.map(([x, y]) => [x * width, y * H])
+  const W = 560, UH = W / cab.aspect
+  return (
+    <div className={`relative shrink-0 ${className}`} style={{ width, height: H }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- capture page; the photo is the frame */}
+      <img src={cab.src} alt="" width={cab.w} height={cab.h} draggable={false} className="absolute inset-0 h-full w-full select-none"
+           style={fadeTop ? { WebkitMaskImage: `linear-gradient(to bottom, transparent, #000 ${fadeTop * 100}%)`, maskImage: `linear-gradient(to bottom, transparent, #000 ${fadeTop * 100}%)` } : undefined} />
+      <div className="absolute left-0 top-0 overflow-hidden rounded-[3px] bg-black"
+           style={{ width: W, height: UH, transformOrigin: '0 0', transform: homography(W, UH, quad), backfaceVisibility: 'hidden' }}>
+        {ui === 'android' ? <AndroidAutoUI w={W} /> : <CarPlayUI w={W} />}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[3px]"
+             style={{ background: 'linear-gradient(155deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.025) 32%, rgba(255,255,255,0) 52%)',
+                      boxShadow: 'inset 0 0 16px rgba(0,0,0,.55), inset 0 0 2px rgba(0,0,0,.9)' }} />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The drawn cab (kept; the posters now use CabPhoto above). Right-hand drive:
+ * wheel on the right, head unit centre-left of the driver, the road ahead
+ * through the glass. The screen is an HTML box positioned over the SVG so
+ * the UI stays crisp text, not a picture of text.
  */
 export default function CarDisplay({ vehicle = 'van', ui = 'carplay', width = 560, className = '' }) {
   const van = vehicle === 'van'
