@@ -74,12 +74,12 @@ await dash.goto(`${BASE}/dashboard`, { waitUntil: 'networkidle' }); await dash.w
 // the linked card, framed as a phone: scroll it to the top and take the viewport
 const card = dash.locator('li', { hasText: 'Diana Whitefield' }).first()
 await card.evaluate((el) => el.scrollIntoView({ block: 'start' })); await dash.waitForTimeout(300)
-await dash.evaluate(() => window.scrollBy(0, -12))
+await dash.evaluate(() => window.scrollBy(0, -72))
 await webp(await dash.screenshot({ type: 'png' }), 'dashboard-card')
 // the stage buttons on a card: open the seeded On site job and show its buttons
 const onsite = dash.locator('li', { hasText: 'Sarah Whitfield' }).first()
 await onsite.evaluate((el) => el.scrollIntoView({ block: 'start' })); await dash.waitForTimeout(300)
-await dash.evaluate(() => window.scrollBy(0, -12))
+await dash.evaluate(() => window.scrollBy(0, -72))
 await webp(await dash.screenshot({ type: 'png' }), 'dashboard-stage')
 // the ServiceM8 panel and its Lately log — the panel is shut by default, so open it
 const opener = dash.getByRole('button', { name: /^ServiceM8/ }).first()

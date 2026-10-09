@@ -292,12 +292,13 @@ export default function Console() {
                 </p>
               </div>
 
-              <div className="mt-3.5 grid grid-cols-5 gap-1.5">
+              <div className="stages mt-3.5" role="group" aria-label="Stage">
                 {STAGE_BUTTONS.map((s) => (
                   <button key={s} type="button" onClick={() => patch(t.id, { stage: s })}
                           aria-pressed={t.stage === s} aria-label={STAGES[s].label}
-                          className={`tone-${STAGES[s].tone} segment ${t.stage === s ? 'segment-on' : 'segment-off'}`}>
-                    {STAGES[s].short}
+                          className={`tone-${STAGES[s].tone} stage-seg ${t.stage === s ? 'stage-seg-on' : ''}`}>
+                    <StageIcon tone={STAGES[s].tone} size={18} />
+                    <span>{STAGES[s].short}</span>
                   </button>
                 ))}
               </div>
