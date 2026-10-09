@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.15.3'
+export const VERSION = '1.15.4'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.15.4', date: '2026-10-09', notes: [
+    'Ready for Apple. The signing code wanted a .p12 the library cannot read, and the pass carried no icon, which Wallet rejects without a word. Both fixed, and tested end to end with a stand-in certificate chain.',
+    'bash scripts/apple-wallet.sh — two commands turn Apple\'s certificate into the six settings, no Keychain Access.',
+    'Add to Apple Wallet appears on the customer page the moment the deployment can sign a pass, and only on an Apple device.',
+  ] },
   { version: '1.15.3', date: '2026-10-09', notes: [
     'The CarPlay and Android Auto frames are photographs from the driver\u2019s seat now, with the app on the real screen \u2014 the UI pressed onto the glass in its perspective, still crisp text',
   ] },

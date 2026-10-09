@@ -483,7 +483,13 @@ Wallet and Google Wallet and updates itself. Both need credentials the
 repository does not have:
 
 - **Apple Wallet (PassKit)** — an Apple Developer Program membership and a Pass
-  Type ID certificate. Passes update over APNs.
+  Type ID certificate. Everything else is built and tested with a stand-in
+  chain (v1.15.4): `bash scripts/apple-wallet.sh csr` makes the key and the
+  request, `finish pass.cer` turns Apple's certificate into the six `PASSKIT_*`
+  settings (`docs/apple-wallet.md`). The library wants **PEM, never a .p12**.
+  Still to build once a real pass is in a wallet: the `/api/passes/v1` web
+  service (device registration, "what changed" and APNs pushes) so the card
+  updates itself; today a pass shows the stage at the moment it was added.
 - **Google Wallet** — a Google Cloud project, a Wallet API issuer account, and
   a service account key.
 

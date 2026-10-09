@@ -7,6 +7,7 @@ import AccessNotes from './AccessNotes'
 import Presence from './Presence'
 import Notify, { PUSH_CONFIGURED } from './Notify'
 import Window from './Window'
+import AddToWallet from './AddToWallet'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
@@ -22,7 +23,7 @@ import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, C
 // renders on the server and again on the phone, and the two ship different
 // locale data, which tore the page down mid-hydration.
 
-export default function StatusTracker({ initialStatus, initialProfile, initialBrand }) {
+export default function StatusTracker({ initialStatus, initialProfile, initialBrand, walletReady = false }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
   const [brand, setBrand] = useState(initialBrand || null)
@@ -289,6 +290,10 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
             <Notify code={status.code} />
           </Disclosure>
         )}
+
+        {/* The card in Wallet. Gated on the server knowing it can sign one, and
+            not offered on a finished job: nothing left to carry around. */}
+        {walletReady && status.stage !== 'DONE' && <AddToWallet code={status.code} />}
 
         {/* A window is an arrangement, so it sits with the things the customer
             does rather than the things they read. Hidden once the job is done:

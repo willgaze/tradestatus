@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+#
+# Apple Wallet signing, in two commands and no Keychain.
+#
+#   bash scripts/apple-wallet.sh csr            # 1. makes a key + a request file to upload to Apple
+#   bash scripts/apple-wallet.sh finish pass.cer  # 2. turns Apple's certificate into the six settings
+#
+# Everything lands in ./apple/ which is gitignored. The private key never
+# leaves this folder except as the value you paste into Vercel.
+#
+# Why not Keychain Access: Apple's instructions assume a Mac and a trip through
+# Certificate Assistant, which is where most first-timers get lost. openssl
+# does the same job in two lines and works anywhere, including this sandbox.
+#
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+DIR=apple
+KEY=$DIR/pass.key
+CSR=$DIR/pass.csr
+PASS_ID="${PASS_TYPE_ID:-pass.com.getturnup.job}"
+WWDR_URL=https://www.apple.com/certificateauthority/AppleWWDRCAG4.cer
+
+say() { printf '\n\033[1;34m==>\033[0m %s\n' "$1"; }
+die() { printf '\n\033[1;31mStopped:\033[0m %s\n' "$1" >&2; exit 1; }
+command -v openssl >/dev/null || die "openssl is not installed."
+
+case "${1:-}" in
+  csr)
+    mkdir -p "$DIR"
+    if [ -f "$KEY" ]; then
+      say "Key already exists at $KEY — keeping it. Delete it first if you really want a new one."
+    else
+      say "Making a private key (encrypted; the passphrase is saved in $DIR/key.password)"
+      PW=$(openssl rand -hex 16)
+      printf '%s' "$PW" > "$DIR/key.password"; chmod 600 "$DIR/key.password"
+      openssl genrsa -aes256 -passout "pass:$PW" -traditional -out "$KEY" 2048 2>/dev/null
+      chmod 600 "$KEY"
+    fi
+    PW=$(cat "$DIR/key.password")
+    say "Making the certificate request for $PASS_ID"
+    openssl req -new -key "$KEY" -passin "pass:$PW" -out "$CSR" \
+      -subj "/CN=$PASS_ID/O=TurnUp/C=GB" 2>/dev/null
+    cat <<MSG
+
+Done. Upload this file to Apple:  $(pwd)/$CSR
+
+  1. https://developer.apple.com/account/resources/identifiers/list/passTypeId
+     Press +, choose Pass Type IDs, Continue.
+     Description: TurnUp job card    Identifier: $PASS_ID
+     Continue, Register.
+  2. https://developer.apple.com/account/resources/certificates/add
+     Under Services choose "Pass Type ID Certificate", Continue.
+     Pick $PASS_ID, Continue. Choose File -> the .csr above. Continue.
+  3. Press Download. You get pass.cer. Then run:
+
+       bash scripts/apple-wallet.sh finish ~/Downloads/pass.cer
+
+MSG
+    ;;
+
+  finish)
+    CER="${2:-}"
+    [ -n "$CER" ] && [ -f "$CER" ] || die "Give me the .cer Apple gave you:  bash scripts/apple-wallet.sh finish ~/Downloads/pass.cer"
+    [ -f "$KEY" ] || die "No $KEY. Run 'bash scripts/apple-wallet.sh csr' first — the certificate only works with the key that requested it."
+    PW=$(cat "$DIR/key.password")
+
+    say "Reading Apple's certificate"
+    if ! openssl x509 -inform DER -in "$CER" -out "$DIR/pass.pem" 2>/dev/null; then
+      openssl x509 -in "$CER" -out "$DIR/pass.pem" 2>/dev/null || die "That file is not a certificate."
+    fi
+    SUBJECT=$(openssl x509 -in "$DIR/pass.pem" -noout -subject -nameopt RFC2253)
+    TEAM=$(printf '%s' "$SUBJECT" | sed -n 's/.*OU=\([A-Z0-9]\{10\}\).*/\1/p')
+    TYPE=$(printf '%s' "$SUBJECT" | sed -n 's/.*UID=\(pass\.[^,]*\).*/\1/p')
+    [ -n "$TYPE" ] || TYPE="$PASS_ID"
+    [ -n "$TEAM" ] || die "Could not read the Team ID from the certificate. Subject was: $SUBJECT"
+
+    say "Checking the certificate matches the key"
+    CM=$(openssl x509 -in "$DIR/pass.pem" -noout -modulus | openssl md5)
+    KM=$(openssl rsa -in "$KEY" -passin "pass:$PW" -noout -modulus 2>/dev/null | openssl md5)
+    [ "$CM" = "$KM" ] || die "This certificate was not made from $KEY. Make a fresh request with 'csr' and download a new certificate for it."
+
+    say "Fetching Apple's WWDR G4 intermediate certificate"
+    curl -fsSL "$WWDR_URL" -o "$DIR/wwdr.cer" || die "Could not download $WWDR_URL"
+    openssl x509 -inform DER -in "$DIR/wwdr.cer" -out "$DIR/wwdr.pem"
+
+    say "Checking Apple signed it"
+    openssl verify -partial_chain -CAfile "$DIR/wwdr.pem" "$DIR/pass.pem" >/dev/null 2>&1 \
+      || echo "   (could not verify the chain locally — fine if openssl lacks -partial_chain; Wallet will be the judge)"
+
+    ENV=$DIR/turnup.env
+    b64() { base64 < "$1" | tr -d '\n'; }
+    {
+      echo "PASSKIT_CERT_PEM=$(b64 "$DIR/pass.pem")"
+      echo "PASSKIT_KEY_PEM=$(b64 "$KEY")"
+      echo "PASSKIT_KEY_PASSWORD=$PW"
+      echo "PASSKIT_WWDR_PEM=$(b64 "$DIR/wwdr.pem")"
+      echo "PASSKIT_PASS_TYPE_ID=$TYPE"
+      echo "PASSKIT_TEAM_ID=$TEAM"
+    } > "$ENV"
+    chmod 600 "$ENV"
+
+    EXP=$(openssl x509 -in "$DIR/pass.pem" -noout -enddate | cut -d= -f2)
+    cat <<MSG
+
+Done. Team $TEAM, pass type $TYPE, certificate good until $EXP.
+
+The six settings are in:  $(pwd)/$ENV
+
+Put them in Vercel (each line is Key=Value; the long ones are one line on purpose):
+  https://vercel.com/willgazes-projects/turnup/settings/environment-variables
+  Add each, Production, Save. Six times. Then
+  https://vercel.com/willgazes-projects/turnup/deployments  ->  ... -> Redeploy.
+
+Or, if the Vercel CLI is logged in here, let it do all six:
+  bash scripts/apple-wallet.sh vercel
+
+MSG
+    ;;
+
+  vercel)
+    ENV=$DIR/turnup.env
+    [ -f "$ENV" ] || die "No $ENV yet. Run 'finish' first."
+    command -v vercel >/dev/null || die "Vercel CLI not installed (npm i -g vercel), or paste the six lines by hand."
+    while IFS='=' read -r k v; do
+      [ -n "$k" ] || continue
+      say "Setting $k"
+      vercel env rm "$k" production --yes >/dev/null 2>&1 || true
+      printf '%s' "$v" | vercel env add "$k" production --sensitive >/dev/null \
+        || die "Vercel refused $k. Paste it by hand at https://vercel.com/willgazes-projects/turnup/settings/environment-variables"
+    done < "$ENV"
+    say "All six set. Redeploying production."
+    vercel --prod --yes >/dev/null && echo "Deployed. Open a job card at https://www.getturnup.com/dashboard and press Add to Apple Wallet."
+    ;;
+
+  *)
+    sed -n 2,13p "$0"; exit 1 ;;
+esac
