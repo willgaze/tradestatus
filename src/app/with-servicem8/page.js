@@ -122,7 +122,8 @@ export default function WithServiceM8() {
               The curly fields are ServiceM8’s own and fill themselves in. Keep the link exactly as written. <b>{'{job.next_booking_time}'}</b> prints a window, not a minute, when the booking is made in an allocation window or your account has an Arrival Window set; the card shows the same window.
             </Step>
             <Step n="2" title="Make ServiceM8 send it when you book" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="automation" /><Drawn /></div>}>
-              Settings → <b>Automations</b> → <b>Booking Confirmation</b> → switch on, Edit, choose SMS and pick that template.
+              Settings → <b>Automations</b> → <b>Booking Confirmation</b> → switch on, Edit, tick <b>Send text message confirmation</b> and pick that template. Tick <b>Send email confirmation</b> too if you email: put the same link in your <b>Booking Confirmation</b> email template (Settings → Email Templates), as a line of its own so it is tappable:
+              <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-black/10 bg-white/60 p-3.5 font-mono text-[13px] leading-snug text-slate-800 dark:bg-black/30 dark:text-slate-100">{`Follow the job as the day goes — it says when I set off, when I arrive and when I am done:\nhttps://${host}/j/{job.generated_job_id}`}</pre>
             </Step>
             <Step n="3" title="Tick it once when you book" visual={<div className="w-full max-w-[340px]"><Sm8Window kind="booking" /><Drawn /></div>}>
               When you schedule a job from the job card (Schedule on the desktop, Add Booking on the app), tick <b>Send Booking Confirmation</b>. ServiceM8 remembers the tick.
