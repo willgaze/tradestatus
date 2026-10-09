@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.16.1'
+export const VERSION = '1.17.0'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 10
+export const THEME_INDEX = 11
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.17.0', date: '2026-10-09', notes: [
+    'The plan grew up: fifteen sections, a wallet-card page, a timeline read from this changelog, and an ask written for one person who builds apps.',
+    'Pricing has a shape: Home is free forever up to a number of cards a month, Trade and Crew pay for the trade features, Partners is quoted. The cap and the Trade price are decisions on the page, and nothing is charged yet.',
+    'A share link: /plan/<code> opens the plan read-only with no sign-in. Copy it from the rail. Set PLAN_SHARE_CODE to off to stop it.',
+    'The financials chart drew no bars and the big figures overflowed their tiles. Fixed.',
+  ] },
   { version: '1.16.1', date: '2026-10-09', notes: [
     'Four decisions landed on the plan: free while customer zero, a new Ltd will own it, RIBA is the first template after ServiceM8, and raising money stays undecided.',
   ] },
