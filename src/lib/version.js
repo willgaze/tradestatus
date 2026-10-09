@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.15.0'
+export const VERSION = '1.15.1'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.15.1', date: '2026-10-09', notes: [
+    'Move my sign-in: the address you are signed in on vouches for you on the new one \u2014 no password, 90 seconds, this browser only',
+    'The sign-in page says plainly that Face ID is per address, and points at the move',
+    'CarPlay and Android Auto drawn on a car\u2019s screen in a dash, not a phone',
+    'ServiceM8: waits and retries while the account is being switched on',
+  ] },
   { version: '1.15.0', date: '2026-10-09', notes: [
     'ServiceM8 connector: add a job by its ServiceM8 number and the card follows the job \u2014 check in is On site, complete is Job done, check out early is Paused',
     'Robust by design: a webhook is only a doorbell; every event is checked against the job itself, every sync is idempotent, and a customer opening their page pulls the truth too',

@@ -1,5 +1,18 @@
 # CLAUDE.md — TurnUp
 
+## Talking to Will
+
+Will reads these on a phone, between jobs. Two rules he has had to repeat, so they
+are written down:
+
+1. **Every ask of Will comes with a tappable link and the steps.** Never a bare
+   command or "do X in Vercel". Say where to go (a link), what to press, in order,
+   and what he will see when it worked. A terminal command gets: open Terminal,
+   `cd` to the folder (name it), paste this, what the last line should say.
+2. **Say it once.** If he has decided (a key he will not rotate, a password he will
+   not change), do not raise it again.
+
+
 ## This is not Rosebourne Plumbing
 
 **Read this first, because the mistake has been made twice.**

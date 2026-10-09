@@ -2,6 +2,7 @@
 import { dayAndMonth } from '@/lib/when'
 
 import { useCallback, useEffect, useState } from 'react'
+import { CANONICAL_HOST } from '@/lib/trade'
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser'
 
 // Named so a lost device can be found in the list and switched off.
@@ -77,6 +78,8 @@ export default function Passkeys() {
 
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-4">
+      <MovedNote />
+      <MoveBanner />
       <h2 className="font-bold">Signing in</h2>
       <p className="mt-1 text-sm text-slate-600">
         Add a device and you sign in with Face ID or Touch ID instead of typing a password.
@@ -114,5 +117,44 @@ export default function Passkeys() {
         Keep your password somewhere safe. It is how you get back in if you lose every device.
       </p>
     </section>
+  )
+}
+
+
+/* Signed in on an old address: carry it to the real one, no password. */
+function MovedNote() {
+  const [moved, setMoved] = useState(false)
+  useEffect(() => { setMoved(Boolean(new URLSearchParams(window.location.search).get('moved'))) }, [])
+  if (!moved) return null
+  return (
+    <div className="r-inner mb-4 px-4 py-3.5 text-[14px]" style={{ background: 'color-mix(in srgb, var(--stage-done) 14%, transparent)' }}>
+      <p className="font-semibold">Moved. You are signed in here now.</p>
+      <p className="mt-1">Press <b>Set up this device</b> below and Face ID works on this address from now on.</p>
+    </div>
+  )
+}
+
+function MoveBanner() {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(null)
+  const [here, setHere] = useState(null)
+  useEffect(() => { setHere(window.location.host) }, [])
+  const move = async () => {
+    setBusy(true); setErr(null)
+    try {
+      const r = await fetch('/api/auth/handoff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: CANONICAL_HOST }) })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok || !j.url) throw new Error(j.error || 'failed')
+      window.location.href = j.url
+    } catch (e) { setErr('Could not start the move. Try again.'); setBusy(false) }
+  }
+  if (!here || here === CANONICAL_HOST || here.startsWith('localhost') || here.startsWith('127.')) return null
+  return (
+    <div className="r-inner mb-4 px-4 py-3.5 text-[14px]" style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
+      <p className="font-semibold">This is the old address.</p>
+      <p className="mt-1">TurnUp lives at <b>{CANONICAL_HOST}</b> now. Face ID is set up per address, so take this sign-in there and set it up once.</p>
+      <button type="button" onClick={move} disabled={busy} className="btn accent-fill mt-2.5 !min-h-[42px] !px-4 !text-[14px]">{busy ? 'Moving…' : `Move my sign-in to ${CANONICAL_HOST}`}</button>
+      {err && <p className="mt-2 text-[13px]">{err}</p>}
+    </div>
   )
 }

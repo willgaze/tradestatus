@@ -123,7 +123,7 @@ export const PHASES = [
       { key: 'job-management', name: 'From tracker to the job itself', state: 'idea',
         what: 'The quote they accepted, the day it was done, the bill, the next service due. The link grows into the job, so a one-van firm runs the whole thing from the same place the customer already looks.' },
       { key: 'carplay', name: 'From the dash, not the phone', state: 'idea',
-        what: 'On my way and On site as two big buttons on CarPlay and Android Auto, or said to Siri. Eyes on the road, hands on the wheel, the card still moves.' },
+        what: 'The four stage buttons on the car’s own screen — CarPlay and Android Auto — or said to Siri or Google. Eyes on the road, hands on the wheel, the card still moves.' },
       { key: 'quoting', name: 'Quotes and invoices', state: 'idea',
         what: 'Only worth doing once the card is in a hundred wallets.' },
     ],
