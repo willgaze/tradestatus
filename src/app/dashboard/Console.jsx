@@ -200,8 +200,11 @@ export default function Console() {
           <Mark className="h-7 w-auto" id="dash" />
           <span className="text-[17px] font-bold tracking-[-0.02em]">TurnUp</span>
         </Link>
-        <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
-                className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
+        <div className="flex items-center gap-1">
+          <Link href="/plan" className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Plan</Link>
+          <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
+                  className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
+        </div>
       </div>
       <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">Jobs</h1>
       <p className="mt-1.5 text-[16px] muted">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>

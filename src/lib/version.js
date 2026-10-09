@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.15.4'
+export const VERSION = '1.16.0'
 export const BUILD_DATE = '2026-10-09'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 9
+export const THEME_INDEX = 10
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.16.0', date: '2026-10-09', notes: [
+    'The business plan lives here now, at /plan, behind the same sign-in as Jobs. Twelve sections, arrow keys to move, P to present. Every figure says whether it is a fact with a source, a working estimate, or a decision only the owner can make.',
+    'Pricing, the owning company and whether to raise money are open questions on the page, not answers.',
+  ] },
   { version: '1.15.4', date: '2026-10-09', notes: [
     'Ready for Apple. The signing code wanted a .p12 the library cannot read, and the pass carried no icon, which Wallet rejects without a word. Both fixed, and tested end to end with a stand-in certificate chain.',
     'bash scripts/apple-wallet.sh — two commands turn Apple\'s certificate into the six settings, no Keychain Access.',

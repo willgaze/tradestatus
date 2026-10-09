@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.16.0](./v1.16.0/) | 2026-10-09 | Slate — the business plan lives at /plan |
 | [v1.9.0](./v1.9.0/) | 2026-09-30 | Teal — a window is something you agree, not announce |
 | [v1.8.0](./v1.8.0/) | 2026-09-30 | Indigo — drop a pin with one tap, from either end |
 | [v1.7.0](./v1.7.0/) | 2026-09-30 | Clay — the customer's own answers came off the public page |
