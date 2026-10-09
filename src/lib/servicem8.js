@@ -54,8 +54,18 @@ async function api(path, init = {}) {
       headers: { Accept: 'application/json', 'X-API-Key': process.env.SM8_API_KEY, ...(init.headers || {}) },
     })
     if (r.status === 401 || r.status === 403) throw new Error('sm8_key_rejected')
-    if (!r.ok) throw new Error(`sm8_http_${r.status}`)
     const text = await r.text()
+    if (!r.ok) {
+      // Carry ServiceM8's own sentence up. On 9 Oct 2026 the first subscribe
+      // on a real account came back 429 "Webhook Events is being activated on
+      // this account. Please try again in a few moments." — a code alone
+      // would have sent Will looking for a bug that was not there.
+      let msg = ''
+      try { msg = JSON.parse(text)?.message || '' } catch { msg = text.slice(0, 120) }
+      const e = new Error(`sm8_http_${r.status}${msg ? `: ${msg}` : ''}`)
+      e.status = r.status
+      throw e
+    }
     return text ? JSON.parse(text) : null
   } finally { clearTimeout(t) }
 }

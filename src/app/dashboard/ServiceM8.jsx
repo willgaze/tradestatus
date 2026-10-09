@@ -22,11 +22,22 @@ export default function ServiceM8({ onChanged }) {
   }, [])
   useEffect(() => { load() }, [load])
 
-  const act = async (action) => {
-    setBusy(action); setNote(null)
+  const act = async (action, attempt = 0) => {
+    setBusy(action); if (!attempt) setNote(null)
     try {
       const r = await fetch('/api/dashboard/servicem8', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) })
       const j = await r.json().catch(() => ({}))
+      if (r.status === 202 && j.activating) {
+        // ServiceM8 switches webhooks on for an account the first time anyone
+        // asks, and says "try again in a few moments". So we do — every 20
+        // seconds for up to five minutes, while this stays open.
+        if (attempt < 15) {
+          setNote(`ServiceM8 is switching webhooks on for your account. Trying again in 20 seconds… (${attempt + 1}/15)`)
+          setTimeout(() => act(action, attempt + 1), 20_000)
+          return
+        }
+        return setNote('ServiceM8 is still switching webhooks on. Leave it a few minutes and press Start listening again.')
+      }
       if (!r.ok) setNote(j.error === 'sm8_key_rejected' ? 'ServiceM8 rejected the key. Check SM8_API_KEY in Vercel.' : `Did not work: ${j.error || r.status}`)
       else if (action === 'sync') setNote(`Checked ${j.results.length} linked job${j.results.length === 1 ? '' : 's'}: ${j.results.filter((x) => String(x.outcome).startsWith('moved')).length} moved.`)
       else if (action === 'subscribe') setNote(j.results.every((x) => x.ok) ? 'Listening. ServiceM8 will ring this page when a job moves.' : `Some subscriptions failed: ${j.results.filter((x) => !x.ok).map((x) => `${x.event} (${x.error})`).join(', ')}`)

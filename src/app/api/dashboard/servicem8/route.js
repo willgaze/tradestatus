@@ -38,7 +38,13 @@ export async function POST(request) {
   if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
   const body = await request.json().catch(() => ({}))
   try {
-    if (body.action === 'subscribe') return NextResponse.json({ results: await subscribe(origin(request)) })
+    if (body.action === 'subscribe') {
+      const results = await subscribe(origin(request))
+      // "Being activated" is not a failure, it is a wait. Say so with a code
+      // the panel can act on, rather than a list of five identical errors.
+      const activating = results.some((x) => !x.ok && /being activated|try again/i.test(x.error || ''))
+      return NextResponse.json({ results, activating }, { status: activating ? 202 : 200 })
+    }
     if (body.action === 'unsubscribe') return NextResponse.json({ removed: await unsubscribe() })
     if (body.action === 'sync') {
       const linked = await prisma.tradeStatus.findMany({ where: { isActive: true, externalId: { not: null } } })
