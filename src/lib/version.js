@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.25.0'
+export const VERSION = '1.26.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -48,9 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.25.0', date: '2026-10-10', notes: [
+  { version: '1.26.0', date: '2026-10-10', notes: [
     'A window passing is noticed even when nobody has the page open \u2014 a scheduled check every five minutes',
     'Before this, nudges only ran while a customer was looking, which is the one time you do not need telling',
+  ] },
+  { version: '1.25.0', date: '2026-10-10', notes: [
+    'When the window is missed, the customer is told. Ten minutes after a window ends with nobody On site and no late estimate still running, their page says so plainly — sorry, that is on us — and offers three choices: I will wait, later today, another day. Their choice lands on your card and your phone. You propose the new window; the product never invents a time.',
   ] },
   { version: '1.24.1', date: '2026-10-10', notes: [
     'Notifications are live \u2014 a real one reached a real phone, so the roadmap says live rather than ready',

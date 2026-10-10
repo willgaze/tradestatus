@@ -313,12 +313,16 @@ export default function Console() {
                 const askOpen = t.askedAt && !t.askAnsweredAt
                 const start = t.windowStart || t.scheduledFor
                 const started = start && new Date(start) <= new Date() && t.stage === 'BOOKED'
-                if (!askOpen && !started && !t.lateMinutes) return null
+                const missed = t.missedAt && !['ON_SITE', 'PAUSED', 'DONE'].includes(t.stage)
+                if (!askOpen && !started && !t.lateMinutes && !missed) return null
                 const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+                const who = greetingName(t.customerName) || 'The customer'
+                const CHOICE = { WAIT: 'will wait', LATER: 'would like it later today — set new hours under Link, hours, photos, note', REBOOK: 'would like another day — set new hours for that day under Link, hours, photos, note' }
                 return (
-                  <div className="mt-3.5 rounded-2xl px-4 py-3" style={{ background: 'color-mix(in srgb, #ff9500 12%, transparent)' }}>
+                  <div className="mt-3.5 rounded-2xl px-4 py-3" style={{ background: missed ? 'color-mix(in srgb, #ff3b30 12%, transparent)' : 'color-mix(in srgb, #ff9500 12%, transparent)' }}>
                     <p className="text-[14px] font-semibold">
-                      {askOpen ? `${greetingName(t.customerName) || 'The customer'} asked at ${hhmm(t.askedAt)}: are you still coming?`
+                      {missed ? `Window missed — ${who} was told at ${hhmm(t.missedAt)}${t.missedChoice ? `, and ${CHOICE[t.missedChoice]}` : ', no answer from them yet'}`
+                        : askOpen ? `${who} asked at ${hhmm(t.askedAt)}: are you still coming?`
                         : t.lateMinutes ? `You said about ${t.lateMinutes} minutes late at ${hhmm(t.lateAt)}`
                         : `Window started at ${hhmm(start)} and the card still says Booked in`}
                     </p>

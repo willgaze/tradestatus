@@ -151,6 +151,10 @@ export function publicShape(row) {
     askAnsweredAt: row.askAnsweredAt ? row.askAnsweredAt.toISOString() : null,
     lateMinutes: row.lateMinutes ?? null,
     lateAt: row.lateAt ? row.lateAt.toISOString() : null,
+    // The window was missed and the customer was told; and what they chose.
+    missedAt: row.missedAt ? row.missedAt.toISOString() : null,
+    missedChoice: row.missedChoice || null,
+    missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,

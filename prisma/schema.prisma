@@ -65,6 +65,13 @@ model TradeStatus {
   // reminder for an unanswered question.
   nudgeLevel Int       @default(0)
   nudgedAt   DateTime?
+  // The window was missed and the customer was told: when, and what they
+  // chose — WAIT, LATER (today) or REBOOK (another day). The choice is a
+  // request; the trade still proposes the new window, because the product
+  // never invents a time.
+  missedAt       DateTime?
+  missedChoice   String?
+  missedChoiceAt DateTime?
 
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.

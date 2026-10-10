@@ -1,4 +1,4 @@
-# v1.25.0 — Clay
+# v1.26.0 — Clay
 
 **2026-10-10** · background `#faf6f2` · accent `#9a4a24`
 
