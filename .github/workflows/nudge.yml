@@ -1,0 +1,64 @@
+# Ping the nudge sweep so a window passing is noticed even when nobody has a
+# page open.
+#
+# WHY HERE AND NOT VERCEL CRON. Vercel's free plan caps cron at once a day, and
+# whether it rejects a more frequent schedule at deploy time or quietly runs it
+# daily could not be confirmed from the docs. A rejected cron would break the
+# deploy of a live product, so this runs where the cost is known: GitHub
+# Actions, free on any plan, independent of whatever Vercel plan is in force.
+#
+# GitHub's scheduler is best effort and often runs late — five minutes asked
+# for can arrive in fifteen under load. That is fine here. A nudge a few
+# minutes late still beats one that never comes, and nothing in this product
+# promises a time.
+#
+# COST: nil, because willgaze/tradestatus is public and Actions minutes are
+# free and unlimited on public repositories. This matters more than it looks:
+# GitHub bills a MINIMUM OF ONE MINUTE per job, so every five minutes is about
+# 8,640 minutes a month against a 2,000-minute free allowance. **If this repo
+# is ever made private, this workflow starts costing real money** — drop the
+# frequency or move it to Vercel Cron on a paid plan.
+#
+# GitHub also disables scheduled workflows on a repository with no commits for
+# 60 days. The nightly build commits most days, so it will not idle out, but
+# that is the thing to check first if nudges quietly stop.
+#
+# If this job ever goes red, nudges have stopped. That is the point of failing
+# on a bad response rather than ignoring it.
+name: Nudge sweep
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  # So it can be run by hand from the Actions tab to check it still works.
+  workflow_dispatch:
+
+# Two runs overlapping would do no harm — the sweep is idempotent — but there
+# is no reason to pay for it.
+concurrency:
+  group: nudge-sweep
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask TurnUp to send any nudge that is due
+        env:
+          # Optional. Unset, the endpoint is open and this header is ignored.
+          # Set it here as a repository secret AND as CRON_SECRET in Vercel to
+          # close it; setting it in only one place locks the schedule out.
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          body=$(curl -sS --max-time 30 --retry 2 --retry-delay 5 \
+            ${CRON_SECRET:+-H "Authorization: Bearer $CRON_SECRET"} \
+            -w '\n%{http_code}' \
+            https://www.getturnup.com/api/cron/nudge)
+          code=$(printf '%s' "$body" | tail -n1)
+          printf '%s\n' "$body" | sed '$d'
+          if [ "$code" != "200" ]; then
+            echo "::error::Nudge sweep answered $code — nudges are not being sent."
+            exit 1
+          fi
