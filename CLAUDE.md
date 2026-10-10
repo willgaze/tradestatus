@@ -563,6 +563,16 @@ is now scaled down to fit, every shot is wrapped, and anything missing is named
 in the folder's README. **Check the README's "Not captured" line before calling
 a build done.**
 
+**The three gaps were filled in on 10 Oct, from the code, not from a later
+build.** `v1.18.0`, `v1.19.0` and `v1.20.0` were re-shot by checking out their
+own commits (`6a51aab`, `d8d9105`, `698bc93`), building and running each, and
+copying only the files that were missing — nothing in those folders was
+overwritten. Each README says so. **That is the only acceptable way to backfill
+a diary**: photographing today's app into a folder dated last week is not a
+record, it is a forgery, and the whole folder exists to be trusted later.
+`scripts/` has no tool for this on purpose — it should not be a routine thing
+to do.
+
 **It no longer needs a database.** With no `DEMO_CODE` the customer shots come
 from `/preview`, which renders the real component from a fixture in
 `src/app/preview/Preview.jsx` — invented name, invented address, one job

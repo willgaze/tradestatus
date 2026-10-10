@@ -7,12 +7,52 @@
 - Get paid carries a small margin on top of the processor. Referrals earn free jobs before activation
 - Five pricing decisions open on the plan; the calculator stacks activations, annual fees, bundles and payments margin
 
-### plan-pricing
+### wallet-in-stack
 
-![plan-pricing](./plan-pricing.webp)
+![wallet-in-stack](./wallet-in-stack.webp)
+
+### wallet-opened
+
+![wallet-opened](./wallet-opened.webp)
+
+### wallet-alone
+
+![wallet-alone](./wallet-alone.webp)
+
+### customer-light
+
+![customer-light](./customer-light.webp)
+
+### customer-dark
+
+![customer-dark](./customer-dark.webp)
+
+### dashboard
+
+![dashboard](./dashboard.webp)
+
+### login
+
+![login](./login.webp)
+
+### homepage
+
+![homepage](./homepage.webp)
+
+### homepage-dark
+
+![homepage-dark](./homepage-dark.webp)
 
 ### plan-financials
 
 ![plan-financials](./plan-financials.webp)
 
-The customer, wallet and dashboard shots are not in this folder: this build was made away from a server with a tracking code, and the next capture fills them in.
+### plan-pricing
+
+![plan-pricing](./plan-pricing.webp)
+
+---
+
+*Shots other than the plan pages were captured on 10 October, after the fact, from this version’s own commit (`d8d9105`) — checked out, built and run, so what is above is v1.19.0 and not a later build wearing its number.*
+
+*They were missing because the capture run died on the first page too tall for WebP (the limit is 16,383px, and at 2x that is any page over about 8,190). The note that used to sit here blamed a missing tracking code; that was the wrong diagnosis. The script now scales a giant page down and carries on past a shot it cannot take.*
