@@ -216,6 +216,47 @@ A deploy is part of the script because `NEXT_PUBLIC_*` is **inlined at build
 time**. Setting the variable without rebuilding changes nothing, and the row
 stays missing while the dashboard says the key is set.
 
+## The box: ask it or tell it (`src/lib/assistant.js`)
+
+The top of the dashboard is one box. "What's on today?" gets an answer; "on my
+way to Whitfield", "paused on Hale, waiting on the cylinder", "I'm about half
+an hour late for Beck", "agree Janet's hours" or a pasted booking email gets a
+card to confirm. It exists because the dashboard had become a wall of buttons
+nobody could learn, and because a good banking app takes "pay this" and hands
+back a review screen, not a form. Three rules hold, and they are the rules of
+the rest of this file:
+
+- **It proposes, never acts.** `propose()` returns JSON to the browser; the
+  trade taps Confirm; `/api/dashboard/trackers` does the work exactly as if
+  the form or a stage button had been used. Do not give the model a tool that
+  touches the database. An answer is only words. A wrong reading costs one tap.
+- **It never promises a time.** The prompt forbids it and `stripTimePromise()`
+  is the second lock: "with you by 2" is dropped from the note, with a warning
+  on the card, and hours go into the window where the customer can agree or
+  counter them. Running late is only 15, 30 or 60, as the trade said, the
+  same as the buttons.
+- **Its output is untrusted.** `sanitiseProposal()` treats the model's JSON
+  as a body from a stranger: `cleanText()`, the stage whitelist, the date and
+  time checks, a job id that must be one it was shown, and `windowAgree` only
+  when that job has a customer proposal on the table. Adding a field to the
+  proposal means adding it there, deliberately.
+
+What reaches the model is the trade's own view of the jobs, behind the
+trade's own password, **minus every phone number** (the route's `select`
+never includes one), plus the setup facts so "how do I turn on nudges" gets a
+true answer. Trade side only: the customer's page is a status bar, and a chat
+on that side is how the product started asking the customer things last time.
+Invisible until `ANTHROPIC_API_KEY` is set, the same gate as push; the key
+never reaches the browser, only the fact that there is one.
+
+**The dashboard teaches itself one tip at a time** (`src/lib/tips.js`): no
+jobs yet, a link nobody has opened, no name on the card, nudges not on, Face
+ID not set, ServiceM8 not connected, in that order, one at a time, each with
+Got it. The seven setup panels sit shut under **Setup and settings**, and a
+tip opens the one that is the next thing to do. Do not put a panel back on the
+open page because it seems important; it was all important, and it was ten
+screens tall.
+
 ## The link is the credential
 
 A customer has no login and never will. The code in the URL is the only thing

@@ -14,6 +14,8 @@ import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
 import ServiceM8 from './ServiceM8'
 import Nudges from './Nudges'
+import Assistant from './Assistant'
+import Tip from './Tip'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
@@ -44,7 +46,26 @@ const STAGE_BUTTONS = ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']
 // React treat it as uncontrolled and then complain the moment it is typed in.
 const EMPTY = { sm8JobNumber: '', customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
 
-export default function Console() {
+/**
+ * The trade's screen. Three things on it, in this order:
+ *
+ *   1. The box. Ask it or tell it. "What's on today?", "on my way to
+ *      Whitfield", a pasted booking email. It answers, or hands back a card
+ *      to confirm. (Only when ANTHROPIC_API_KEY is set; otherwise a New job
+ *      button and the form.)
+ *   2. The day's run. One card per job: who and where, the stage control,
+ *      and anything waiting on an answer. What is only useful at the door
+ *      (Navigate, which door, the dog) appears when the stage says you are
+ *      on your way or there. Everything done once per job sitting down (the
+ *      link, hours, photos, the note) is under More.
+ *   3. Setup and settings, shut. Who to expect, Nudge me, notifications,
+ *      ServiceM8, Face ID, the wallet card, the roadmap. One tip at a time
+ *      opens the right one when it is the next thing worth doing.
+ *
+ * This screen was ten phone-screens tall with every panel open at once, and
+ * "it's impossible to know what all the buttons do" was the fair review.
+ */
+export default function Console({ assistant = false }) {
   const [trackers, setTrackers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -52,12 +73,13 @@ export default function Console() {
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(null)
   // One job open at a time, and the new-job form shut until it is wanted.
-  // Everything on this screen used to be open at once: five jobs came to
-  // 7,826px, nine and a quarter screens, with a 663px empty form on top of
-  // the work. A trade standing on a driveway scrolled a full screen per job
-  // to reach the one they were at.
   const [openJob, setOpenJob] = useState(null)
   const [showForm, setShowForm] = useState(false)
+  // The setup panels, shut by default; a tip or a tap opens them and names
+  // the one to land on.
+  const [setupOpen, setSetupOpen] = useState(false)
+  const [focusPanel, setFocusPanel] = useState(null)
+  const [setup, setSetup] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -70,36 +92,66 @@ export default function Console() {
     } finally { setLoading(false) }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  // What is switched on, for the one-tip-at-a-time line. Never an error: a
+  // dashboard that cannot work out what to suggest just suggests nothing.
+  const loadSetup = useCallback(async () => {
+    try {
+      const r = await fetch('/api/dashboard/assistant', { cache: 'no-store' })
+      if (r.ok) setSetup((await r.json()).setup || null)
+    } catch { /* no tip, no harm */ }
+  }, [])
 
-  const create = async (e) => {
-    e.preventDefault()
+  useEffect(() => { load(); loadSetup() }, [load, loadSetup])
+
+  const openPanel = (panel) => {
+    setSetupOpen(true)
+    setFocusPanel(panel)
+  }
+  useEffect(() => {
+    if (!setupOpen || !focusPanel) return
+    const el = document.getElementById(`panel-${focusPanel}`)
+    el?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+    setFocusPanel(null)
+  }, [setupOpen, focusPanel])
+
+  // One way in for a new job, whether the fields came from the form or from
+  // the box's card. Returns whether it worked, so the caller knows what to
+  // clear.
+  const createFields = async (fields) => {
     setSaving(true)
     try {
       const r = await fetch('/api/dashboard/trackers', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
       })
-      if (!r.ok) return setError(await failure(r, 'Could not create the link'))
-      setForm(EMPTY)
-      setShowForm(false)
+      if (!r.ok) { setError(await failure(r, 'Could not create the link')); return false }
       await load()
+      return true
     } catch {
       setError({ title: 'Could not create the link', fix: 'Check your connection and try again.' })
+      return false
     } finally { setSaving(false) }
+  }
+
+  const create = async (e) => {
+    e.preventDefault()
+    if (await createFields(form)) { setForm(EMPTY); setShowForm(false) }
   }
 
   const patch = async (id, body) => {
     // Optimistic: signal is patchy in a van, and a button that does nothing for
     // three seconds gets pressed four times.
     setTrackers((rows) => rows.map((r) => (r.id === id ? { ...r, ...body } : r)))
+    let ok = false
     try {
       const r = await fetch(`/api/dashboard/trackers/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       })
+      ok = r.ok
       if (!r.ok) setError(await failure(r, 'Update failed'))
     } catch {
       setError({ title: 'Update failed', fix: 'Check your connection and try again.' })
     } finally { await load() }
+    return ok
   }
 
   const revoke = async (id) => {
@@ -194,6 +246,8 @@ export default function Console() {
     </label>
   )
 
+  const openJobs = trackers.filter((t) => t.isActive !== false && t.stage !== 'DONE').length
+
   return (
     <div className="relative min-h-screen" style={{ '--tint': 'var(--mts-accent)' }}>
       <div className="stage-wash" aria-hidden="true" />
@@ -209,8 +263,10 @@ export default function Console() {
                   className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
         </div>
       </div>
-      <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">Jobs</h1>
-      <p className="mt-1.5 text-[16px] muted">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
+      <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">Today</h1>
+      <p className="mt-1.5 text-[16px] muted">
+        {loading ? 'Loading…' : openJobs === 0 ? 'Nothing open.' : `${openJobs} job${openJobs === 1 ? '' : 's'} open. Tap the stage as the day goes.`}
+      </p>
 
       {error && (
         <div className="r-outer mt-5 p-5"
@@ -220,17 +276,28 @@ export default function Console() {
         </div>
       )}
 
-      {/* Shut by default. It is six empty fields used once per job, and it was
-          the first thing on the screen every time the screen was opened. */}
-      {!showForm && (
+      {/* The box, or the button. With a key, saying it beats typing six
+          fields; the form stays a tap away for a ServiceM8 number or a day
+          with no signal worth spending on a round trip. */}
+      {assistant
+        ? <Assistant jobs={trackers} setup={setup} onCreate={createFields} onUpdate={patch} />
+        : !showForm && (
+          <button type="button" onClick={() => setShowForm(true)} className="btn btn-filled mt-6 w-full">
+            <PlusIcon size={18} /> New job
+          </button>
+        )}
+
+      <Tip jobs={trackers} setup={setup} onOpen={openPanel} />
+
+      {assistant && !showForm && (
         <button type="button" onClick={() => setShowForm(true)}
-                className="btn btn-filled mt-6 w-full">
-          <PlusIcon size={18} /> New job
+                className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 text-[14px] font-medium muted">
+          <PlusIcon size={15} /> Add a job by hand, or by ServiceM8 number
         </button>
       )}
 
       {showForm && (
-      <form onSubmit={create} className="glass r-outer mt-6 grid gap-4 p-5 sm:grid-cols-2">
+      <form onSubmit={create} className="glass r-outer mt-4 grid gap-4 p-5 sm:grid-cols-2">
         {field('sm8JobNumber', 'ServiceM8 job number — fills the rest in, and the card then follows the job', '2718')}
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
         {field('customerPhone', 'Their mobile', '07700 900123', 'tel')}
@@ -249,12 +316,16 @@ export default function Console() {
       </form>
       )}
 
-      {loading ? <p className="mt-8 text-center text-[15px] muted">Loading…</p>
-       : trackers.length === 0 ? <p className="mt-8 text-center text-[15px] muted">No jobs yet. Create one above.</p>
+      {loading ? null
+       : trackers.length === 0 ? <p className="mt-8 text-center text-[15px] muted">No jobs yet.</p>
        : (
         <ul className="mt-6 space-y-4">
           {trackers.map((t) => {
             const open = openJob === t.id
+            // What is useful at the door shows when you are heading there or
+            // there; before that it is noise between this job and the next.
+            const heading = t.stage === 'ON_MY_WAY'
+            const there = t.stage === 'ON_MY_WAY' || t.stage === 'ON_SITE' || t.stage === 'PAUSED'
             return (
             <li key={t.id}
                 className={`glass r-outer tone-${stageOf(t.stage).tone} p-4 ${t.isActive ? '' : 'opacity-55'}`}>
@@ -317,7 +388,7 @@ export default function Console() {
                 if (!askOpen && !started && !t.lateMinutes && !missed) return null
                 const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
                 const who = greetingName(t.customerName) || 'The customer'
-                const CHOICE = { WAIT: 'will wait', LATER: 'would like it later today — set new hours under Link, hours, photos, note', REBOOK: 'would like another day — set new hours for that day under Link, hours, photos, note' }
+                const CHOICE = { WAIT: 'will wait', LATER: 'would like it later today — set new hours under More', REBOOK: 'would like another day — set new hours for that day under More' }
                 return (
                   <div className="mt-3.5 rounded-2xl px-4 py-3" style={{ background: missed ? 'color-mix(in srgb, #ff3b30 12%, transparent)' : 'color-mix(in srgb, #ff9500 12%, transparent)' }}>
                     <p className="text-[14px] font-semibold">
@@ -338,10 +409,9 @@ export default function Console() {
                 )
               })()}
 
-              {/* Getting there — and what they told you about the door. This
-                  used to live only on the customer's page, which meant the
-                  trade never saw "gate sticks, use the back door". */}
-              {(t.jobAddress || t.mapPin || t.what3words) && (
+              {/* Getting there. Shown while you are on your way, which is when
+                  you need it; otherwise it waits under More. */}
+              {(heading || open) && (t.jobAddress || t.mapPin || t.what3words) && (
                 <div className="mt-3.5 flex flex-wrap gap-2">
                   <a href={mapsDirectionsUrl({ mapPin: t.mapPin, address: t.jobAddress })} target="_blank" rel="noreferrer"
                      className="btn btn-tinted !min-h-[44px] !px-4 !text-[14px]">
@@ -358,7 +428,9 @@ export default function Console() {
                 </div>
               )}
 
-              {(t.doorToUse || t.petsOnSite || t.accessNotes) && (
+              {/* What they told you about the door. Read at the gate, not in
+                  the office, so it shows once you are heading there. */}
+              {(there || open) && (t.doorToUse || t.petsOnSite || t.accessNotes) && (
                 <div className="r-inner mt-3 flex items-start gap-3 px-4 py-3" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                   <KeyIcon size={18} className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }} />
                   <span className="min-w-0 text-[14px]">
@@ -386,7 +458,7 @@ export default function Console() {
                     <TickIcon size={17} /> That works — agree it
                   </button>
                   <p className="mt-2 text-[13px] muted">
-                    Or open this job and set your own hours, which sends it back to them.
+                    Or set your own hours under More, which sends it back to them.
                   </p>
                 </div>
               )}
@@ -405,15 +477,15 @@ export default function Console() {
               {/* --- everything below is folded away until the row is opened ---
 
                   What stays visible is what gets used standing next to a van:
-                  who and where, the stage buttons, Navigate, anything the
-                  customer has said that is waiting on an answer. The rest —
-                  sending the link, setting hours, photos, the note — is done
-                  once per job, sitting down, and does not belong between this
-                  job and the next one. */}
+                  who and where, the stage buttons, anything the customer has
+                  said that is waiting on an answer. The rest — sending the
+                  link, setting hours, photos, the note — is done once per job,
+                  sitting down, and does not belong between this job and the
+                  next one. */}
               <button type="button" onClick={() => setOpenJob(open ? null : t.id)}
                       aria-expanded={open}
                       className="mt-3 flex min-h-[44px] w-full items-center justify-between gap-2 text-[14px] font-medium muted">
-                <span>{open ? 'Less' : 'Link, hours, photos, note'}</span>
+                <span>{open ? 'Less' : 'More'}</span>
                 <ChevronIcon size={16} className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
               </button>
 
@@ -431,15 +503,12 @@ export default function Console() {
               </div>
 
               {/* The trade needs three words as often as the customer does, and
-                  is more likely to be the one standing at the gate. The field
-                  was read-only here: whatever the customer had typed, and no
-                  way to set it from the van. */}
+                  is more likely to be the one standing at the gate. */}
               <label className="mt-3 block text-[13px] muted">
                 what3words — for a gate with no number
                 {/* Uncontrolled, like the other fields here, so it does not
                     fight a keystroke on a patchy connection. Keyed on the
-                    value so a lookup that fills it in is actually seen: a
-                    defaultValue alone would not change on re-render. */}
+                    value so a lookup that fills it in is actually seen. */}
                 <input type="text" key={t.what3words || 'empty'}
                        defaultValue={t.what3words || ''} placeholder="///filled.count.soap"
                        autoCapitalize="none" autoCorrect="off"
@@ -486,7 +555,6 @@ export default function Console() {
                   </a>
                 </div>
               </div>
-
 
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <label className="block text-[13px] muted">
@@ -552,15 +620,32 @@ export default function Console() {
         </ul>
       )}
 
-      <WaitlistPanel />
-      <WalletShowcase tracker={trackers[0]} />
-      <ServiceM8 onChanged={load} />
-      <Nudges />
-      <Profile />
-      <Passkeys />
-      <PushSetup />
-      <Roadmap />
-      <Changelog />
+      {/* Setup and settings, shut. Seven panels used once each, and they were
+          the second half of every visit to a screen meant for a driveway. A
+          tip above opens the right one when it is the next thing to do. */}
+      <button type="button" onClick={() => setSetupOpen((o) => !o)} aria-expanded={setupOpen}
+              className="glass r-outer mt-8 flex min-h-[54px] w-full items-center justify-between gap-3 px-4 py-2.5 text-left">
+        <span className="min-w-0">
+          <span className="block text-[16px] font-semibold leading-tight">Setup and settings</span>
+          <span className="mt-px block truncate text-[13px]" style={{ color: 'var(--label-2)' }}>
+            Who to expect, Nudge me, notifications, ServiceM8, Face ID, the wallet card, what is next
+          </span>
+        </span>
+        <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
+                     className={`shrink-0 transition-transform duration-200 ${setupOpen ? 'rotate-90' : ''}`} />
+      </button>
+
+      {setupOpen && (<>
+        <div id="panel-profile" className="scroll-mt-4"><Profile /></div>
+        <div id="panel-nudges" className="scroll-mt-4"><Nudges /></div>
+        <div id="panel-push" className="scroll-mt-4"><PushSetup /></div>
+        <div id="panel-servicem8" className="scroll-mt-4"><ServiceM8 onChanged={load} /></div>
+        <div id="panel-passkeys" className="scroll-mt-4"><Passkeys /></div>
+        <div id="panel-wallet" className="scroll-mt-4"><WalletShowcase tracker={trackers[0]} /></div>
+        <div id="panel-waitlist" className="scroll-mt-4"><WaitlistPanel /></div>
+        <div id="panel-roadmap" className="scroll-mt-4"><Roadmap /></div>
+        <div id="panel-changelog" className="scroll-mt-4"><Changelog /></div>
+      </>)}
       <div className="mt-8 flex justify-center"><BuildStamp /></div>
       </main>
     </div>
