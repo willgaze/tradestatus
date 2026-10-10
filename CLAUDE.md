@@ -594,7 +594,27 @@ writes `lateMinutes`/`lateAt`, a note with the time, and pushes the customer.
 Unasked nudges go to the trade at window start (`nudgeLevel` 1) and window
 end (2); an unanswered ask repeats every ten minutes. `nudgeIfDue` runs on
 the customer's 30-second poll, after every ServiceM8 sync, and from
-`GET /api/cron/nudge` (open, idempotent; point any five-minute pinger at it).
+`GET /api/cron/nudge`, which **`.github/workflows/nudge.yml` pings every five
+minutes**. Before that nothing called it, so a window could pass unnoticed
+whenever no customer happened to have their page open — which is the case a
+trade cannot rely on.
+
+Why GitHub Actions and not Vercel Cron: Vercel's free plan caps cron at once a
+day, and whether a more frequent schedule is rejected at deploy time or quietly
+run daily could not be confirmed from their docs. A rejected cron breaks the
+deploy of a live product, so the schedule runs where the cost is known. **It is
+free only because the repo is public** — GitHub bills a minimum of one minute
+per job, so every five minutes is ~8,640 minutes a month against a 2,000-minute
+allowance. Making the repo private turns this into a bill.
+
+The route is **open, and that is a choice**: every nudge level fires once and a
+repeat is paced to ten minutes inside `nudgeAll()`, whoever calls it, so
+hammering it cannot produce extra notifications. A sweep is also throttled to
+one per twenty seconds, which caps what an open URL costs the database rather
+than what it costs the customer. Setting `CRON_SECRET` makes it require
+`Authorization: Bearer <secret>` — the header Vercel Cron sends — and it must
+then be set in **both** Vercel and the repository secrets, or the schedule
+locks itself out.
 Rules that must not drift: the product never estimates a time; a late figure
 is only ever one the trade typed, shown with when they said it.
 
