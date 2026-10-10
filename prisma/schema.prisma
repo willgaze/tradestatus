@@ -203,3 +203,34 @@ model Waitlist {
 
   @@index([createdAt])
 }
+
+// ---------------------------------------------------------------------------
+// ServiceM8. Two NEW tables, no new columns on TradeStatus: a new table that
+// has not been created yet only breaks the routes that read it, whereas a
+// missing column breaks every customer link (see CLAUDE.md, v1.9.0).
+// ---------------------------------------------------------------------------
+
+// Which ServiceM8 job a tracker follows, and when we last looked.
+model Sm8Link {
+  tradeStatusId String    @id
+  jobUuid       String    @unique
+  jobNumber     String?
+  syncedAt      DateTime?
+  lastStatus    String?                      // ServiceM8's own status word
+  lastOutcome   String?                      // what the last sync did, in a word
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Every delivery and every sync, so "did it fire?" has an answer.
+model Sm8Event {
+  id            String   @id @default(cuid())
+  event         String                       // job.checked_in, sync.pull, ...
+  jobUuid       String?
+  tradeStatusId String?
+  outcome       String?                      // moved:ON_SITE | unchanged | unlinked | error:...
+  receivedAt    DateTime @default(now())
+
+  @@index([receivedAt])
+  @@index([jobUuid])
+}

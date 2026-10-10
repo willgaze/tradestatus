@@ -4,6 +4,7 @@ import { publicShape } from '@/lib/trade-status'
 import { publicProfile, publicBrand } from '@/lib/profile'
 import { TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import StatusTracker from '../StatusTracker'
+import { passkitConfigured } from '@/lib/passkit'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Your job | TurnUp', robots: { index: false, follow: false } }
@@ -58,5 +59,7 @@ export default async function TrackPage({ params }) {
     )
   }
 
-  return <StatusTracker initialStatus={status} initialProfile={profile} initialBrand={brand} />
+  // Whether this deployment can sign an Apple Wallet pass. Decided here, on
+  // the server, so the client never has to guess from a 503.
+  return <StatusTracker initialStatus={status} initialProfile={profile} initialBrand={brand} walletReady={passkitConfigured()} />
 }

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.14.0'
+export const VERSION = '1.21.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 10
+export const THEME_INDEX = 15
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,14 +48,108 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.14.0', date: '2026-10-10', notes: [
+  { version: '1.21.0', date: '2026-10-10', notes: [
     'The what3words box no longer assumes you already know your three words',
     'A link straight to their map, which finds you \u2014 then copy them back',
     'You can set three words from the van too; the dashboard field was read-only',
     'One tap fills it in automatically the day there is a what3words key',
+    'Fixed: the diary had quietly stopped recording the app \u2014 three nights of it',
   ] },
-  // 1.13.1 shipped without an entry here. Added after the fact rather than
-  // left out, because a changelog with a hole in it is worse than a late line.
+  { version: '1.20.0', date: '2026-10-09', notes: [
+    'The plan has a spine: three moats a big firm cannot build in a sprint, six moves in order with a gate each, five rivals with the move that beats each, and seven sectors where a regulator already prices a missed visit.',
+    'Pricing turned round a third time, and this one holds: free for every sender, homes, trades and small firms, no cap and no activation. An enterprise pays per card. Why they pay is Ofgem, Ofcom, Ofwat and the Ombudsman, not the card.',
+    'Seventeen sections now. The ask for the friend is one line: read it and say what is wrong.',
+  ] },
+  { version: '1.19.0', date: '2026-10-09', notes: [
+    'Pricing turned round: the card and the job are free with no cap. A trade who is a month in and past a number of jobs pays a small activation charge and a small yearly one, card details on file. Everything else is a bundle (Get paid, Look the part, Run the day) or a tier, paid monthly or weekly.',
+    'Get paid takes the payment on the job, with a small margin on top of the processor. Referrals earn free jobs before activation, the Dropbox way.',
+    'Five pricing decisions open on the page: the jobs threshold, the activation charge, the yearly fee, the payments margin, the referral reward. The calculator stacks all four revenue lines.',
+  ] },
+  { version: '1.18.1', date: '2026-10-09', notes: [
+    'Two more decisions landed: Home is free to five cards a month, and Trade is five pounds a month. The tiles, the chips and the calculator follow.',
+  ] },
+  { version: '1.18.0', date: '2026-10-09', notes: [
+    'The plan grew up: fifteen sections, a wallet-card page, a timeline read from this changelog, and an ask written for one person who builds apps.',
+    'Pricing has a shape: Home is free forever up to a number of cards a month, Trade and Crew pay for the trade features, Partners is quoted. The cap and the Trade price are decisions on the page, and nothing is charged yet.',
+    'A share link: /plan/<code> opens the plan read-only with no sign-in. Copy it from the rail. Set PLAN_SHARE_CODE to off to stop it.',
+    'The financials chart drew no bars and the big figures overflowed their tiles. Fixed.',
+  ] },
+  { version: '1.17.2', date: '2026-10-09', notes: [
+    'Four decisions landed on the plan: free while customer zero, a new Ltd will own it, RIBA is the first template after ServiceM8, and raising money stays undecided.',
+  { version: '1.17.1', date: '2026-10-09', notes: [
+    'A card that follows a ServiceM8 job now carries the booking window too: "Between 09:00 and 11:00" from the ServiceM8 booking, agreed, and moved when the booking moves. ServiceM8 stamps times in UK local time with no offset, so they are read as Europe/London rather than trusted as UTC.',
+  ] },
+  { version: '1.17.0', date: '2026-10-09', notes: [
+    'Paid on the same page: a new idea on the roadmap and a frame under Where it is going. When the card says Job done, the bill is under it and Apple Pay settles it there; the receipt stays with the job.',
+    'The trade-side homepage frames are re-captured with the new stage control.',
+  ] },
+  { version: '1.16.3', date: '2026-10-09', notes: [
+    'The stage control on a job card is one track with five equal cells, icon over a short label, instead of five pills that wrapped and clipped at phone width. Will: "the buttons lose their integrity".',
+  ] },
+  { version: '1.16.2', date: '2026-10-09', notes: [
+    '/with-servicem8 has a screen beside every sentence: real captures where the screen is TurnUp\'s, drawings of ServiceM8\'s own screens where it is theirs, and a What you get row at the top.',
+    'A dashboard card that follows a ServiceM8 job now says so.',
+  ] },
+  { version: '1.16.1', date: '2026-10-09', notes: [
+    'The link ServiceM8 can send itself. /j/<job number> goes in the booking confirmation template; the customer proves it is their booking with the last four digits of their mobile, once, and the card appears on the dashboard already linked to the job.',
+    '/with-servicem8: the page that says what the connector does in its current form, the exact template line, and a ten-minute test. Linked from the homepage.',
+    'Two ideas logged from Will: a diary on every job, and WhatsApp as the place bookings actually arrive.',
+  ] },
+  ] },
+  { version: '1.16.0', date: '2026-10-09', notes: [
+    'The business plan lives here now, at /plan, behind the same sign-in as Jobs. Twelve sections, arrow keys to move, P to present. Every figure says whether it is a fact with a source, a working estimate, or a decision only the owner can make.',
+    'Pricing, the owning company and whether to raise money are open questions on the page, not answers.',
+  ] },
+  { version: '1.15.4', date: '2026-10-09', notes: [
+    'Ready for Apple. The signing code wanted a .p12 the library cannot read, and the pass carried no icon, which Wallet rejects without a word. Both fixed, and tested end to end with a stand-in certificate chain.',
+    'bash scripts/apple-wallet.sh — two commands turn Apple\'s certificate into the six settings, no Keychain Access.',
+    'Add to Apple Wallet appears on the customer page the moment the deployment can sign a pass, and only on an Apple device.',
+  ] },
+  { version: '1.15.3', date: '2026-10-09', notes: [
+    'The CarPlay and Android Auto frames are photographs from the driver\u2019s seat now, with the app on the real screen \u2014 the UI pressed onto the glass in its perspective, still crisp text',
+  ] },
+  { version: '1.15.2', date: '2026-10-09', notes: [
+    'CarPlay in the van and Android Auto in the car, drawn from the driver\u2019s seat: the map, Navigate to the address, the four stage buttons',
+    'The TurnUp mark on the dashboard goes to the homepage, and the homepage\u2019s Sign in comes back',
+    'ServiceM8 needs one setting in Vercel now: the webhook secret is derived and new tables are created on deploy',
+  ] },
+  { version: '1.15.1', date: '2026-10-09', notes: [
+    'Move my sign-in: the address you are signed in on vouches for you on the new one \u2014 no password, 90 seconds, this browser only',
+    'The sign-in page says plainly that Face ID is per address, and points at the move',
+    'CarPlay and Android Auto drawn on a car\u2019s screen in a dash, not a phone',
+    'ServiceM8: waits and retries while the account is being switched on',
+  ] },
+  { version: '1.15.0', date: '2026-10-09', notes: [
+    'ServiceM8 connector: add a job by its ServiceM8 number and the card follows the job \u2014 check in is On site, complete is Job done, check out early is Paused',
+    'Robust by design: a webhook is only a doorbell; every event is checked against the job itself, every sync is idempotent, and a customer opening their page pulls the truth too',
+    'A ServiceM8 panel on the dashboard: connected, listening, and what it did lately',
+    'One command connects it: scripts/connect-servicem8.sh',
+    'CarPlay on the roadmap, with its frame',
+  ] },
+  { version: '1.14.0', date: '2026-10-08', notes: [
+    'The homepage tells both sides: pick \u201cI\u2019m the customer\u201d or \u201cI do the work\u201d and walk through that side in eight frames',
+    'Either end, any job \u2014 the role swap is on the page, badged Next so nobody mistakes it for live',
+    'Everything it does today, as one list that reads from the same file as the in-app roadmap',
+    'Where it is going: six drawn frames, every one badged Next',
+    'Twenty-six App Store-sized frames in all, each a real screen or an honest drawing \u2014 including a record of your home, and the step from tracker to the job itself',
+  ] },
+  { version: '1.13.4', date: '2026-10-08', notes: [
+    'The wallet card on the homepage is pulled out of a stack in real 3D \u2014 the flat version stays in the dashboard',
+    'Six App Store-style frames tell the story: sent by text, four words, will someone be in, find the door, your five buttons, in their wallet',
+    'Every frame is rendered from the real screens, in a drawn phone with a status bar, from /preview/posters',
+  ] },
+  { version: '1.13.3', date: '2026-10-08', notes: [
+    'The homepage finally shows the thing: the customer\u2019s page and the wallet card, before any words',
+    '\u201cHow it goes\u201d is pictures now \u2014 your job card, their page changing across the day, and a paused job',
+    'The wallet card is one drawing shared by the homepage and the dashboard, so it cannot drift from the real pass',
+  ] },
+  { version: '1.13.2', date: '2026-10-02', notes: [
+    'Van lookup now uses the DVSA MOT history record \u2014 make, model AND colour from the plate',
+    'DVLA closed new registrations; it stays as the fallback for anyone who already has a key',
+    'The profile page says exactly which key to get, where, and that it must be used within 90 days',
+  ] },
+  // Added after the fact: 1.13.1 shipped without an entry, and a changelog
+  // with a hole in it is worse than a late line.
   { version: '1.13.1', date: '2026-10-01', notes: [
     'Took the one-off database migration back out of the build',
     'The waiting list can be cleared, not just added to',

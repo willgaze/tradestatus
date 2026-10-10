@@ -1,11 +1,27 @@
-# CLAUDE.md — My Trade Status
+# CLAUDE.md — TurnUp
+
+## Talking to Will
+
+Will reads these on a phone, between jobs. Two rules he has had to repeat, so they
+are written down:
+
+1. **Every ask of Will comes with a tappable link and the steps.** Never a bare
+   command or "do X in Vercel". Say where to go (a link), what to press, in order,
+   and what he will see when it worked. A terminal command gets: open Terminal,
+   `cd` to the folder (name it), paste this, what the last line should say.
+2. **Say it once.** If he has decided (a key he will not rotate, a password he will
+   not change), do not raise it again.
+
 
 ## This is not Rosebourne Plumbing
 
 **Read this first, because the mistake has been made twice.**
 
-My Trade Status is its own product, in its own repository, with its own
-database and its own Vercel project. Rosebourne Plumbing is a *customer* of it
+TurnUp (until v1.13.0 called My Trade Status; the GitHub repo `tradestatus`, the
+Vercel project `turnup`, the old `tradestatus.vercel.app` URL, the Prisma models and
+the `mts-` CSS/cookie prefixes keep their old names because nobody reads them)
+is its own product, in its own repository, with its own database and its own
+Vercel project. Anywhere a person reads the name, it is **TurnUp**. Rosebourne Plumbing is a *customer* of it
 — the first one, and currently the only one. The two share nothing but an
 owner.
 
@@ -383,7 +399,11 @@ Each of these was live. Do not reintroduce them.
 - **A time built in UTC came back an hour out.** Covered above under *A window
   is an arrangement*. `setUTCHours()` on a wall-clock time is always wrong for
   seven months of the year.
-- **Deployment protection.** `tradestatus.vercel.app` is open; the generated
+- **The address is https://www.getturnup.com** (since 8 Oct 2026; `getturnup.com` 308s to it,
+  bought on Hostinger, DNS at Vercel). `tradestatus.vercel.app` still serves every link already
+  sent and must keep doing so. Passkeys are bound to the host they were enrolled on, so a Face ID
+  set up on the old address does not sign in on the new one: enrol again there, once.
+- **Deployment protection.** The custom domains and `tradestatus.vercel.app` are open; the generated
   per-deployment URLs are behind Vercel's login. Never put a
   `tradestatus-<hash>-…` URL in front of a customer.
 - **`setup.sh` died on its first line of real work.** The push-key block read
@@ -447,12 +467,24 @@ So: **columns on an existing table are not shippable until the migration has
 run.** Either run it first, or hold the commit. Do not reason from "the push
 table shipped fine" — that was a new table, which is the other case.
 
+### New tables are created by the build
+
+Since 9 Oct 2026 `npm run build` runs `prisma db push` before `next build` (see
+package.json). An additive change — a new table, a new nullable column — lands
+in the live database as part of the deploy, which is how `Sm8Link` and
+`Sm8Event` got there. A destructive change is refused by `db push` without
+`--accept-data-loss`, the step is allowed to fail (`|| true`), and the build
+carries on; so a destructive change still needs a human and still needs the
+check below. The v1.9.0 rule stands: a NEW COLUMN that code reads is only safe
+because the build now creates it first — if the push step ever fails, every
+link is down. Read the build log.
+
 ### The check after any deploy that touches the schema
 
 One curl, and it is not optional:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' https://tradestatus.vercel.app/api/status/ZZZZZZZZ
+curl -s -o /dev/null -w '%{http_code}\n' https://www.getturnup.com/api/status/ZZZZZZZZ
 ```
 
 **404 is healthy** — the row was looked for and not found. **503 means the code
@@ -463,6 +495,20 @@ perfectly good status code.
 Checking the theme colour changed is not this check. The theme comes from a
 constant in the bundle and is green while the database is on fire.
 
+## The link ServiceM8 sends (`/j/<job number>`)
+
+ServiceM8 templates can merge the job number and the mobile, and nothing
+unguessable (the field list has no uuid or link; checked 9 Oct 2026). So the
+booking text carries `/j/{job.generated_job_id}`, and that page shows nothing
+until the visitor gives the last four digits of the job contact's mobile or
+phone (`phoneMatches` in `src/lib/servicem8.js`). `/j/<number>/<mobile>` skips
+the question when the mobile matches, which a template could write too, but
+a mobile saved with spaces ends the link early in an SMS, so the page
+recommends the plain form. Ten misses on one number rest it for fifteen
+minutes, counted in `Sm8Event` (`claim.miss`) so it holds across instances. The tracker is created on first proof
+(`findOrCreateForJob`), linked at birth and synced. `/with-servicem8` is the
+public how-to and must stay true to what the connector does today.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.
@@ -471,7 +517,13 @@ Wallet and Google Wallet and updates itself. Both need credentials the
 repository does not have:
 
 - **Apple Wallet (PassKit)** — an Apple Developer Program membership and a Pass
-  Type ID certificate. Passes update over APNs.
+  Type ID certificate. Everything else is built and tested with a stand-in
+  chain (v1.15.4): `bash scripts/apple-wallet.sh csr` makes the key and the
+  request, `finish pass.cer` turns Apple's certificate into the six `PASSKIT_*`
+  settings (`docs/apple-wallet.md`). The library wants **PEM, never a .p12**.
+  Still to build once a real pass is in a wallet: the `/api/passes/v1` web
+  service (device registration, "what changed" and APNs pushes) so the card
+  updates itself; today a pass shows the stage at the moment it was added.
 - **Google Wallet** — a Google Cloud project, a Wallet API issuer account, and
   a service account key.
 
@@ -500,6 +552,16 @@ and dark text on the background for contrast. Generating one at runtime to be
 `docs/diary/v<version>/`. Nothing in there is ever overwritten, tidied or
 deleted: it is the record of what the app looked like on a given day, and it is
 wanted for marketing.
+
+**One shot that will not photograph must never cost the rest.** WebP cannot
+hold an image taller than 16,383px, which at `deviceScaleFactor: 2` is any page
+over about 8,190 CSS pixels. The homepage grew past it, sharp threw, the throw
+killed the whole run, and v1.18 to v1.20 recorded almost nothing of the product
+— only the plan pages, because those happened to be captured first. Nobody
+noticed, because a diary folder with files in it looks finished. A giant page
+is now scaled down to fit, every shot is wrapped, and anything missing is named
+in the folder's README. **Check the README's "Not captured" line before calling
+a build done.**
 
 **It no longer needs a database.** With no `DEMO_CODE` the customer shots come
 from `/preview`, which renders the real component from a fixture in

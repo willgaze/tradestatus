@@ -6,8 +6,9 @@ import { useCallback, useEffect, useState } from 'react'
 /**
  * Set up once, shown on every job from then on.
  *
- * The registration does the work: DVLA returns make and colour, so the trade
- * types a plate rather than describing their van. Without a DVLA key it falls
+ * The registration does the work: the MOT history API returns make, model and
+ * colour, so the trade types a plate rather than describing their van. (DVLA
+ * is the fallback; it has no model.) Without a key it falls
  * back to typing make and colour, which takes ten seconds once.
  */
 export default function Profile() {
@@ -36,15 +37,21 @@ export default function Profile() {
         body: JSON.stringify({ reg: p.vehicleReg }),
       })
       const v = await r.json()
-      if (v.make || v.colour) {
-        setP((x) => ({ ...x, vehicleMake: v.make || x.vehicleMake, vehicleColour: v.colour || x.vehicleColour }))
-        setLookupNote(`Found it — ${[v.colour, v.make].filter(Boolean).join(' ')}. Add the model yourself.`)
+      if (v.make || v.colour || v.model) {
+        setP((x) => ({
+          ...x,
+          vehicleMake: v.make || x.vehicleMake,
+          vehicleModel: v.model || x.vehicleModel,
+          vehicleColour: v.colour || x.vehicleColour,
+        }))
+        const found = [v.colour, v.make, v.model].filter(Boolean).join(' ')
+        setLookupNote(v.model ? `Found it — ${found}.` : `Found it — ${found}. Add the model yourself; DVLA does not hold it.`)
       } else if (v.error === 'not_configured') {
         setNeedsKey(true)
       } else if (v.error === 'not_found') {
-        setLookupNote('DVLA does not know that plate. Type the make and colour below.')
+        setLookupNote('No record for that plate. Type the make, model and colour below.')
       } else {
-        setLookupNote('Lookup did not work. Type the make and colour below.')
+        setLookupNote('Lookup did not work. Type the make, model and colour below.')
       }
     } finally { setLooking(false) }
   }
@@ -114,16 +121,20 @@ export default function Profile() {
                    style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
                 <p className="font-semibold">The lookup is built but has no key yet.</p>
                 <p className="mt-1">
-                  DVLA give one out free, to a named person, in about five minutes:
+                  The DVSA MOT history API gives make, model and colour for free. Register with
+                  your name, email and postal address; the key takes up to five working days.
                 </p>
-                <a href="https://developer-portal.driver-vehicle-licensing.api.gov.uk/apis/vehicle-enquiry-service"
+                <a href="https://documentation.history.mot.api.gov.uk/mot-history-api/register"
                    target="_blank" rel="noreferrer"
                    className="btn btn-tinted mt-2.5 !min-h-[42px] !px-4 !text-[14px]">
-                  Get a DVLA key ›
+                  Register for the MOT history API ›
                 </a>
                 <p className="mt-2.5 muted">
-                  Then add it in Vercel as <code className="font-mono">DVLA_API_KEY</code> and redeploy.
-                  Until then, type the make and colour below — it is ten seconds, once.
+                  When the email arrives, add <code className="font-mono">MOT_CLIENT_ID</code>,{' '}
+                  <code className="font-mono">MOT_CLIENT_SECRET</code> and{' '}
+                  <code className="font-mono">MOT_API_KEY</code> in Vercel and redeploy. Use the key
+                  within 90 days or DVSA restrict it. Until then, type the details below — it is ten
+                  seconds, once.
                 </p>
               </div>
             )}
@@ -133,7 +144,7 @@ export default function Profile() {
             <Field label="Colour" value={p.vehicleColour || ''} onChange={set('vehicleColour')} placeholder="White" />
             <Field label="Make" value={p.vehicleMake || ''} onChange={set('vehicleMake')} placeholder="Ford" />
           </div>
-          <Field label="Model" hint="DVLA does not hold this one" value={p.vehicleModel || ''}
+          <Field label="Model" hint="Filled by the lookup, or type it" value={p.vehicleModel || ''}
                  onChange={set('vehicleModel')} placeholder="Transit Custom" />
 
           <Field label="Photo of you" hint="A link to an image — optional"

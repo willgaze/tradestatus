@@ -47,7 +47,25 @@ const SHOTS = [
 
 // Playwright only writes PNG or JPEG; sharp (already here as a Next.js dependency)
 // turns the PNG buffer into the WebP the diary keeps.
-const toWebp = (png, file) => sharp(png).webp({ quality: 82 }).toFile(file)
+/**
+ * WebP cannot hold an image taller than 16,383px, and at deviceScaleFactor 2
+ * that is any page over about 8,190 CSS pixels. The homepage passed it, sharp
+ * threw "Processed image is too large for the WebP format", the throw took the
+ * whole run down with it, and v1.18 to v1.20 recorded almost nothing of the
+ * product as a result — only the plan pages, which happened to be captured
+ * first. So: scale a giant page down to fit rather than lose it.
+ */
+const WEBP_MAX = 16383
+
+const toWebp = async (png, file) => {
+  const img = sharp(png)
+  const { height = 0, width = 0 } = await img.metadata()
+  const tall = height > WEBP_MAX
+  return (tall
+    ? img.resize({ width: Math.max(1, Math.round(width * (WEBP_MAX / height))), height: WEBP_MAX })
+    : img
+  ).webp({ quality: 82 }).toFile(file)
+}
 
 const run = async () => {
   await mkdir(OUT, { recursive: true })
@@ -115,9 +133,16 @@ const run = async () => {
       throw new Error(`${BASE} is a dev server (Next's badge is on the page). Capture against \`next start\`.`)
     }
     const file = `${OUT}${shot.name}.webp`
-    await toWebp(await page.screenshot({ fullPage: shot.full, type: 'png' }), file)
-    done.push(shot.name)
-    console.log('  captured', shot.name)
+    try {
+      await toWebp(await page.screenshot({ fullPage: shot.full, type: 'png' }), file)
+      done.push(shot.name)
+      console.log('  captured', shot.name)
+    } catch (e) {
+      // Record the gap and carry on. A run that dies on its fourth shot leaves
+      // a diary that looks complete and is not.
+      skipped.push(`${shot.name} (${e.message.slice(0, 80)})`)
+      console.log('  SKIPPED', shot.name, '-', e.message.slice(0, 80))
+    }
     await ctx.close()
   }
   await browser.close()

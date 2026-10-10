@@ -4,6 +4,7 @@ import { requireOperator } from '@/lib/operator-auth'
 import { generateCode, isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
+import { sm8Configured, fetchJob, fetchJobContact, syncTracker, fieldsFromJob } from '@/lib/servicem8'
 
 export const dynamic = 'force-dynamic'
 
@@ -68,14 +69,24 @@ export async function POST(request) {
       return NextResponse.json({ error: 'bad_scheduled_date' }, { status: 400 })
     }
 
+    // A ServiceM8 job number is the whole form: name, mobile, address and the
+    // job come from there, and the tracker follows the job from then on.
+    let fromSm8 = null
+    if (body.sm8JobNumber && sm8Configured()) {
+      const job = await fetchJob({ number: body.sm8JobNumber }).catch(() => null)
+      if (!job) return NextResponse.json({ error: 'sm8_job_not_found' }, { status: 404 })
+      const contact = await fetchJobContact(job.uuid).catch(() => null)
+      fromSm8 = fieldsFromJob(job, contact)
+    }
+
     const stageNote = cleanText(body.stageNote)
     const fields = {
-      jobRef: cleanText(body.jobRef),
-      externalId: cleanText(body.externalId),
-      customerName: cleanText(body.customerName),
-      customerPhone: cleanText(body.customerPhone, 32),
-      jobAddress: cleanText(body.jobAddress),
-      jobSummary: cleanText(body.jobSummary),
+      jobRef: cleanText(body.jobRef) || fromSm8?.jobRef || null,
+      externalId: cleanText(body.externalId) || fromSm8?.externalId || null,
+      customerName: cleanText(body.customerName) || fromSm8?.customerName || null,
+      customerPhone: cleanText(body.customerPhone, 32) || fromSm8?.customerPhone || null,
+      jobAddress: cleanText(body.jobAddress) || fromSm8?.jobAddress || null,
+      jobSummary: cleanText(body.jobSummary) || fromSm8?.jobSummary || null,
       stage,
       stageNote,
       scheduledFor,
@@ -101,6 +112,8 @@ export async function POST(request) {
       }
     }
     if (!tracker) return NextResponse.json({ error: 'code_collision' }, { status: 503 })
+    // Linked at birth: take the job's real state straight away.
+    if (fromSm8) await syncTracker(tracker, { source: 'sync.create' })
 
     return NextResponse.json({ tracker }, { status: 201 })
   } catch (error) {

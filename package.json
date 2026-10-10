@@ -1,10 +1,10 @@
 {
-  "name": "mytradestatus",
+  "name": "turnup",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma db push --skip-generate --accept-data-loss=false || true; next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push"

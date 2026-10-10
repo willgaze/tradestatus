@@ -20,6 +20,10 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.20.0](./v1.20.0/) | 2026-10-09 | Plum — three moats, six moves, five rivals, seven wedges; free for every sender, enterprise per card |
+| [v1.19.0](./v1.19.0/) | 2026-10-09 | Indigo — the card is free; activation, bundles and a payments margin are the business |
+| [v1.18.0](./v1.18.0/) | 2026-10-09 | Clay — the plan grew up: pricing, the wallet card, a share link |
+| [v1.16.0](./v1.16.0/) | 2026-10-09 | Slate — the business plan lives at /plan |
 | [v1.9.0](./v1.9.0/) | 2026-09-30 | Teal — a window is something you agree, not announce |
 | [v1.8.0](./v1.8.0/) | 2026-09-30 | Indigo — drop a pin with one tap, from either end |
 | [v1.7.0](./v1.7.0/) | 2026-09-30 | Clay — the customer's own answers came off the public page |

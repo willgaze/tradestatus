@@ -1,6 +1,6 @@
 # TurnUp
 
-**Live at https://tradestatus.vercel.app**
+**Live at https://www.getturnup.com** (the old `tradestatus.vercel.app` still serves every link already sent)
 
 Live job tracking for trades. The customer opens one link and sees where their
 job actually is.
@@ -48,7 +48,7 @@ rather than creating second ones, and re-reads the connection string from Neon
 `main` is connected to Vercel, so a push deploys to production and any other
 branch gets a preview.
 
-**Send customers the short URL only.** `tradestatus.vercel.app` is open, but
+**Send customers the short URL only.** `www.getturnup.com` and `tradestatus.vercel.app` are open, but
 the generated per-deployment URLs (`tradestatus-<hash>-willgazes-projects...`)
 sit behind Vercel's login — the deployment protection covers everything except
 the production alias. A customer sent the long one lands on a Vercel sign-in

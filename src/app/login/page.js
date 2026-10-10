@@ -4,10 +4,13 @@ import Mark from '@/components/Mark'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { CANONICAL_HOST } from '@/lib/trade'
 import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser'
 
 export default function LoginPage() {
   const router = useRouter()
+  const [moved, setMoved] = useState(null)
+  const [onCanonical, setOnCanonical] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [supported, setSupported] = useState(false)
@@ -16,7 +19,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState('')
 
-  useEffect(() => setSupported(browserSupportsWebAuthn()), [])
+  useEffect(() => {
+    setSupported(browserSupportsWebAuthn())
+    setMoved(new URLSearchParams(window.location.search).get('moved'))
+    setOnCanonical(window.location.host === CANONICAL_HOST)
+  }, [])
 
   const done = () => { router.push('/dashboard'); router.refresh() }
 
@@ -49,7 +56,7 @@ export default function LoginPage() {
       // leaves someone tapping a button that appears dead, so offer the way
       // forward that works in both cases rather than calling it an error.
       if (err?.name === 'NotAllowedError' || err?.name === 'AbortError') {
-        setError('Nothing to sign in with on this device yet — use your password, then set it up.')
+        setError('Nothing set up on this address yet. Face ID is per address: if you have it on the old one, move it from there (below). Or use your password, then set it up here.')
         setShowPassword(true)
       } else {
         setError(err.message || 'That did not work.')
@@ -119,6 +126,19 @@ export default function LoginPage() {
             {busy ? 'Signing in…' : 'Sign in with password'}
           </button>
         </form>
+      )}
+
+      {moved === 'failed' && (
+        <p className="r-inner mt-4 p-3.5 text-[15px]" style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
+          That move link had expired — they last ninety seconds. Go back to the old address and press Move again.
+        </p>
+      )}
+
+      {onCanonical && (
+        <div className="glass r-outer mt-8 p-4 text-[14px]">
+          <p className="font-semibold">Still signed in on the old address?</p>
+          <p className="mt-1 muted">Open <a className="underline" href="https://tradestatus.vercel.app/dashboard">tradestatus.vercel.app/dashboard</a>, and under Signing in press <b>Move my sign-in</b>. You land back here, signed in, and set up Face ID once.</p>
+        </div>
       )}
 
       {supported && (

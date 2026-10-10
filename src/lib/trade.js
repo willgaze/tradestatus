@@ -17,3 +17,7 @@ export const TRADE_PHONE_TEL =
  * src/lib/when.js, which is the only place dates are formatted.
  */
 export const TRADE_TIMEZONE = process.env.NEXT_PUBLIC_TRADE_TIMEZONE || 'Europe/London'
+
+// The address the product lives at. Used to offer a move when someone is
+// signed in on an old one (passkeys are per host).
+export const CANONICAL_HOST = process.env.NEXT_PUBLIC_CANONICAL_HOST || 'www.getturnup.com'

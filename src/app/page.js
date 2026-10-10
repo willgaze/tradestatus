@@ -2,7 +2,14 @@ import Link from 'next/link'
 import Mark from '@/components/Mark'
 import Waitlist from './Waitlist'
 import { STAGE_ORDER, STAGES, stageOf } from '@/lib/trade-status'
-import { StageIcon, TickIcon, MessageIcon, PinIcon, BellIcon, ChevronIcon } from '@/components/icons'
+import { StageIcon, TickIcon, ChevronIcon } from '@/components/icons'
+import Image from 'next/image'
+import Device from '@/components/Device'
+import WalletHero from '@/components/WalletHero'
+import { byGroup } from '@/lib/posters'
+import FrameStrip from '@/components/FrameStrip'
+import Walkthrough from './Walkthrough'
+import { PHASES } from '@/lib/roadmap'
 
 /**
  * The front door — the only page here a stranger is meant to find.
@@ -26,8 +33,8 @@ import { StageIcon, TickIcon, MessageIcon, PinIcon, BellIcon, ChevronIcon } from
 export const metadata = {
   title: 'TurnUp — your customer always knows where you are',
   description:
-    'One link, sent by text. Your customer sees whether you are booked in, on your way, on site or done — '
-    + 'without ringing you to ask. No app and no login for them.',
+    'One link per job, sent by text. Your customer sees booked in, on my way, on site, done — as it happens, '
+    + 'without ringing to ask. Nothing to download, nothing to log in to.',
   robots: { index: true, follow: true },
   openGraph: {
     title: 'TurnUp — your customer always knows where you are',
@@ -36,16 +43,13 @@ export const metadata = {
   },
 }
 
-const STEPS = [
-  { icon: <MessageIcon size={20} />, title: 'Book the job, send the link',
-    body: 'One tap sends a text with their link in it. They open it — no app, no account, no password.' },
-  { icon: <PinIcon size={20} />, title: 'Tap the stage as the day goes',
-    body: 'Booked in, on my way, on site, done. Five buttons on your phone, one-handed, next to the van.' },
-  { icon: <BellIcon size={20} />, title: 'Their page changes as you tap',
-    body: 'They stop ringing to ask, because the answer is already on their phone.' },
-  { icon: <TickIcon size={20} />, title: 'Running late? Say so once',
-    body: 'Pause it with a reason — "waiting on the cylinder" — and everyone waiting on you reads it.' },
-]
+/* The job the pictures show. Same invented job as /demo and the diary, so a
+   visitor who taps "See what they see" lands on the page they just looked at. */
+const DEMO = {
+  stage: 'ON_MY_WAY', jobRef: '2718', customerName: 'Sarah Whitfield',
+  jobAddress: 'Church Lane, Burbage SN8', arrivingAt: '2026-10-01T07:00:00.000Z',
+}
+
 
 export default function Home() {
   return (
@@ -75,9 +79,8 @@ export default function Home() {
             Your customer always knows where you are.
           </h1>
           <p className="mt-5 text-[19px] leading-snug muted">
-            One link per job, sent by text. They open it and see whether you are booked in, on your way,
-            on site or done — without ringing you to find out. No app for them to download and nothing to
-            log in to.
+            One link per job, sent by text. They see booked in, on my way, on site, done &mdash; as it
+            happens, without ringing to ask. Nothing to download. Nothing to log in to.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#list" className="btn btn-filled !px-6">Get on the list</a>
@@ -85,6 +88,27 @@ export default function Home() {
               See what they see <ChevronIcon size={16} />
             </Link>
           </div>
+        </section>
+
+        {/* --- what it looks like ------------------------------------------
+            Shown before it is explained. A page of words about a visual
+            product is a page nobody finishes; the two pictures below are the
+            customer's phone and the customer's wallet, and they do the rest. */}
+        <section className="mt-12 grid items-start gap-8 sm:grid-cols-2">
+          <figure className="mx-auto">
+            <Device screen="/home/customer-on-my-way.webp" width={250} tilt priority className="mx-auto"
+                    alt="The page your customer opens from the text: Hello Sarah, On my way, set off at 08:00, between 09:00 and 11:00" />
+            <figcaption className="mt-4 text-center text-[14px] leading-snug muted">
+              What they open from the text. No app, no login.
+            </figcaption>
+          </figure>
+          <figure className="mx-auto w-full max-w-[340px]" style={{ '--tint': '#5856d6' }}>
+            <WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" />
+            <figcaption className="mt-2.5 text-center text-[14px] leading-snug muted">
+              The same job as a card in their wallet, updating on the lock screen.
+              Built; waiting on Apple&rsquo;s signing certificate.
+            </figcaption>
+          </figure>
         </section>
 
         {/* --- the thing it is actually for -------------------------------- */}
@@ -126,23 +150,67 @@ export default function Home() {
           </ul>
         </section>
 
-        {/* --- how a day goes ---------------------------------------------- */}
-        <section className="mt-12">
-          <h2 className="text-[26px] font-bold tracking-[-0.02em]">How it goes</h2>
-          <ol className="mt-5 grid gap-3">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="glass r-outer flex items-start gap-4 p-5">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-[15px] font-bold"
-                      style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>
-                  {i + 1}
-                </span>
+        {/* --- two sides of one job -------------------------------------------
+            The product has two ends. A visitor is standing at one of them, and
+            a page that explains both at once explains neither. One switch. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Two sides of one job</h2>
+          <p className="mt-2 text-[17px] muted">The customer opens a link. You tap a button. Pick your side.</p>
+          <div className="mt-5">
+            <Walkthrough frames={{ customer: byGroup('customer'), trade: byGroup('trade') }} />
+          </div>
+        </section>
+
+        {/* --- either end --------------------------------------------------------
+            Not built yet, and badged so on the frames. It is on the page because
+            it is where this is going: the plumber is also somebody's customer. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Either end, any job</h2>
+          <p className="mt-2 text-[17px] leading-snug muted">
+            Today you send the link. Tomorrow you are the one waiting in &mdash; for a delivery, a mate with a
+            trailer, the electrician. One person moves, one waits, and either of you can be either. Same
+            page, other chair. <span className="font-semibold" style={{ color: 'var(--tint)' }}>Next.</span>
+          </p>
+          <FrameStrip frames={byGroup('either')} />
+        </section>
+
+        {/* --- everything it does today ------------------------------------------
+            The complete list, from the same file the in-app roadmap reads, so
+            this cannot drift from what is actually live. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Everything it does today</h2>
+          <p className="mt-2 text-[17px] muted">Live now, on every job. Nothing on this list is a promise.</p>
+          <Link href="/with-servicem8" className="glass r-outer mt-4 flex items-center justify-between gap-3 px-4 py-3.5">
+            <span className="min-w-0">
+              <span className="block text-[16px] font-semibold leading-tight">Using it with ServiceM8</span>
+              <span className="mt-0.5 block text-[14px] leading-snug muted">One line in your booking text, and the card follows the job. Setup and a ten-minute test.</span>
+            </span>
+            <span className="shrink-0 text-[15px] font-medium" style={{ color: 'var(--tint)' }}>Read →</span>
+          </Link>
+          <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+            {PHASES.flatMap((ph) => ph.items).filter((it) => it.state === 'live').map((it) => (
+              <li key={it.key} className="glass r-outer flex items-start gap-3 px-4 py-3.5">
+                <span className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }}><TickIcon size={18} /></span>
                 <span className="min-w-0">
-                  <span className="block text-[17px] font-semibold">{step.title}</span>
-                  <span className="mt-1 block text-[16px] leading-snug muted">{step.body}</span>
+                  <span className="block text-[16px] font-semibold leading-tight">{it.name}</span>
+                  {it.what && <span className="mt-0.5 block text-[14px] leading-snug muted">{it.what}</span>}
                 </span>
               </li>
             ))}
-          </ol>
+          </ul>
+        </section>
+
+        {/* --- where it is going ----------------------------------------------------
+            Drawn, not captured, and every frame says NEXT. The app carries the
+            same list with a vote button; the page shows the six that change the
+            shape of the thing. */}
+        <section className="mt-14">
+          <h2 className="text-[26px] font-bold tracking-[-0.02em]">Where it is going</h2>
+          <p className="mt-2 text-[17px] leading-snug muted">
+            Not built yet, and marked so you cannot mistake it. The order is decided by the people using it:
+            every one of these has a vote button in the app.
+          </p>
+          <FrameStrip frames={byGroup('next')} />
         </section>
 
         {/* --- the part that is a promise about what it will NOT do --------
@@ -192,7 +260,7 @@ export default function Home() {
         <footer className="mt-12 text-center">
           <Mark className="mx-auto h-6 w-auto opacity-60" id="foot" />
           <p className="mt-2 text-[13px]" style={{ color: 'var(--label-3)' }}>
-            TurnUp — live job tracking for trades
+            TurnUp — live job tracking for trades · <Link href="/with-servicem8" className="underline">With ServiceM8</Link>
           </p>
         </footer>
       </main>

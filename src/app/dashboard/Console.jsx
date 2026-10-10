@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
 import Mark from '@/components/Mark'
@@ -10,6 +11,7 @@ import Profile from './Profile'
 import WalletShowcase from './WalletShowcase'
 import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
+import ServiceM8 from './ServiceM8'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
@@ -38,7 +40,7 @@ const STAGE_BUTTONS = ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']
 // customerPhone belongs here even though nothing sets it initially: the form
 // renders an input bound to form.customerPhone, and a value of undefined makes
 // React treat it as uncontrolled and then complain the moment it is typed in.
-const EMPTY = { customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
+const EMPTY = { sm8JobNumber: '', customerName: '', customerPhone: '', jobSummary: '', jobAddress: '', jobRef: '', scheduledFor: '' }
 
 export default function Console() {
   const [trackers, setTrackers] = useState([])
@@ -195,9 +197,15 @@ export default function Console() {
       <div className="stage-wash" aria-hidden="true" />
       <main className="relative z-10 mx-auto max-w-3xl px-4 pb-16 pt-safe">
       <div className="flex items-center justify-between pt-2">
-        <Mark className="h-7 w-auto" id="dash" />
-        <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
-                className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
+        <Link href="/" aria-label="TurnUp home" className="inline-flex min-h-[44px] items-center gap-2 pr-2">
+          <Mark className="h-7 w-auto" id="dash" />
+          <span className="text-[17px] font-bold tracking-[-0.02em]">TurnUp</span>
+        </Link>
+        <div className="flex items-center gap-1">
+          <Link href="/plan" className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Plan</Link>
+          <button onClick={async () => { await fetch('/api/auth/login', { method: 'DELETE' }); location.href = '/login' }}
+                  className="inline-flex min-h-[44px] items-center px-2 text-[15px] muted">Sign out</button>
+        </div>
       </div>
       <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.02em]">Jobs</h1>
       <p className="mt-1.5 text-[16px] muted">One link per job. Send it when the job is booked, then tap the stage as the day goes.</p>
@@ -221,6 +229,7 @@ export default function Console() {
 
       {showForm && (
       <form onSubmit={create} className="glass r-outer mt-6 grid gap-4 p-5 sm:grid-cols-2">
+        {field('sm8JobNumber', 'ServiceM8 job number — fills the rest in, and the card then follows the job', '2718')}
         {field('customerName', 'Customer name', 'Sarah Whitfield')}
         {field('customerPhone', 'Their mobile', '07700 900123', 'tel')}
         {field('jobSummary', 'Job', 'Unvented cylinder swap')}
@@ -268,6 +277,14 @@ export default function Console() {
                 <div className="min-w-0 flex-1 break-words">
                   <p className="text-[19px] font-semibold tracking-[-0.01em]">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="mt-0.5 text-[15px] muted">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
+                  {/* Linked at birth to a ServiceM8 job: the card moves on its own. Worth
+                      saying on the card, because the stage buttons below still work and
+                      a trade should know which cards follow the job and which are theirs. */}
+                  {t.externalId && (
+                    <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold" style={{ color: 'var(--tint)' }}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />Follows ServiceM8 job {t.jobRef ? `#${t.jobRef}` : ''}
+                    </p>
+                  )}
                 </div>
                 <p className="inline-flex shrink-0 items-center gap-1.5 text-[14px] font-semibold"
                    style={{ color: 'var(--tint)' }}>
@@ -276,12 +293,13 @@ export default function Console() {
                 </p>
               </div>
 
-              <div className="mt-3.5 grid grid-cols-5 gap-1.5">
+              <div className="stages mt-3.5" role="group" aria-label="Stage">
                 {STAGE_BUTTONS.map((s) => (
                   <button key={s} type="button" onClick={() => patch(t.id, { stage: s })}
                           aria-pressed={t.stage === s} aria-label={STAGES[s].label}
-                          className={`tone-${STAGES[s].tone} segment ${t.stage === s ? 'segment-on' : 'segment-off'}`}>
-                    {STAGES[s].short}
+                          className={`tone-${STAGES[s].tone} stage-seg ${t.stage === s ? 'stage-seg-on' : ''}`}>
+                    <StageIcon tone={STAGES[s].tone} size={18} />
+                    <span>{STAGES[s].short}</span>
                   </button>
                 ))}
               </div>
@@ -502,6 +520,7 @@ export default function Console() {
 
       <WaitlistPanel />
       <WalletShowcase tracker={trackers[0]} />
+      <ServiceM8 onChanged={load} />
       <Profile />
       <Passkeys />
       <Roadmap />
