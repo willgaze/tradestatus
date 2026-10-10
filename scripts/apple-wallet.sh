@@ -8,9 +8,20 @@
 # Everything lands in ./apple/ which is gitignored. The private key never
 # leaves this folder except as the value you paste into Vercel.
 #
+# DO BOTH HALVES IN ONE SITTING. The certificate Apple issues is bound to the
+# key `csr` makes, and that key is gitignored — correctly, it is a credential —
+# which means in a cloud session it lives only in that container and dies with
+# it. Generate the key, upload the request, download the .cer and run `finish`
+# without stopping. If the key is gone when the certificate arrives, the
+# certificate is waste paper and the whole dance starts again.
+#
+# So do not run `csr` while the membership is still being approved. Approval
+# takes a day or two; the container will not last that long. Wait for the
+# "your membership is active" email, then do all of it at once.
+#
 # Why not Keychain Access: Apple's instructions assume a Mac and a trip through
 # Certificate Assistant, which is where most first-timers get lost. openssl
-# does the same job in two lines and works anywhere, including this sandbox.
+# does the same job in two lines and works anywhere.
 #
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -27,6 +38,25 @@ command -v openssl >/dev/null || die "openssl is not installed."
 
 case "${1:-}" in
   csr)
+    cat <<'WARN'
+
+  ────────────────────────────────────────────────────────────
+   Before you go further: can you finish in this same sitting?
+
+   The certificate Apple gives you only works with the key this
+   command is about to make, and that key is not saved to git —
+   it is a credential. In a cloud session it dies with the
+   container, usually within the hour.
+
+   You need, right now:
+     - a LIVE Apple Developer membership (the email has arrived)
+     - ten minutes to upload the request and download the .cer
+     - to run `finish` before you close this
+
+   Still waiting on approval? Stop here and come back to it.
+  ────────────────────────────────────────────────────────────
+
+WARN
     mkdir -p "$DIR"
     if [ -f "$KEY" ]; then
       say "Key already exists at $KEY — keeping it. Delete it first if you really want a new one."
