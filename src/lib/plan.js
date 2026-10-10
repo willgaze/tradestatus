@@ -31,7 +31,7 @@ export const PLAN_META = {
   walletDocUrl: 'https://github.com/willgaze/tradestatus/blob/main/docs/apple-wallet.md',
   diaryUrl: 'https://github.com/willgaze/tradestatus/tree/main/docs/diary',
   liveSince: '8 Oct 2026',
-  updated: '9 Oct 2026',
+  updated: '10 Oct 2026',
 }
 
 export const STAGES = [
@@ -233,7 +233,7 @@ export const GTM_PHASES = [
   { phase: '2', label: 'Be ServiceM8’s card', gate: 'Ten ServiceM8 trades sending', moves: ['Connector live on customer zero', 'Add-on listing', 'Stage vocabulary published'], when: 'Q4 2026', state: 'gray' },
   { phase: '3', label: 'Android, on a pass platform if faster', gate: 'Both wallets live', moves: ['Decide: PassKit or our own', 'Google Wallet pass class', 'Same update loop'], when: 'Q4 2026', state: 'gray' },
   { phase: '4', label: 'The household asks for it', gate: 'Household-requested cards outnumber trade-sent', moves: ['Customer-invite: one screen', 'An account per address', 'Remembered for the next trade'], when: '2027 H1', state: 'gray' },
-  { phase: '5', label: 'One housing association', gate: 'One paid pilot, one tender', moves: ['Resident card beside their repairs system', 'Attendance and confirmation fed back, timestamped', 'Ombudsman cases as the deck', 'The Ltd before any contract'], when: '2027 H1', state: 'amber' },
+  { phase: '5', label: 'One housing association', gate: 'One paid pilot, one tender', moves: ['Resident card beside their repairs system', 'Attendance record as a CSV: built 10 Oct 2026', 'Ombudsman cases as the deck', 'The Ltd before any contract'], when: '2027 H1', state: 'amber' },
   { phase: '6', label: 'Carriers, as a tick-box', gate: 'One carrier pass live', moves: ['A button in their email, AfterShip-style', 'Then energy, broadband, water', 'Then four firms on one card'], when: '2027 H2', state: 'gray' },
 ]
 

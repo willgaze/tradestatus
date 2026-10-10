@@ -499,6 +499,18 @@ export default function Console() {
         </ul>
       )}
 
+      {/* The attendance record. One row per visit, timestamped from the taps
+          above, for whoever pays per visit and is marked per missed one. */}
+      <section className="glass r-outer mt-8 p-5">
+        <h2 className="text-[20px] font-bold tracking-[-0.02em]">Attendance record</h2>
+        <p className="mt-1 text-[14px] muted">Every set-off, arrival and finish, one row per visit, as a spreadsheet. A repeat visit is a second row. A job nobody went to says so.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <a href="/api/dashboard/attendance?days=30" download className="btn btn-grey text-[14px]">Last 30 days</a>
+          <a href="/api/dashboard/attendance?days=90" download className="btn btn-grey text-[14px]">Last 90 days</a>
+        </div>
+        <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, and nor does the link.</p>
+      </section>
+
       <WaitlistPanel />
       <WalletShowcase tracker={trackers[0]} />
       <ServiceM8 onChanged={load} />

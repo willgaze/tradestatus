@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.20.0'
-export const BUILD_DATE = '2026-10-09'
+export const VERSION = '1.21.0'
+export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 14
+export const THEME_INDEX = 15
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.21.0', date: '2026-10-10', notes: [
+    'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. On the dashboard, last 30 or 90 days.',
+    'Built for the first enterprise wedge, decided today: a social landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',
+  ] },
   { version: '1.20.0', date: '2026-10-09', notes: [
     'The plan has a spine: three moats a big firm cannot build in a sprint, six moves in order with a gate each, five rivals with the move that beats each, and seven sectors where a regulator already prices a missed visit.',
     'Pricing turned round a third time, and this one holds: free for every sender, homes, trades and small firms, no cap and no activation. An enterprise pays per card. Why they pay is Ofgem, Ofcom, Ofwat and the Ombudsman, not the card.',

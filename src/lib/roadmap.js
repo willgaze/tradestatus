@@ -47,6 +47,8 @@ export const PHASES = [
         what: 'Apple and Google. All day, or the window if you have set one.' },
       { key: 'installable', name: 'Add to home screen', state: 'live',
         what: 'Opens like an app, no address bar.' },
+      { key: 'attendance-csv', name: 'Attendance record as a spreadsheet', state: 'live',
+        what: 'Set off, arrived, finished, one row per visit, from your own taps. For a landlord who pays per visit and is marked per missed one.' },
     ],
   },
   {
