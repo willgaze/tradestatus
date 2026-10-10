@@ -129,7 +129,7 @@ export const PHASES = [
         what: 'What happened and who said what, in one thread on the job: the stages, the customer\u2019s answers, your notes, the texts \u2014 the way a ServiceM8 job diary reads, but shared with the person it is about.' },
       { key: 'whatsapp', name: 'WhatsApp, where the bookings actually come from', state: 'idea',
         what: 'Half the jobs start as a WhatsApp with a photo, a video and a pin. Today that gets retyped into the job system and the pictures stay in the chat. The link sent back through WhatsApp, and the photos, the pin and the thread kept with the job \u2014 without running the business inside WhatsApp.' },
-      { key: 'window-missed', name: 'When the window ends and nobody is there', state: 'idea',
+      { key: 'window-missed', name: 'When the window ends and nobody is there', state: 'live',
         what: 'A message to the customer in plain words: the window has passed, here is a new one, and three buttons — wait, later today, rebook. Sent on an objective trigger, the way Ofcom and Ofgem fire a payment, not left to whoever remembers.' },
       { key: 'not-home', name: 'Customer not home, in one tap', state: 'idea',
         what: 'Door photo, location fix, two logged attempts, a short wait, and a sorry-we-missed-you message with a rebook link. The evidence a carrier keeps, from a one-van firm. A fee only if it was agreed in the booking and no notice was given.' },

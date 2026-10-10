@@ -30,7 +30,7 @@ when they said it.
 | 1 | Both present, on time | On site tap stamps device time, fix (if granted) and server time; card moves | Live |
 | 2 | Trade drifting late inside the window | Nothing to the customer; the trade's phone is nudged when the window *starts* with the card still Booked in | Live 1.22.0 |
 | 3 | Window ends with no On site | Trade nudged again. Customer sees "Are you still coming?" and asks in one tap; trade answers On my way or 15/30/60 min late | Live 1.22.0 |
-| 3b | …and the trade does not answer in ten minutes | Push repeats every ten minutes. Next: the customer-facing message with a new window and *wait / later today / rebook*; then the pre-agreed goodwill gesture; last rung, a call to the trade in their own recorded voice (idea) | Next |
+| 3b | …and ten minutes pass after the window with nobody On site | The customer is told plainly (sorry, that is on us) with *I'll wait / later today / another day*; their choice lands on the card and the trade's phone; the trade proposes the new window. Push to the trade repeats every ten minutes while a question is open. Later: the pre-agreed goodwill gesture; last rung, a call to the trade in their own recorded voice (idea) | Live 1.24.0 |
 | 4 | Trade cancels before the day | Dashboard cancel records notice time; customer gets a rebook link; the 24-hour rule applies to the trade too | Next |
 | 5 | Trade cancels en route or same day | Treated as a missed visit: apology, gesture, priority rebook, reason logged | Next |
 | 6 | Customer says "I'm running late" | Button on their page with a stated delay up to a cap; trade's expected start shifts; later jobs told only if it leaves their window | Next |

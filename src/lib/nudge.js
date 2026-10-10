@@ -45,14 +45,26 @@ export function nudgeDue(t, now = new Date()) {
   if (t.nudgeLevel < 2 && now >= new Date(end) && !['ON_SITE', 'PAUSED', 'DONE'].includes(t.stage)) {
     return { kind: 'end', level: 2, title: `${first(t)}'s window has ended`, body: `It ran to ${hhmm(end)} and the card is not On site. Tell them where you are.` }
   }
+  // The window was missed. Ten minutes after it ended (a judgement: long
+  // enough to answer the nudge, short enough that the customer is not left
+  // staring), with nobody On site and no late estimate still running, the
+  // CUSTOMER is told, plainly, and given three choices. Fires once.
+  if (!t.missedAt && !['ON_SITE', 'PAUSED', 'DONE'].includes(t.stage) && now >= new Date(end).getTime() + MISSED_GRACE_MS) {
+    const promised = t.lateMinutes && t.lateAt ? new Date(t.lateAt).getTime() + t.lateMinutes * 60_000 + MISSED_GRACE_MS : 0
+    if (now >= promised) return { kind: 'missed', title: `${first(t)} has been told the window was missed`, body: `It ended at ${hhmm(end)}. They can choose to wait, have it later today, or rebook. Set off, say how late, or give them a new window.` }
+  }
   return null
 }
+
+export const MISSED_GRACE_MS = 10 * 60_000
+export const MISSED_CHOICES = { WAIT: 'will wait', LATER: 'would like it later today', REBOOK: 'would like another day' }
 
 /** Send what is due for one tracker. Never throws. */
 export async function nudgeIfDue(tracker) {
   try {
     const due = nudgeDue(tracker)
     if (!due) return null
+    if (due.kind === 'missed') return tellMissed(tracker, due)
     const r = await pushTrade({ title: due.title, body: due.body, tag: `nudge-${tracker.code}` })
     // Only count a nudge that had somewhere to go: with no device registered,
     // the first phone to register should still get it.
@@ -107,3 +119,33 @@ export async function runningLate(tracker, minutes) {
 
 /** Any stage change answers an open question. */
 export const answeredByStage = (tracker) => (tracker.askedAt && !tracker.askAnsweredAt ? { askAnsweredAt: new Date() } : {})
+
+/**
+ * The window was missed: tell the customer, once, whatever devices exist.
+ * Their page shows it with the three choices the moment it next polls; the
+ * push is the enhancement. The trade is told that the customer was told.
+ */
+async function tellMissed(tracker, due) {
+  const now = new Date()
+  await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
+    missedAt: now, nudgedAt: now, nudgeLevel: Math.max(tracker.nudgeLevel || 0, 2),
+    events: { create: { stage: tracker.stage, note: 'The window was missed — the customer has been told and asked what they would like.' } },
+  } })
+  notifyCustomer(tracker, { title: 'Sorry — the window has passed', body: `${TRADE_NAME} has not arrived in the window. Open the page to choose: wait, later today, or another day.` }).catch(() => {})
+  const r = await pushTrade({ title: due.title, body: due.body, tag: `nudge-${tracker.code}` })
+  return { ...due, sent: r.sent }
+}
+
+/** The customer's choice after a missed window. A request, pushed to the trade. */
+export async function chooseAfterMissed(tracker, choice) {
+  if (!MISSED_CHOICES[choice]) throw new Error('bad_choice')
+  const now = new Date()
+  const line = `${first(tracker)} ${MISSED_CHOICES[choice]}`
+  await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
+    missedChoice: choice, missedChoiceAt: now,
+    events: { create: { stage: tracker.stage, note: `After the missed window: ${line}.` } },
+  } })
+  const next = choice === 'WAIT' ? 'Set off, or say how late.' : 'Propose a new window on the card.'
+  const r = await pushTrade({ title: line, body: next, tag: `nudge-${tracker.code}` })
+  return { ok: true, sent: r.sent }
+}

@@ -10,6 +10,7 @@ capability we do not have) · No.
 
 ## What changed this week
 
+- **10 Oct 2026, later** — window-missed message to the customer shipped (1.24.0).
 - **10 Oct 2026** — list created from the first full deep dive. Already live
   before the list existed: arrival window from ServiceM8 (1.17.1), Paused
   visible to the customer, "Are you still coming?" with one-tap late reply
@@ -26,7 +27,7 @@ capability we do not have) · No.
 | Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Next — dashboard service worker + IndexedDB |
 | Customer page shows "last updated hh:mm" and the last honest stage | Improve | Next |
 | "Customer not home" in one tap: fix, door photo, two attempts, short wait, message with rebook link | Copy | Next |
-| Automatic concrete message at window end: new window + wait / later today / rebook | Improve | Building — nudge to the trade is live (1.22.0); the customer-facing message is next |
+| Automatic concrete message at window end: wait / later today / rebook | Improve | Done 1.24.0 (the new window is proposed by the trade, never generated) |
 | Revised promise shown as revised, original kept | Copy | Next |
 | Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Next — "Will someone be in?" exists; add the three actions |
 | Paused visible to the customer with reason and expected return | Improve | Done (Paused + note); expected return: Next |

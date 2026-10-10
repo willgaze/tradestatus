@@ -30,9 +30,20 @@ export default function StillComing({ status, onAsked }) {
   const due = (status.stage === 'BOOKED' && startPassed) || (status.stage === 'ON_MY_WAY' && endPassed)
   const open = status.askedAt && !status.askAnsweredAt
   const late = status.lateMinutes && status.lateAt
-  if (!due && !open && !late) return null
+  const missed = status.missedAt && !['ON_SITE', 'PAUSED'].includes(status.stage)
+  if (!due && !open && !late && !missed) return null
 
   const askAgainOk = !open && (!status.askedAt || now - new Date(status.askedAt).getTime() > 10 * 60_000)
+
+  const [choosing, setChoosing] = useState(false)
+  const choose = async (choice) => {
+    setChoosing(true)
+    try {
+      const r = await fetch(`/api/status/${status.code}/missed`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ choice }) })
+      const d = await r.json().catch(() => ({}))
+      if (r.ok) onAsked?.({ missedChoice: d.missedChoice, missedChoiceAt: d.missedChoiceAt })
+    } finally { setChoosing(false) }
+  }
 
   const askNow = async () => {
     setBusy(true)
@@ -48,7 +59,24 @@ export default function StillComing({ status, onAsked }) {
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl" style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 14%, transparent)' }}><BellIcon size={19} /></span>
         <div className="min-w-0 flex-1">
-          {late ? (
+          {missed ? (
+            <>
+              <p className="text-[16px] font-semibold">Sorry — the window ended at {hhmm(end || start)} and {first} has not arrived</p>
+              {late && new Date(status.lateAt) > new Date(status.missedAt)
+                ? <p className="mt-0.5 text-[14px] muted">{first} says about {status.lateMinutes} minutes late, said at {hhmm(status.lateAt)}.</p>
+                : <p className="mt-0.5 text-[14px] muted">That is on us, not you. What would suit you? {first}’s phone gets your answer straight away.</p>}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[['WAIT', 'I’ll wait'], ['LATER', 'Later today'], ['REBOOK', 'Another day']].map(([k, label]) => (
+                  <button key={k} type="button" onClick={() => choose(k)} disabled={choosing}
+                          className={`btn !min-h-[44px] !px-4 !text-[15px] ${status.missedChoice === k ? 'text-white' : 'btn-grey'}`}
+                          style={status.missedChoice === k ? { background: 'var(--tint)' } : undefined}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {status.missedChoice && <p className="mt-2 text-[13px] muted">Sent at {hhmm(status.missedChoiceAt)}. {status.missedChoice === 'WAIT' ? `${first} knows you are waiting.` : `${first} will offer a new window here.`}</p>}
+            </>
+          ) : late ? (
             <>
               <p className="text-[16px] font-semibold">{first} says: running about {status.lateMinutes} minutes late</p>
               <p className="mt-0.5 text-[14px] muted">Said at {hhmm(status.lateAt)}. Sorry about that.</p>
@@ -64,7 +92,7 @@ export default function StillComing({ status, onAsked }) {
               <p className="mt-0.5 text-[14px] muted">Ask, and {first}’s phone buzzes. You get an answer here, not a guess.</p>
             </>
           )}
-          {askAgainOk && (
+          {!missed && askAgainOk && (
             <button type="button" onClick={askNow} disabled={busy}
                     className="btn mt-3 !min-h-[44px] !px-4 !text-[15px] text-white disabled:opacity-60" style={{ background: 'var(--tint)' }}>
               {busy ? 'Asking…' : late ? 'Ask again: still coming?' : 'Are you still coming?'}
