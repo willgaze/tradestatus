@@ -20,7 +20,11 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
-| [v1.21.0](./v1.21.0/) | 2026-10-10 | Ochre — the attendance record: one row per visit, from the taps |
+| [v1.26.0](./v1.26.0/) | 2026-10-10 | Clay — the attendance record: one row per visit, from the taps |
+| [v1.24.0](./v1.24.0/) | 2026-10-10 | Slate — Nudge me has a Send a test to this phone button — tap it, your phone buzzes, no job to move |
+| [v1.23.0](./v1.23.0/) | 2026-10-10 | Moss — Turn on notifications from the dashboard — no terminal, no laptop, all on your phone |
+| [v1.22.0](./v1.22.0/) | 2026-10-10 | Harbour — Are you still coming? One button for the customer once the window has started and the card has not moved |
+| [v1.21.0](./v1.21.0/) | 2026-10-10 | Ochre — The what3words box no longer assumes you already know your three words |
 | [v1.20.0](./v1.20.0/) | 2026-10-09 | Plum — three moats, six moves, five rivals, seven wedges; free for every sender, enterprise per card |
 | [v1.19.0](./v1.19.0/) | 2026-10-09 | Indigo — the card is free; activation, bundles and a payments margin are the business |
 | [v1.18.0](./v1.18.0/) | 2026-10-09 | Clay — the plan grew up: pricing, the wallet card, a share link |

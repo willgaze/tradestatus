@@ -141,3 +141,60 @@ export async function subscriberCount(tradeStatusId) {
     return 0
   }
 }
+
+/**
+ * Send one payload to a list of subscriptions, drop the dead ones from
+ * `table`, and say how many landed. Shared by the customer and trade sides.
+ */
+async function deliver(subs, payload, table) {
+  if (!subs.length || !configure()) return { sent: 0, dropped: 0 }
+  let sent = 0
+  const dead = []
+  await Promise.all(subs.map(async (sub) => {
+    try {
+      await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify(payload), { TTL: 60 * 60, urgency: 'high' })
+      sent += 1
+    } catch (error) {
+      if (error?.statusCode === 404 || error?.statusCode === 410) dead.push(sub.id)
+      else console.error('push: send failed', error?.statusCode, sub.id)
+    }
+  }))
+  try {
+    if (dead.length) await prisma[table].deleteMany({ where: { id: { in: dead } } })
+    const live = subs.map((s) => s.id).filter((id) => !dead.includes(id))
+    if (sent && live.length) await prisma[table].updateMany({ where: { id: { in: live } }, data: { lastSentAt: new Date() } })
+  } catch (error) {
+    console.error('push: bookkeeping failed:', error?.code || error?.message)
+  }
+  return { sent, dropped: dead.length }
+}
+
+/**
+ * A line to the customer that is not a stage change: "running about 30
+ * minutes late". Same lock-screen rule as notifyStage — the trade's name and
+ * the fact, never the address or the customer's name.
+ */
+export async function notifyCustomer(tracker, { title, body }) {
+  let subs = []
+  try { subs = await prisma.pushSubscription.findMany({ where: { tradeStatusId: tracker.id } }) } catch { return { sent: 0, dropped: 0 } }
+  return deliver(subs, { title: `${TRADE_NAME} — ${title}`, body, code: tracker.code, tag: `job-${tracker.code}` }, 'pushSubscription')
+}
+
+/**
+ * A nudge to the trade's own phones. `url` is where the notification opens,
+ * normally the dashboard. The body may name the customer: this lock screen
+ * is the trade's, and the job is theirs.
+ */
+export async function pushTrade({ title, body, url = '/dashboard', tag = 'turnup-nudge' }) {
+  let subs = []
+  try { subs = await prisma.tradeDevice.findMany() } catch (error) {
+    console.error('push: could not read trade devices:', error?.code || error?.message)
+    return { sent: 0, dropped: 0, devices: 0 }
+  }
+  const r = await deliver(subs, { title, body, url, tag }, 'tradeDevice')
+  return { ...r, devices: subs.length }
+}
+
+export async function tradeDeviceCount() {
+  try { return await prisma.tradeDevice.count() } catch { return 0 }
+}

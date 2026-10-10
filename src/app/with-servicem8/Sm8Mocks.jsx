@@ -47,7 +47,17 @@ const Toggle = ({ on }) => (
   </span>
 )
 const Tick = ({ on }) => (
-  <span className="grid h-4 w-4 place-items-center rounded-[4px] border text-[10px] font-bold text-white" style={on ? { background: BLUE, borderColor: BLUE } : { borderColor: '#aab1bd' }}>{on ? '✓' : ''}</span>
+  <span className="grid h-4 w-4 place-items-center rounded-[4px] border text-[10px] font-bold text-white" style={on ? { background: BLUE, borderColor: BLUE } : { borderColor: '#aab1bd' }}>
+    {/* Drawn rather than a check-mark character, which the no-emoji rule
+        covers for the reason it covers all of them: it arrives in whatever
+        face the machine has, and these mocks get photographed. */}
+    {on && (
+      <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" stroke="currentColor"
+           strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M2.5 6.3 L4.8 8.6 L9.5 3.6" />
+      </svg>
+    )}
+  </span>
 )
 
 export function Sm8Window({ kind, host = 'www.getturnup.com' }) {
@@ -66,7 +76,12 @@ export function Sm8Window({ kind, host = 'www.getturnup.com' }) {
           </Field>
         </div>
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-[10px] text-[#8a93a3]">SMS Template Fields ▾</span>
+          <span className="flex items-center gap-1 text-[10px] text-[#8a93a3]">
+            SMS Template Fields
+            <svg viewBox="0 0 10 7" className="h-[5px] w-[7px]" fill="currentColor" aria-hidden>
+              <path d="M0 0h10L5 7z" />
+            </svg>
+          </span>
           <Button>Save Changes</Button>
         </div>
       </Window>

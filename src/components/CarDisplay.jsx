@@ -41,7 +41,18 @@ function CarPlayUI({ w }) {
   return (
     <div className="flex h-full bg-black text-white" style={{ fontSize: fs }}>
       <aside className="flex w-[13%] flex-col items-center justify-between py-[0.9em] text-[0.68em]">
-        <div className="text-center leading-tight"><p className="font-semibold text-[1.15em]">08:42</p><p className="mt-[0.2em] text-white/60">▂▄▆█ 5G</p></div>
+        <div className="text-center leading-tight"><p className="font-semibold text-[1.15em]">08:42</p><p className="mt-[0.2em] flex items-center justify-center gap-[0.35em] text-white/60">
+          {/* Drawn, not typed. Block-element characters are font glyphs: they
+            render at a weight and baseline nobody chose, and differently on
+            another machine — which for a frame that ends up in a poster means
+            the poster changes too. */}
+        <span className="inline-flex items-end gap-[0.1em] align-[-0.1em]" aria-hidden>
+          {[0.3, 0.5, 0.75, 1].map((h) => (
+            <i key={h} className="w-[0.22em] rounded-[0.05em] bg-current" style={{ height: `${h}em` }} />
+          ))}
+        </span>
+          <span>5G</span>
+        </p></div>
         <div className="grid gap-[0.7em]">
           <span className="grid h-[2.6em] w-[2.6em] place-items-center rounded-[0.75em] bg-[#34c759]"><CompassIcon size={fs * 1.2} /></span>
           <span className="grid h-[2.6em] w-[2.6em] place-items-center rounded-[0.75em] bg-[#34c759]/30"><PhoneIcon size={fs * 1.1} /></span>
@@ -106,7 +117,15 @@ function AndroidAutoUI({ w }) {
       {/* bottom bar */}
       <nav className="absolute inset-x-0 bottom-0 flex h-[2.6em] items-center justify-between bg-[#202124] px-[0.9em] text-[0.7em] text-white/70">
         <span className="flex items-center gap-[0.9em]"><span className="grid h-[1.7em] w-[1.7em] grid-cols-2 gap-[0.15em]"><i className="rounded-sm bg-white/70" /><i className="rounded-sm bg-white/70" /><i className="rounded-sm bg-white/70" /><i className="rounded-sm bg-white/70" /></span><span className="h-[1.7em] w-[1.7em] rounded-full bg-[#8ab4f8]" /></span>
-        <span>08:42 · ▂▄▆ · 5G · 86%</span>
+        <span className="flex items-center gap-[0.45em]">
+          08:42 ·
+          <span className="inline-flex items-end gap-[0.1em]" aria-hidden>
+            {[0.35, 0.6, 0.85].map((h) => (
+              <i key={h} className="w-[0.2em] rounded-[0.05em] bg-current" style={{ height: `${h}em` }} />
+            ))}
+          </span>
+          · 5G · 86%
+        </span>
       </nav>
     </div>
   )

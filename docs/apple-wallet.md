@@ -3,6 +3,29 @@
 Will has never done this. These are the steps in order, each one a page and a
 button, and what the app does at each point. Nothing here needs a Mac.
 
+## 0. Before you ring them
+
+Apple verifies four things for an individual enrolment: **legal name, email,
+phone and address**. Three traps, in the order they bite:
+
+- **The Apple ID's own name must be the legal name.** An alias, a nickname or
+  "Rosebourne Plumbing" in the first or last name field delays approval by
+  itself, before anyone looks at a document. Check it at
+  <https://account.apple.com> and fix it before enrolling.
+- **P.O. boxes are refused.** The address has to be a real one.
+- **The ID has to carry the address.** A UK passport does not show an address;
+  a UK photocard driving licence does. If an address is what is in dispute,
+  the driving licence is the document that can settle it — have it to hand,
+  plus something in the same name and address (bank statement, council tax,
+  utility bill) in case they ask for a second.
+
+Have ready on the call: the Apple ID email, the exact address as it appears on
+the licence, and the enrolment or case number from the email Apple sent.
+
+It is an **individual** enrolment. A sole trader does not need a D-U-N-S
+number, a company website or a work email — those are the organisation route,
+and it takes weeks.
+
 ## 1. Join the Apple Developer Program (you, ~15 minutes, then a wait)
 
 - Enrol as an **individual** (you are a sole trader; "organisation" needs a
@@ -14,7 +37,15 @@ button, and what the app does at each point. Nothing here needs a Mac.
 - Pay £79. Apple then verifies you. Usually a day, sometimes two; you get an
   email saying the membership is active.
 
-## 2. Make the key and the request (this sandbox, one command)
+## 2. Make the key and the request — ONLY once the membership is live
+
+**Do steps 2 to 4 in one sitting, and not before the "your membership is
+active" email arrives.** The certificate Apple issues only works with the key
+step 2 makes. That key is gitignored, because it is a credential, which means
+in a cloud session it lives in that container and dies with it — and approval
+takes a day or two, far longer than a container lasts. Start early and the
+certificate arrives to find its key gone, and the whole thing starts again.
+The script now says this before it does anything.
 
     bash scripts/apple-wallet.sh csr
 

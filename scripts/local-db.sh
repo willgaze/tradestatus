@@ -64,6 +64,7 @@ cat <<DONE
 ────────────────────────────────────────────────────────────
   Local database ready.
 
+    export DATABASE_URL="$URL"      # prisma generate reads the shell, not .env.local
     npm run build && npx next start
 
   Dashboard   http://localhost:3000/dashboard   (smoketest)

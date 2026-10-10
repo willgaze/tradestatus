@@ -20,6 +20,20 @@ export function normaliseW3w(raw) {
 
 export const w3wUrl = (words) => (words ? `https://what3words.com/${words}` : null)
 
+/**
+ * what3words' own map, for somebody who does not know their three words yet.
+ *
+ * A plain link with nothing appended, on purpose. Their site has a locate
+ * button and their app knows where the phone is, so it can answer the question
+ * on its own — and a URL format invented here that silently stops working is
+ * worse than two taps that always do.
+ *
+ * Turning a GPS fix into three words needs their API and a paid key; see
+ * src/app/api/w3w/route.js. Until there is one this link is the honest route,
+ * and the pin beside it is the better one anyway.
+ */
+export const W3W_SITE = 'https://what3words.com/'
+
 // A pasted Google Maps link. Only Google's own hosts, so the field cannot be
 // turned into a link to anywhere else on a page a customer trusts.
 const MAPS_HOSTS = /^(www\.)?(google\.[a-z.]+|maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl)$/i

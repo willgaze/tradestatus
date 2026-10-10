@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.21.0'
+export const VERSION = '1.26.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 15
+export const THEME_INDEX = 19
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,9 +48,37 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.21.0', date: '2026-10-10', notes: [
+  { version: '1.26.0', date: '2026-10-10', notes: [
     'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. On the dashboard, last 30 or 90 days.',
     'Built for the first enterprise wedge, decided today: a social landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',
+  ] },
+  { version: '1.25.0', date: '2026-10-10', notes: [
+    'When the window is missed, the customer is told. Ten minutes after a window ends with nobody On site and no late estimate still running, their page says so plainly — sorry, that is on us — and offers three choices: I will wait, later today, another day. Their choice lands on your card and your phone. You propose the new window; the product never invents a time.',
+  ] },
+  { version: '1.24.1', date: '2026-10-10', notes: [
+    'Notifications are live \u2014 a real one reached a real phone, so the roadmap says live rather than ready',
+  ] },
+  { version: '1.24.0', date: '2026-10-10', notes: [
+    'Nudge me has a Send a test to this phone button \u2014 tap it, your phone buzzes, no job to move',
+    'It says how many phones it actually reached, so nothing arriving is visible rather than silent',
+    'Nudge me now says plainly that it is YOUR phone; customers switch their own on from their link',
+  ] },
+  { version: '1.23.0', date: '2026-10-10', notes: [
+    'Turn on notifications from the dashboard \u2014 no terminal, no laptop, all on your phone',
+    'It makes the keys on your own phone and sends them nowhere, then links you straight to Vercel',
+    'The box disappears by itself once the keys are in, which is how you know it worked',
+  ] },
+  { version: '1.22.0', date: '2026-10-10', notes: [
+    'Are you still coming? When a window the trade gave has started and the card has not moved, the customer gets one button. It buzzes the trade\'s phone; the trade answers from the card with On my way or about how late, and the answer shows on the customer\'s page with the time it was said.',
+    'Nudges to the trade without being asked: once when the window starts with the card still Booked in, once when it ends with nobody On site, and every ten minutes while a question goes unanswered. Nudge me on the dashboard registers the phone.',
+    'Running late is a one-tap answer on the card: 15, 30 or 60 minutes. Written to the card with the time, pushed to the customer. Never worked out by the product, always said by the trade.',
+  ] },
+  { version: '1.21.0', date: '2026-10-10', notes: [
+    'The what3words box no longer assumes you already know your three words',
+    'A link straight to their map, which finds you \u2014 then copy them back',
+    'You can set three words from the van too; the dashboard field was read-only',
+    'One tap fills it in automatically the day there is a what3words key',
+    'Fixed: the diary had quietly stopped recording the app \u2014 three nights of it',
   ] },
   { version: '1.20.0', date: '2026-10-09', notes: [
     'The plan has a spine: three moats a big firm cannot build in a sprint, six moves in order with a gate each, five rivals with the move that beats each, and seven sectors where a regulator already prices a missed visit.',
@@ -144,6 +172,12 @@ export const CHANGELOG = [
     'Van lookup now uses the DVSA MOT history record \u2014 make, model AND colour from the plate',
     'DVLA closed new registrations; it stays as the fallback for anyone who already has a key',
     'The profile page says exactly which key to get, where, and that it must be used within 90 days',
+  ] },
+  // Added after the fact: 1.13.1 shipped without an entry, and a changelog
+  // with a hole in it is worse than a late line.
+  { version: '1.13.1', date: '2026-10-01', notes: [
+    'Took the one-off database migration back out of the build',
+    'The waiting list can be cleared, not just added to',
   ] },
   { version: '1.13.0', date: '2026-10-01', notes: [
     'It is called TurnUp now \u2014 renamed everywhere a person reads it',

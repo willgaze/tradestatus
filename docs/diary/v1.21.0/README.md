@@ -2,14 +2,44 @@
 
 **2026-10-10** · background `#fbf8f0` · accent `#8a6414`
 
-- The attendance record: every set-off, arrival and finish, one row per visit, as a CSV from the dashboard
-- A second visit after a pause is a second row. A job nobody went to is a row that says so
-- Built for the first enterprise wedge, social housing, decided the same day
+- The what3words box no longer assumes you already know your three words
+- A link straight to their map, which finds you — then copy them back
+- You can set three words from the van too; the dashboard field was read-only
+- One tap fills it in automatically the day there is a what3words key
 
-### attendance-sample.csv
 
-What the file looks like, from the fixtures in `scripts/check-attendance.mjs` rather than a database. Four jobs: one paused for a part and finished on a second visit, one nobody went to, one still on site, one closed from the office.
+### wallet-in-stack
 
-[attendance-sample.csv](./attendance-sample.csv)
+![wallet-in-stack](./wallet-in-stack.webp)
 
-The customer, wallet and dashboard shots are not in this folder: this build was made on a machine with no Postgres, so the dashboard could not be seeded, and the next capture fills them in. The export itself was checked against a running `next start`: unauthenticated is 401, a bad range is 400, and with no database it is 503 and never a blank file.
+### wallet-opened
+
+![wallet-opened](./wallet-opened.webp)
+
+### wallet-alone
+
+![wallet-alone](./wallet-alone.webp)
+
+### customer-light
+
+![customer-light](./customer-light.webp)
+
+### customer-dark
+
+![customer-dark](./customer-dark.webp)
+
+### dashboard
+
+![dashboard](./dashboard.webp)
+
+### login
+
+![login](./login.webp)
+
+### homepage
+
+![homepage](./homepage.webp)
+
+### homepage-dark
+
+![homepage-dark](./homepage-dark.webp)

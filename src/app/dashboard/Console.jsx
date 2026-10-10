@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
+import PushSetup from './PushSetup'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import Changelog from './Changelog'
@@ -12,9 +13,11 @@ import WalletShowcase from './WalletShowcase'
 import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
 import ServiceM8 from './ServiceM8'
+import Nudges from './Nudges'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
+import FindWords from '@/components/FindWords'
 import { windowSummary, windowHours } from '@/lib/window'
 import { TickIcon } from '@/components/icons'
 import { DB_REASONS } from '@/lib/db-errors'
@@ -303,6 +306,38 @@ export default function Console() {
                 ))}
               </div>
 
+              {/* "Are you still coming?" — the customer asked, or the window has
+                  started and the card has not moved. Answer in one tap: set off,
+                  or say how late. The estimate is yours, written with the time. */}
+              {(() => {
+                const askOpen = t.askedAt && !t.askAnsweredAt
+                const start = t.windowStart || t.scheduledFor
+                const started = start && new Date(start) <= new Date() && t.stage === 'BOOKED'
+                const missed = t.missedAt && !['ON_SITE', 'PAUSED', 'DONE'].includes(t.stage)
+                if (!askOpen && !started && !t.lateMinutes && !missed) return null
+                const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+                const who = greetingName(t.customerName) || 'The customer'
+                const CHOICE = { WAIT: 'will wait', LATER: 'would like it later today — set new hours under Link, hours, photos, note', REBOOK: 'would like another day — set new hours for that day under Link, hours, photos, note' }
+                return (
+                  <div className="mt-3.5 rounded-2xl px-4 py-3" style={{ background: missed ? 'color-mix(in srgb, #ff3b30 12%, transparent)' : 'color-mix(in srgb, #ff9500 12%, transparent)' }}>
+                    <p className="text-[14px] font-semibold">
+                      {missed ? `Window missed — ${who} was told at ${hhmm(t.missedAt)}${t.missedChoice ? `, and ${CHOICE[t.missedChoice]}` : ', no answer from them yet'}`
+                        : askOpen ? `${who} asked at ${hhmm(t.askedAt)}: are you still coming?`
+                        : t.lateMinutes ? `You said about ${t.lateMinutes} minutes late at ${hhmm(t.lateAt)}`
+                        : `Window started at ${hhmm(start)} and the card still says Booked in`}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {t.stage === 'BOOKED' && <button type="button" onClick={() => patch(t.id, { stage: 'ON_MY_WAY' })} className="btn accent-fill !min-h-[40px] !px-3.5 !text-[13px]">On my way</button>}
+                      {[15, 30, 60].map((m) => (
+                        <button key={m} type="button" onClick={() => patch(t.id, { lateMinutes: m })} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">{m} min late</button>
+                      ))}
+                      {t.lateMinutes && <button type="button" onClick={() => patch(t.id, { lateMinutes: null })} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">Clear</button>}
+                      {t.customerPhone && <a href={`tel:${t.customerPhone.replace(/\s+/g, '')}`} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">Call</a>}
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* Getting there — and what they told you about the door. This
                   used to live only on the customer's page, which meant the
                   trade never saw "gate sticks, use the back door". */}
@@ -394,6 +429,24 @@ export default function Console() {
                   onPin={(url) => patch(t.id, { mapPin: url })}
                 />
               </div>
+
+              {/* The trade needs three words as often as the customer does, and
+                  is more likely to be the one standing at the gate. The field
+                  was read-only here: whatever the customer had typed, and no
+                  way to set it from the van. */}
+              <label className="mt-3 block text-[13px] muted">
+                what3words — for a gate with no number
+                {/* Uncontrolled, like the other fields here, so it does not
+                    fight a keystroke on a patchy connection. Keyed on the
+                    value so a lookup that fills it in is actually seen: a
+                    defaultValue alone would not change on re-render. */}
+                <input type="text" key={t.what3words || 'empty'}
+                       defaultValue={t.what3words || ''} placeholder="///filled.count.soap"
+                       autoCapitalize="none" autoCorrect="off"
+                       onBlur={(e) => e.target.value !== (t.what3words || '') && patch(t.id, { what3words: e.target.value })}
+                       className="field mt-1.5 !min-h-[44px] !text-[14px]" />
+              </label>
+              <FindWords onWords={(w) => patch(t.id, { what3words: w })} />
 
               <div className="r-inner mt-4 p-4" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                 <p className="text-[13px] font-semibold muted">Send this to the customer</p>
@@ -514,8 +567,10 @@ export default function Console() {
       <WaitlistPanel />
       <WalletShowcase tracker={trackers[0]} />
       <ServiceM8 onChanged={load} />
+      <Nudges />
       <Profile />
       <Passkeys />
+      <PushSetup />
       <Roadmap />
       <Changelog />
       <div className="mt-8 flex justify-center"><BuildStamp /></div>

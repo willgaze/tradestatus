@@ -145,6 +145,16 @@ export function publicShape(row) {
     // The TIME an answer was given, never the answer. Lets the page say "you
     // answered 20 minutes ago" without saying whether anyone is home.
     presenceAt: row.presenceAt ? row.presenceAt.toISOString() : null,
+    // "Are you still coming?" and the answer. Times and a number of minutes
+    // the TRADE chose to say; nothing the customer typed.
+    askedAt: row.askedAt ? row.askedAt.toISOString() : null,
+    askAnsweredAt: row.askAnsweredAt ? row.askAnsweredAt.toISOString() : null,
+    lateMinutes: row.lateMinutes ?? null,
+    lateAt: row.lateAt ? row.lateAt.toISOString() : null,
+    // The window was missed and the customer was told; and what they chose.
+    missedAt: row.missedAt ? row.missedAt.toISOString() : null,
+    missedChoice: row.missedChoice || null,
+    missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,
