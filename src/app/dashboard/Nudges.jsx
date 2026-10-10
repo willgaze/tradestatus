@@ -48,6 +48,23 @@ export default function Nudges() {
     } catch (e) { console.error('trade push:', e); setErr('That did not take. Try again in a moment.') }
     finally { setBusy(false) }
   }
+  const [tested, setTested] = useState(null)
+  const sendTest = async () => {
+    setBusy(true); setErr(''); setTested(null)
+    try {
+      const r = await fetch('/api/dashboard/devices/test', { method: 'POST' })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d?.error || 'failed')
+      // Say how many phones it actually reached. "Sent" with nothing arriving
+      // is the failure this button exists to make visible, not hide.
+      setTested(d.sent > 0
+        ? `Sent to ${d.sent} phone${d.sent === 1 ? '' : 's'}. It should buzz within a few seconds \u2014 lock the screen if you are looking at this one.`
+        : 'Nothing to send to. No phone is registered yet \u2014 press the button above first.')
+    } catch {
+      setErr('Could not send the test. Try again in a moment.')
+    } finally { setBusy(false) }
+  }
+
   const turnOff = async () => {
     setBusy(true)
     try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if (sub) { await fetch('/api/dashboard/devices', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }); await sub.unsubscribe() } setState('off'); read() }
@@ -72,10 +89,17 @@ export default function Nudges() {
       </div>
       <div className="px-6 pb-5 text-[15px] leading-snug muted">
         <p>When a window you gave has started and the card still says <b>Booked in</b>, this phone buzzes. Again when the window ends with nobody On site. And the moment a customer taps <b>Are you still coming?</b> — answer from the card: On my way, or how late.</p>
+        {/* There are two notification buttons in this product and they are
+            easy to mix up: this one is the trade's, and the one on a tracking
+            page is the customer's. Somebody who had just set this one up
+            could not tell which they had done. */}
+        <p className="mt-2 text-[14px]"><b>This is your phone.</b> Your customers switch their own on from their tracking link — a separate thing, and it needs nothing from you.</p>
         {state === 'needs-install' && <p className="mt-2 text-[14px]">On an iPhone: Share → <b>Add to Home Screen</b>, open the dashboard from there, then press the button.</p>}
         {err && <p className="mt-2 text-[14px] text-red-600">{err}</p>}
+        {tested && <p className="mt-2 text-[14px]" style={{ color: 'var(--tint)' }}>{tested}</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           {state === 'off' && <button type="button" onClick={turnOn} disabled={busy} className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">{busy ? '…' : 'Nudge me on this phone'}</button>}
+          {state === 'on' && <button type="button" onClick={sendTest} disabled={busy} className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">{busy ? '…' : 'Send a test to this phone'}</button>}
           {state === 'on' && <button type="button" onClick={turnOff} disabled={busy} className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">Stop nudging this phone</button>}
         </div>
       </div>

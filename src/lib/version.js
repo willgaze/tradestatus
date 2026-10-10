@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.23.0'
+export const VERSION = '1.24.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 17
+export const THEME_INDEX = 18
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.24.0', date: '2026-10-10', notes: [
+    'Nudge me has a Send a test to this phone button \u2014 tap it, your phone buzzes, no job to move',
+    'It says how many phones it actually reached, so nothing arriving is visible rather than silent',
+    'Nudge me now says plainly that it is YOUR phone; customers switch their own on from their link',
+  ] },
   { version: '1.23.0', date: '2026-10-10', notes: [
     'Turn on notifications from the dashboard \u2014 no terminal, no laptop, all on your phone',
     'It makes the keys on your own phone and sends them nowhere, then links you straight to Vercel',

@@ -147,6 +147,21 @@ a driveway and is waiting on that response, and a push service having a bad
 afternoon must not turn it into an error. A 404 or 410 from a push service means
 the browser discarded the subscription — delete the row, do not retry it.
 
+**There are two notification buttons and they get mixed up.** **Nudge me** on
+the dashboard registers the TRADE's phone; **Tell me when they set off** on a
+tracking page registers the CUSTOMER's. Will set up the first while following
+instructions written for the second, and could not tell which he had done —
+reasonably, because both are a bell icon, both say Add to Home Screen, and
+nothing said which was which. Both panels now say whose phone they are for.
+**Any instruction about notifications has to name which of the two it means.**
+
+**Setting it up ends with a buzz, not a sentence.** "1 phone registered" is not
+the same as a notification arriving, and the gap between them is where somebody
+gives up. **Send a test to this phone** in Nudge me pushes a real one and
+reports how many phones it reached, so nothing arriving is visible instead of
+silent. Any future setup flow that ends in a claim rather than a demonstration
+is not finished.
+
 **The iPhone catch.** iOS delivers web push only to a page added to the home
 screen; Safari in a tab has no `Notification` API at all, so subscribing does
 not fail, it is absent. `src/app/t/Notify.jsx` detects that and shows the
