@@ -58,7 +58,7 @@ function Step({ n, title, visual, children }) {
 
 const STAGES = [
   ['Booked in', 'booked', 'The job is a Work Order in ServiceM8 and the confirmation text has gone. The card carries the booking window from ServiceM8 — “Between 09:00 and 11:00”, never a time on the dot — and follows it if you move the booking.', 'sms'],
-  ['On my way', 'onway', 'Your tap, on the TurnUp dashboard. ServiceM8 has no event for setting off that the API exposes, so this one stays yours for now.', 'dashboard-stage'],
+  ['On my way', 'onway', 'Your tap, on the TurnUp dashboard. ServiceM8 has no event for setting off that the API exposes, so this one stays yours for now. If the window starts and you have not tapped it, your phone is nudged, and the customer can ask “are you still coming?” — you answer from the card in one tap.', 'dashboard-stage'],
   ['On site', 'onsite', 'You check in on the ServiceM8 app. TurnUp hears it and moves the card.', 'checkin'],
   ['Paused', 'paused', 'You check out before the job is complete. The card says you are away from site and coming back.', 'checkout'],
   ['Job done', 'done', 'You complete the job in ServiceM8. The card closes the day.', 'complete'],

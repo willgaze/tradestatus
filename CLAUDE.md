@@ -509,6 +509,22 @@ minutes, counted in `Sm8Event` (`claim.miss`) so it holds across instances. The 
 (`findOrCreateForJob`), linked at birth and synced. `/with-servicem8` is the
 public how-to and must stay true to what the connector does today.
 
+## When the window arrives and nothing has moved (`src/lib/nudge.js`)
+
+The one thing the card could not do until v1.18.0 was notice that a time the
+trade gave had passed. Now: the customer's page shows **Are you still coming?**
+once the window has started with the card still Booked in (or ended with
+nobody On site); pressing it sets `askedAt` and pushes every `TradeDevice`
+(the trade's phones, registered by **Nudge me** on the dashboard). The trade
+answers from the card: a stage change, or **15 / 30 / 60 min late**, which
+writes `lateMinutes`/`lateAt`, a note with the time, and pushes the customer.
+Unasked nudges go to the trade at window start (`nudgeLevel` 1) and window
+end (2); an unanswered ask repeats every ten minutes. `nudgeIfDue` runs on
+the customer's 30-second poll, after every ServiceM8 sync, and from
+`GET /api/cron/nudge` (open, idempotent; point any five-minute pinger at it).
+Rules that must not drift: the product never estimates a time; a late figure
+is only ever one the trade typed, shown with when they said it.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.

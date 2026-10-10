@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
 import { publicProfile, publicBrand } from '@/lib/profile'
 import { syncIfStale } from '@/lib/servicem8'
+import { nudgeIfDue } from '@/lib/nudge'
 
 // Public on purpose — the customer has no account and never will. The code is
 // the credential, so it is unguessable and revocable, and this hands back only
@@ -31,7 +32,7 @@ export async function GET(request, { params }) {
     // for a minute, look — AFTER the response has gone, so the page is never a
     // millisecond slower or a byte wronger for it. The poll every 30 seconds
     // picks up whatever moved.
-    after(() => syncIfStale(row))
+    after(async () => { await syncIfStale(row); await nudgeIfDue(row) })
 
     const status = publicShape(row)
     const arriving = status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE'

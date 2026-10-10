@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.21.0'
+export const VERSION = '1.22.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.22.0', date: '2026-10-10', notes: [
+    'Are you still coming? When a window the trade gave has started and the card has not moved, the customer gets one button. It buzzes the trade\'s phone; the trade answers from the card with On my way or about how late, and the answer shows on the customer\'s page with the time it was said.',
+    'Nudges to the trade without being asked: once when the window starts with the card still Booked in, once when it ends with nobody On site, and every ten minutes while a question goes unanswered. Nudge me on the dashboard registers the phone.',
+    'Running late is a one-tap answer on the card: 15, 30 or 60 minutes. Written to the card with the time, pushed to the customer. Never worked out by the product, always said by the trade.',
+  ] },
   { version: '1.21.0', date: '2026-10-10', notes: [
     'The what3words box no longer assumes you already know your three words',
     'A link straight to their map, which finds you \u2014 then copy them back',

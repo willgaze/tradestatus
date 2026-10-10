@@ -1,0 +1,77 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { TRADE_NAME } from '@/lib/trade'
+import { BellIcon } from '@/components/icons'
+
+/**
+ * "Are you still coming?"
+ *
+ * Shown only when a time the trade gave has arrived and the card has not
+ * moved: the window has started and it still says Booked in, or the window
+ * has ended and nobody is On site. One button. It buzzes the trade's phone,
+ * and the answer — On my way, or "about 30 minutes late" — appears here with
+ * the time it was given. Nothing on this page invents a time; it only
+ * notices that one has passed.
+ */
+const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+const first = TRADE_NAME.split(' ')[0]
+
+export default function StillComing({ status, onAsked }) {
+  const [now, setNow] = useState(() => Date.now())
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30_000); return () => clearInterval(t) }, [])
+
+  const start = status.window?.start || status.scheduledFor
+  if (!start || status.stage === 'DONE') return null
+  const end = status.window?.end || null
+  const startPassed = now >= new Date(start).getTime()
+  const endPassed = end && now >= new Date(end).getTime()
+  const due = (status.stage === 'BOOKED' && startPassed) || (status.stage === 'ON_MY_WAY' && endPassed)
+  const open = status.askedAt && !status.askAnsweredAt
+  const late = status.lateMinutes && status.lateAt
+  if (!due && !open && !late) return null
+
+  const askAgainOk = !open && (!status.askedAt || now - new Date(status.askedAt).getTime() > 10 * 60_000)
+
+  const askNow = async () => {
+    setBusy(true)
+    try {
+      const r = await fetch(`/api/status/${status.code}/ask`, { method: 'POST' })
+      const d = await r.json().catch(() => ({}))
+      if (r.ok) onAsked?.({ askedAt: d.askedAt, askAnsweredAt: null })
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <section className="glass r-outer mt-3 p-4" style={{ '--tint': '#ff9500' }}>
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl" style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 14%, transparent)' }}><BellIcon size={19} /></span>
+        <div className="min-w-0 flex-1">
+          {late ? (
+            <>
+              <p className="text-[16px] font-semibold">{first} says: running about {status.lateMinutes} minutes late</p>
+              <p className="mt-0.5 text-[14px] muted">Said at {hhmm(status.lateAt)}. Sorry about that.</p>
+            </>
+          ) : open ? (
+            <>
+              <p className="text-[16px] font-semibold">You asked at {hhmm(status.askedAt)}</p>
+              <p className="mt-0.5 text-[14px] muted">{first}’s phone has buzzed. The answer shows here the moment it is given.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-[16px] font-semibold">{status.stage === 'BOOKED' ? `The window started at ${hhmm(start)}` : `The window ended at ${hhmm(end)}`} and nothing has moved yet</p>
+              <p className="mt-0.5 text-[14px] muted">Ask, and {first}’s phone buzzes. You get an answer here, not a guess.</p>
+            </>
+          )}
+          {askAgainOk && (
+            <button type="button" onClick={askNow} disabled={busy}
+                    className="btn mt-3 !min-h-[44px] !px-4 !text-[15px] text-white disabled:opacity-60" style={{ background: 'var(--tint)' }}>
+              {busy ? 'Asking…' : late ? 'Ask again: still coming?' : 'Are you still coming?'}
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}

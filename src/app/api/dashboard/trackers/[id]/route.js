@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { runningLate, answeredByStage } from '@/lib/nudge'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
@@ -19,10 +20,21 @@ export async function PATCH(request, { params }) {
   try {
     const body = await request.json()
     const data = {}
+    const current = await prisma.tradeStatus.findUnique({ where: { id } })
+    if (!current) return NextResponse.json({ error: 'not_found' }, { status: 404 })
+
+    // "About 30 minutes late": the trade's own estimate, written to the card
+    // with the time it was said, pushed to the customer, and it answers an
+    // open "are you still coming?". Null clears it.
+    if (body.lateMinutes !== undefined) {
+      const updated = await runningLate(current, body.lateMinutes === null ? null : Number(body.lateMinutes))
+      return NextResponse.json({ tracker: updated })
+    }
 
     if (body.stage !== undefined) {
       if (!isValidStage(body.stage)) return NextResponse.json({ error: 'bad_stage' }, { status: 400 })
       data.stage = body.stage
+      Object.assign(data, answeredByStage(current))
       // Setting off is the moment worth stamping: the one the customer is
       // waiting on, and a record of what happened rather than a promise.
       //

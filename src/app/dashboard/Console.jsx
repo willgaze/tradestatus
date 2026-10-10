@@ -12,6 +12,7 @@ import WalletShowcase from './WalletShowcase'
 import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
 import ServiceM8 from './ServiceM8'
+import Nudges from './Nudges'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
@@ -304,6 +305,34 @@ export default function Console() {
                 ))}
               </div>
 
+              {/* "Are you still coming?" — the customer asked, or the window has
+                  started and the card has not moved. Answer in one tap: set off,
+                  or say how late. The estimate is yours, written with the time. */}
+              {(() => {
+                const askOpen = t.askedAt && !t.askAnsweredAt
+                const start = t.windowStart || t.scheduledFor
+                const started = start && new Date(start) <= new Date() && t.stage === 'BOOKED'
+                if (!askOpen && !started && !t.lateMinutes) return null
+                const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+                return (
+                  <div className="mt-3.5 rounded-2xl px-4 py-3" style={{ background: 'color-mix(in srgb, #ff9500 12%, transparent)' }}>
+                    <p className="text-[14px] font-semibold">
+                      {askOpen ? `${greetingName(t.customerName) || 'The customer'} asked at ${hhmm(t.askedAt)}: are you still coming?`
+                        : t.lateMinutes ? `You said about ${t.lateMinutes} minutes late at ${hhmm(t.lateAt)}`
+                        : `Window started at ${hhmm(start)} and the card still says Booked in`}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {t.stage === 'BOOKED' && <button type="button" onClick={() => patch(t.id, { stage: 'ON_MY_WAY' })} className="btn accent-fill !min-h-[40px] !px-3.5 !text-[13px]">On my way</button>}
+                      {[15, 30, 60].map((m) => (
+                        <button key={m} type="button" onClick={() => patch(t.id, { lateMinutes: m })} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">{m} min late</button>
+                      ))}
+                      {t.lateMinutes && <button type="button" onClick={() => patch(t.id, { lateMinutes: null })} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">Clear</button>}
+                      {t.customerPhone && <a href={`tel:${t.customerPhone.replace(/\s+/g, '')}`} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">Call</a>}
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* Getting there — and what they told you about the door. This
                   used to live only on the customer's page, which meant the
                   trade never saw "gate sticks, use the back door". */}
@@ -521,6 +550,7 @@ export default function Console() {
       <WaitlistPanel />
       <WalletShowcase tracker={trackers[0]} />
       <ServiceM8 onChanged={load} />
+      <Nudges />
       <Profile />
       <Passkeys />
       <Roadmap />

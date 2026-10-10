@@ -25,6 +25,7 @@ import { prisma } from './prisma'
 import { notifyStage } from './push'
 import { cleanText } from './clean-text'
 import { generateCode } from './trade-status'
+import { nudgeIfDue } from './nudge'
 import { createHmac } from 'node:crypto'
 
 // SM8_API_BASE exists so a test can stand a fake ServiceM8 up on localhost.
@@ -203,6 +204,7 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
       update: { syncedAt: new Date(), lastStatus: job.status, lastOutcome: outcome, jobNumber: job.generated_job_id ? String(job.generated_job_id) : undefined },
     }).catch((e) => console.error('sm8 link:', e?.code || e?.message))
     await log({ event: source, jobUuid, tradeStatusId: tracker.id, outcome })
+    prisma.tradeStatus.findUnique({ where: { id: tracker.id } }).then((fresh) => fresh && nudgeIfDue(fresh)).catch(() => {})
     return { outcome, stage, why }
   } catch (error) {
     const outcome = `error:${error?.message || 'unknown'}`

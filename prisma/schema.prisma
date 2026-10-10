@@ -50,6 +50,22 @@ model TradeStatus {
   // "you are second today" — a fact about order, never a time."
   position Int?
 
+  // "Are you still coming?" — the customer's one question, and the answer.
+  // askedAt is set from the customer's page once the window has started and
+  // nothing has moved; it buzzes the trade's phone. askAnsweredAt is set by
+  // any reply: a stage change, or a late estimate. lateMinutes is the trade
+  // saying "about 30 minutes" — an estimate they chose to give, never one the
+  // product worked out, and it is shown with the time it was said.
+  askedAt       DateTime?
+  askAnsweredAt DateTime?
+  lateMinutes   Int?
+  lateAt        DateTime?
+  // Nudges to the trade: 1 after the window started with the card still
+  // Booked in, 2 after it ended with nobody On site. nudgedAt also paces the
+  // reminder for an unanswered question.
+  nudgeLevel Int       @default(0)
+  nudgedAt   DateTime?
+
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.
   doorToUse      String? // FRONT | BACK | SIDE
@@ -233,4 +249,19 @@ model Sm8Event {
 
   @@index([receivedAt])
   @@index([jobUuid])
+}
+
+/// The trade's own phones, for nudges: "the window has started and the card
+/// still says Booked in", "Sarah asked if you are still coming". One row per
+/// browser that pressed "Nudge me on this phone" on the dashboard. Not tied
+/// to a job: the trade has one set of devices for every job.
+model TradeDevice {
+  id           String    @id @default(cuid())
+  endpoint     String    @unique
+  p256dh       String
+  auth         String
+  label        String?
+  createdAt    DateTime  @default(now())
+  lastSentAt   DateTime?
+  failureCount Int       @default(0)
 }
