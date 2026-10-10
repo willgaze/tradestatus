@@ -9,6 +9,7 @@ import Notify, { PUSH_CONFIGURED } from './Notify'
 import Window from './Window'
 import AddToWallet from './AddToWallet'
 import StillComing from './StillComing'
+import MissedYou from './MissedYou'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
@@ -287,6 +288,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         {/* When a time the trade gave has passed and nothing has moved: one
             question, and the answer with the time it was given. */}
         <StillComing status={status} onAsked={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
+        <MissedYou status={status} onReplied={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
 
         {PUSH_CONFIGURED && status.stage !== 'DONE' && (
           <Disclosure icon={<BellIcon size={19} />} title="Tell me when they set off" delay="165ms"

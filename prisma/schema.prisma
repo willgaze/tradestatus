@@ -101,6 +101,7 @@ model TradeStatus {
   updatedAt    DateTime  @updatedAt
 
   events   TradeStatusEvent[]
+  noAccess NoAccess[]
   pushSubs PushSubscription[]
 
   @@index([code])
@@ -271,4 +272,29 @@ model TradeDevice {
   createdAt    DateTime  @default(now())
   lastSentAt   DateTime?
   failureCount Int       @default(0)
+}
+
+/// Customer not home, recorded in one tap. The evidence a carrier keeps, from
+/// a one-van firm: when the trade was at the door, where the phone said it
+/// was, what they tried, how long they waited, a photo of the door. The
+/// photo never leaves the dashboard; the customer page says one was taken.
+model NoAccess {
+  id              String    @id @default(cuid())
+  tradeStatusId   String
+  startedAt       DateTime  // the trade's tap, server time
+  deviceStartedAt DateTime? // the phone's own clock at that tap
+  leftAt          DateTime?
+  lat             Float?
+  lng             Float?
+  accuracy        Float?
+  attempts        Json      @default("[]") // [{ kind: 'KNOCKED'|'CALLED'|'TEXTED', at }]
+  photo           Bytes?
+  photoAt         DateTime?
+  reply           String?   // HERE | LATER | REBOOK
+  replyAt         DateTime?
+  createdAt       DateTime  @default(now())
+
+  tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
+
+  @@index([tradeStatusId])
 }

@@ -10,6 +10,7 @@ capability we do not have) · No.
 
 ## What changed this week
 
+- **10 Oct 2026, later still** — customer not home in one tap shipped (1.26.0).
 - **10 Oct 2026, later** — window-missed message to the customer shipped (1.24.0).
 - **10 Oct 2026** — list created from the first full deep dive. Already live
   before the list existed: arrival window from ServiceM8 (1.17.1), Paused
@@ -26,7 +27,7 @@ capability we do not have) · No.
 | Non-push fallback for every customer-critical event | Copy | Next — email first; SMS is the capability to buy |
 | Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Next — dashboard service worker + IndexedDB |
 | Customer page shows "last updated hh:mm" and the last honest stage | Improve | Next |
-| "Customer not home" in one tap: fix, door photo, two attempts, short wait, message with rebook link | Copy | Next |
+| "Customer not home" in one tap: fix, door photo, attempts, wait clock, message with three replies | Copy | Done 1.26.0 (fee deliberately absent; the next step is offered first) |
 | Automatic concrete message at window end: wait / later today / rebook | Improve | Done 1.24.0 (the new window is proposed by the trade, never generated) |
 | Revised promise shown as revised, original kept | Copy | Next |
 | Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Next — "Will someone be in?" exists; add the three actions |

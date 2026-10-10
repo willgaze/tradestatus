@@ -19,7 +19,7 @@ export default async function TrackPage({ params }) {
   try {
     const row = await prisma.tradeStatus.findUnique({
       where: { code: String(code).toUpperCase() },
-      include: { events: { orderBy: { createdAt: 'asc' } } },
+      include: { events: { orderBy: { createdAt: 'asc' } }, noAccess: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, startedAt: true, leftAt: true, attempts: true, photoAt: true, reply: true, replyAt: true, lat: true, lng: true, accuracy: true } } },
     })
     if (row?.isActive) {
       status = publicShape(row)

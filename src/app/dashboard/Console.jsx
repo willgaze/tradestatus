@@ -16,6 +16,7 @@ import ServiceM8 from './ServiceM8'
 import Nudges from './Nudges'
 import Assistant from './Assistant'
 import Tip from './Tip'
+import NoAccess from './NoAccess'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
@@ -408,6 +409,10 @@ export default function Console({ assistant = false }) {
                   </div>
                 )
               })()}
+
+              {/* Customer not home: the clock, what you tried, the door photo,
+                  and the note the customer reads. Nothing charged from here. */}
+              <NoAccess tracker={t} onDone={load} />
 
               {/* Getting there. Shown while you are on your way, which is when
                   you need it; otherwise it waits under More. */}

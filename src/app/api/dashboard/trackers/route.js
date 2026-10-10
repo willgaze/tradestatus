@@ -48,6 +48,7 @@ export async function GET() {
   try {
     const trackers = await prisma.tradeStatus.findMany({
       orderBy: [{ isActive: 'desc' }, { updatedAt: 'desc' }],
+      include: { noAccess: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, startedAt: true, leftAt: true, attempts: true, photoAt: true, reply: true, replyAt: true, lat: true, lng: true, accuracy: true } } },
       take: 100,
     })
     return NextResponse.json({ trackers: inRunOrder(trackers) })

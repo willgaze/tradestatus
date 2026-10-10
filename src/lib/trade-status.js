@@ -95,6 +95,18 @@ export function generateCode(length = 8) {
 
 // What the public route is allowed to hand back. Everything else on the row —
 // the job UUID, view counts, who looked and when — stays inside.
+export function publicNoAccess(n) {
+  if (!n) return null
+  return {
+    at: n.startedAt.toISOString(),
+    leftAt: n.leftAt ? n.leftAt.toISOString() : null,
+    attempts: (Array.isArray(n.attempts) ? n.attempts : []).map((a) => ({ kind: a.kind, at: a.at })),
+    photoTaken: Boolean(n.photoAt),
+    reply: n.reply || null,
+    replyAt: n.replyAt ? n.replyAt.toISOString() : null,
+  }
+}
+
 export function publicShape(row) {
   return {
     code: row.code,
@@ -155,6 +167,9 @@ export function publicShape(row) {
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,
     missedChoice: row.missedChoice || null,
     missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
+    // Customer not home: the facts of the visit, never the location or the
+    // photo. "Was at the door at 10:04, knocked and called, waited until 10:14."
+    noAccess: publicNoAccess(row.noAccess?.[0]),
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,
