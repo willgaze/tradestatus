@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.13.1'
-export const BUILD_DATE = '2026-10-01'
+export const VERSION = '1.14.0'
+export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 9
+export const THEME_INDEX = 10
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,18 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.14.0', date: '2026-10-10', notes: [
+    'The what3words box no longer assumes you already know your three words',
+    'A link straight to their map, which finds you \u2014 then copy them back',
+    'You can set three words from the van too; the dashboard field was read-only',
+    'One tap fills it in automatically the day there is a what3words key',
+  ] },
+  // 1.13.1 shipped without an entry here. Added after the fact rather than
+  // left out, because a changelog with a hole in it is worse than a late line.
+  { version: '1.13.1', date: '2026-10-01', notes: [
+    'Took the one-off database migration back out of the build',
+    'The waiting list can be cleared, not just added to',
+  ] },
   { version: '1.13.0', date: '2026-10-01', notes: [
     'It is called TurnUp now \u2014 renamed everywhere a person reads it',
     'A real homepage: what it is, what it will never do, and a working example to tap',

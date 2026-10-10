@@ -13,6 +13,7 @@ import Roadmap from './Roadmap'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
+import FindWords from '@/components/FindWords'
 import { windowSummary, windowHours } from '@/lib/window'
 import { TickIcon } from '@/components/icons'
 import { DB_REASONS } from '@/lib/db-errors'
@@ -376,6 +377,24 @@ export default function Console() {
                   onPin={(url) => patch(t.id, { mapPin: url })}
                 />
               </div>
+
+              {/* The trade needs three words as often as the customer does, and
+                  is more likely to be the one standing at the gate. The field
+                  was read-only here: whatever the customer had typed, and no
+                  way to set it from the van. */}
+              <label className="mt-3 block text-[13px] muted">
+                what3words — for a gate with no number
+                {/* Uncontrolled, like the other fields here, so it does not
+                    fight a keystroke on a patchy connection. Keyed on the
+                    value so a lookup that fills it in is actually seen: a
+                    defaultValue alone would not change on re-render. */}
+                <input type="text" key={t.what3words || 'empty'}
+                       defaultValue={t.what3words || ''} placeholder="///filled.count.soap"
+                       autoCapitalize="none" autoCorrect="off"
+                       onBlur={(e) => e.target.value !== (t.what3words || '') && patch(t.id, { what3words: e.target.value })}
+                       className="field mt-1.5 !min-h-[44px] !text-[14px]" />
+              </label>
+              <FindWords onWords={(w) => patch(t.id, { what3words: w })} />
 
               <div className="r-inner mt-4 p-4" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
                 <p className="text-[13px] font-semibold muted">Send this to the customer</p>

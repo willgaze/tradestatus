@@ -281,9 +281,29 @@ A precise location is the sharpest field this product holds, so it obeys the
 rule above it: the trade sees it on the dashboard, the tapping device remembers
 it, and it is not in `publicShape()`.
 
-**what3words from a GPS fix needs their API and a key**, so it is not built.
-Once there is a pin it is also not needed — three words exist to be said down a
-phone, and a pin is better for everything else.
+**what3words from a GPS fix needs their API and a paid key.** Checked: the
+endpoint is `convert-to-3wa`, the key is required, and the free plan does not
+reliably cover it — the entry tier is around £8/month. Not worth it for this,
+so the conversion is **gated like push**: `WHAT3WORDS_API_KEY` set and one tap
+fills the box; unset and the box shows a link to their map instead, which
+finds the phone itself. `src/app/api/w3w/route.js` answers `GET` with
+`{configured}` so `FindWords` never renders a button that cannot work — the
+same mistake as the push row that opened onto nothing.
+
+The key stays server-side. A what3words key is billable, and a billable key in
+client JavaScript is somebody else's monthly invoice.
+
+**Do not invent a what3words URL that carries coordinates.** It could not be
+verified from this container (their site 403s a bare curl, and Chromium here
+will not trust the egress CA), so the link is the plain
+`https://what3words.com/` and their own locate button does the rest. A guessed
+third-party URL format that silently stops working is worse than two taps that
+always do.
+
+Once there is a pin, three words are not strictly needed — they exist to be
+said down a phone, and a pin is better for everything else. They are still
+offered because rural customers often know theirs already, and reading three
+words down a phone beats describing a gate.
 
 ## Every operator route guards itself
 

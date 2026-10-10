@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { normaliseW3w, normaliseMapPin, w3wUrl } from '@/lib/places'
 import { readOwn, writeOwn } from './own-answers'
 import DropPin from '@/components/DropPin'
+import FindWords from '@/components/FindWords'
 
 const DOORS = [
   { key: 'FRONT', label: 'Front' },
@@ -106,11 +107,16 @@ export default function AccessNotes({ status, onSaved }) {
             <input type="text" value={w3w} onChange={(e) => setW3w(e.target.value)}
                    placeholder="///filled.count.soap" autoCapitalize="none" autoCorrect="off"
                    className="field mt-2" />
-            {normaliseW3w(w3w) && (
+            {normaliseW3w(w3w) ? (
               <a href={w3wUrl(normaliseW3w(w3w))} target="_blank" rel="noreferrer"
                  className="mt-2 inline-flex min-h-[40px] items-center text-[15px] font-medium" style={{ color: 'var(--tint)' }}>
                 Check it opens on the right square ›
               </a>
+            ) : (
+              /* The box used to assume you already knew your three words,
+                 which is the one assumption that fails for the person it is
+                 for: somebody at a gate with no number. */
+              <FindWords onWords={setW3w} />
             )}
           </label>
 
