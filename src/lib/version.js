@@ -50,6 +50,7 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 export const CHANGELOG = [
   { version: '1.28.0', date: '2026-10-10', notes: [
     'Customer not home, in one tap. "No one home" on the card starts the clock and takes a location fix; knocked, called and texted are logged as you do them; a photo of the door if you want one; "Leave and tell them" sets the card to Paused with a plain note. The customer\'s page says sorry we missed you, with what was tried and when, and three replies: I am here now, later today, another day. Nothing is charged from here; the photo never leaves the dashboard.',
+  ] },
   { version: '1.27.0', date: '2026-10-10', notes: [
     'Ask it or tell it. One box at the top of the dashboard: "what is on today?" gets an answer; "on my way to Whitfield", "paused on Hale, waiting on the cylinder" or a pasted booking email gets a card to confirm. It proposes, you tap, the same routes as the form do the saving. It cannot promise a time.',
     'The dashboard stopped being a wall of buttons. Navigate and the door notes show when you are heading there; the link, hours, photos and note are under More; the seven setup panels are shut under Setup and settings.',
