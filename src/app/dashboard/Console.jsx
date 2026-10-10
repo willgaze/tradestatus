@@ -280,7 +280,7 @@ export default function Console({ assistant = false }) {
           fields; the form stays a tap away for a ServiceM8 number or a day
           with no signal worth spending on a round trip. */}
       {assistant
-        ? <Assistant jobs={trackers} onCreate={createFields} onUpdate={patch} />
+        ? <Assistant jobs={trackers} setup={setup} onCreate={createFields} onUpdate={patch} />
         : !showForm && (
           <button type="button" onClick={() => setShowForm(true)} className="btn btn-filled mt-6 w-full">
             <PlusIcon size={18} /> New job

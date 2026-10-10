@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { STAGES } from '@/lib/trade-status'
 import { dayOnly } from '@/lib/when'
 import { DB_REASONS } from '@/lib/db-errors'
+import { suggestions } from '@/lib/tips'
 import { TickIcon, MessageIcon } from '@/components/icons'
 
 /**
@@ -36,8 +37,6 @@ const LABELS = {
   jobRef: 'Job number', sm8JobNumber: 'ServiceM8 job', scheduledFor: 'Booked for', stage: 'Stage',
   stageNote: 'Note to customer', position: 'Where in the run',
 }
-
-const EXAMPLES = ['What is on today?', 'On my way to the first job', 'Paused on Hale, waiting on the cylinder']
 
 // "14:30" on a given day as an instant. The day is the proposal's, or the
 // job's own booked day, or today. Parsed as local time, which is what the
@@ -76,7 +75,7 @@ const WARNINGS = {
   late_not_a_choice: 'Running late is 15, 30 or 60 minutes, the same as the buttons.',
 }
 
-export default function Assistant({ jobs, onCreate, onUpdate }) {
+export default function Assistant({ jobs, setup, onCreate, onUpdate }) {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [thread, setThread] = useState([])
@@ -181,12 +180,7 @@ export default function Assistant({ jobs, onCreate, onUpdate }) {
   return (
     <section className="glass r-outer mt-5 p-4">
       {thread.length === 0 && (
-        <p className="mb-3 text-[14px] muted">
-          Ask it or tell it. Try:{' '}
-          {EXAMPLES.map((h, i) => (
-            <span key={h}>{i > 0 ? ' · ' : ''}<button type="button" className="underline" onClick={() => ask(h)}>{h}</button></span>
-          ))}
-        </p>
+        <p className="mb-2 text-[14px] muted">Ask it or tell it.</p>
       )}
 
       {thread.length > 0 && (
@@ -247,6 +241,18 @@ export default function Assistant({ jobs, onCreate, onUpdate }) {
         <div className="r-inner mb-3 px-4 py-3" style={{ background: 'color-mix(in srgb, #ff3b30 12%, transparent)', color: '#ff3b30' }}>
           <p className="text-[14px] font-semibold">{error.title}</p>
           {error.fix && <p className="mt-0.5 text-[13px]">{error.fix}</p>}
+        </div>
+      )}
+
+      {/* What you would most likely say right now: a customer waiting on an
+          answer first, then the job you are moving, then the time of day.
+          See suggestions() in src/lib/tips.js. One tap sends it. */}
+      {!busy && (
+        <div className="mb-2.5 flex flex-wrap gap-1.5">
+          {suggestions({ jobs, setup }).map((h) => (
+            <button key={h} type="button" onClick={() => ask(h)}
+                    className="btn btn-grey !min-h-[34px] !rounded-full !px-3 !text-[13px]">{h}</button>
+          ))}
         </div>
       )}
 
