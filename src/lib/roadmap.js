@@ -15,6 +15,8 @@ export const PHASES = [
     items: [
       { key: 'still-coming', name: 'Are you still coming?', state: 'live',
         what: 'When a window you gave has started and the card has not moved, the customer gets one button and your phone buzzes. Answer from the card: On my way, or about how late. The answer shows on their page with the time you said it. Nothing invents a time; it notices one has passed.' },
+      { key: 'push', name: 'Your phone buzzes when they set off', state: 'live',
+        what: 'Set off, arrived, done — on the lock screen, no app to install. Live since 10 Oct 2026: a real notification reached a real phone. On an iPhone the page has to be on the home screen first, which is Apple’s rule and the page says so.' },
       { key: 'status-link', name: 'One link per job', state: 'live',
         what: 'Booked in, on my way, on site, done. No promised time.' },
       { key: 'one-tap-text', name: 'Text or WhatsApp in one tap', state: 'live',
@@ -56,9 +58,6 @@ export const PHASES = [
     title: 'Built, waiting on someone else',
     blurb: 'The code is done. These need an account or a certificate that only you can get.',
     items: [
-      { key: 'push', name: 'Your phone buzzes when they set off', state: 'ready',
-        what: 'Set off, arrived, done — on the lock screen, no app. The closest thing to the wallet card, and it costs nothing.',
-        needs: 'One database migration and a key pair — both in setup.sh' },
       { key: 'wallet-pass', name: 'The card in Apple Wallet', state: 'ready',
         what: 'Updates itself on the lock screen when you tap a stage.',
         needs: 'Apple Developer Program, £79/yr' },

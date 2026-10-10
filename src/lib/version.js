@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.24.0'
+export const VERSION = '1.24.1'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.24.1', date: '2026-10-10', notes: [
+    'Notifications are live \u2014 a real one reached a real phone, so the roadmap says live rather than ready',
+  ] },
   { version: '1.24.0', date: '2026-10-10', notes: [
     'Nudge me has a Send a test to this phone button \u2014 tap it, your phone buzzes, no job to move',
     'It says how many phones it actually reached, so nothing arriving is visible rather than silent',
