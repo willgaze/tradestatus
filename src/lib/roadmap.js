@@ -13,6 +13,9 @@ export const PHASES = [
     title: 'Working now',
     blurb: 'Everything below is live on this app today.',
     items: [
+      { key: 'ask-or-tell', name: 'Ask it or tell it', state: 'ready',
+        what: 'The box at the top of the dashboard. "What is on today?" gets an answer. "On my way to Whitfield", "paused on Hale, waiting on the cylinder", a pasted booking email: a card to confirm. It never saves anything itself and never promises a time. The rest of the dashboard learns you one tip at a time.',
+        needs: 'An Anthropic API key, about a penny a go' },
       { key: 'still-coming', name: 'Are you still coming?', state: 'live',
         what: 'When a window you gave has started and the card has not moved, the customer gets one button and your phone buzzes. Answer from the card: On my way, or about how late. The answer shows on their page with the time you said it. Nothing invents a time; it notices one has passed.' },
       { key: 'push', name: 'Your phone buzzes when they set off', state: 'live',

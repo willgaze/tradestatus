@@ -16,8 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.25.0'
-export const BUILD_DATE = '2026-10-10'
+export const VERSION = '1.26.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -40,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 18
+export const THEME_INDEX = 19
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -49,8 +48,16 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.26.0', date: '2026-10-10', notes: [
+    'Ask it or tell it. One box at the top of the dashboard: "what is on today?" gets an answer; "on my way to Whitfield", "paused on Hale, waiting on the cylinder" or a pasted booking email gets a card to confirm. It proposes, you tap, the same routes as the form do the saving. It cannot promise a time.',
+    'The dashboard stopped being a wall of buttons. Navigate and the door notes show when you are heading there; the link, hours, photos and note are under More; the seven setup panels are shut under Setup and settings.',
+    'It teaches itself one tip at a time: no jobs yet, a link nobody has opened, no name on the card, nudges not on. Got it, and the next one waits its turn.',
+    'Invisible until ANTHROPIC_API_KEY is set. No key, no box, and the New job button is back.',
+    'Fixed: the version file on main did not parse (a duplicated line and two unclosed entries), so the last two nightly builds never deployed.',
+  ] },
   { version: '1.25.0', date: '2026-10-10', notes: [
     'When the window is missed, the customer is told. Ten minutes after a window ends with nobody On site and no late estimate still running, their page says so plainly — sorry, that is on us — and offers three choices: I will wait, later today, another day. Their choice lands on your card and your phone. You propose the new window; the product never invents a time.',
+  ] },
   { version: '1.24.1', date: '2026-10-10', notes: [
     'Notifications are live \u2014 a real one reached a real phone, so the roadmap says live rather than ready',
   ] },
@@ -97,6 +104,7 @@ export const CHANGELOG = [
   ] },
   { version: '1.17.2', date: '2026-10-09', notes: [
     'Four decisions landed on the plan: free while customer zero, a new Ltd will own it, RIBA is the first template after ServiceM8, and raising money stays undecided.',
+  ] },
   { version: '1.17.1', date: '2026-10-09', notes: [
     'A card that follows a ServiceM8 job now carries the booking window too: "Between 09:00 and 11:00" from the ServiceM8 booking, agreed, and moved when the booking moves. ServiceM8 stamps times in UK local time with no offset, so they are read as Europe/London rather than trusted as UTC.',
   ] },
@@ -115,7 +123,6 @@ export const CHANGELOG = [
     'The link ServiceM8 can send itself. /j/<job number> goes in the booking confirmation template; the customer proves it is their booking with the last four digits of their mobile, once, and the card appears on the dashboard already linked to the job.',
     '/with-servicem8: the page that says what the connector does in its current form, the exact template line, and a ten-minute test. Linked from the homepage.',
     'Two ideas logged from Will: a diary on every job, and WhatsApp as the place bookings actually arrive.',
-  ] },
   ] },
   { version: '1.16.0', date: '2026-10-09', notes: [
     'The business plan lives here now, at /plan, behind the same sign-in as Jobs. Twelve sections, arrow keys to move, P to present. Every figure says whether it is a fact with a source, a working estimate, or a decision only the owner can make.',
