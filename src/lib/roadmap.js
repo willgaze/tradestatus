@@ -13,6 +13,8 @@ export const PHASES = [
     title: 'Working now',
     blurb: 'Everything below is live on this app today.',
     items: [
+      { key: 'still-coming', name: 'Are you still coming?', state: 'live',
+        what: 'When a window you gave has started and the card has not moved, the customer gets one button and your phone buzzes. Answer from the card: On my way, or about how late. The answer shows on their page with the time you said it. Nothing invents a time; it notices one has passed.' },
       { key: 'status-link', name: 'One link per job', state: 'live',
         what: 'Booked in, on my way, on site, done. No promised time.' },
       { key: 'one-tap-text', name: 'Text or WhatsApp in one tap', state: 'live',
@@ -128,6 +130,8 @@ export const PHASES = [
         what: 'What happened and who said what, in one thread on the job: the stages, the customer\u2019s answers, your notes, the texts \u2014 the way a ServiceM8 job diary reads, but shared with the person it is about.' },
       { key: 'whatsapp', name: 'WhatsApp, where the bookings actually come from', state: 'idea',
         what: 'Half the jobs start as a WhatsApp with a photo, a video and a pin. Today that gets retyped into the job system and the pictures stay in the chat. The link sent back through WhatsApp, and the photos, the pin and the thread kept with the job \u2014 without running the business inside WhatsApp.' },
+      { key: 'late-call', name: 'A phone call when a push is not enough', state: 'idea',
+        what: 'If a customer asks and ten minutes pass with no answer, your phone rings with a recorded message: get back to your customer. For the days the phone is face down on the dash. Needs a voice provider and costs pennies a call.' },
       { key: 'payments', name: 'Paid on the same page', state: 'idea',
         what: 'When the card says Job done, the bill is under it and Apple Pay or a card settles it there, the way ServiceM8 Pay does on an invoice. A deposit at booking if you take one. The receipt stays with the job, so the customer never hunts an email and you never chase. Needs a Stripe account and takes their fee.' },
       { key: 'quoting', name: 'Quotes and invoices', state: 'idea',

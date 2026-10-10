@@ -1,6 +1,6 @@
-# v1.22.0 — Harbour
+# v1.23.0 — Moss
 
-**2026-10-10** · background `#f4f7fb` · accent `#255a95`
+**2026-10-10** · background `#f3f8f4` · accent `#2c6e49`
 
 - Turn on notifications from the dashboard — no terminal, no laptop, all on your phone
 - It makes the keys on your own phone and sends them nowhere, then links you straight to Vercel
