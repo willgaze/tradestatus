@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { STAGES, stageOf } from '@/lib/trade-status'
 import Passkeys from './Passkeys'
+import PushSetup from './PushSetup'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import Changelog from './Changelog'
@@ -523,6 +524,7 @@ export default function Console() {
       <ServiceM8 onChanged={load} />
       <Profile />
       <Passkeys />
+      <PushSetup />
       <Roadmap />
       <Changelog />
       <div className="mt-8 flex justify-center"><BuildStamp /></div>

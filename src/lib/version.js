@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.21.0'
+export const VERSION = '1.22.0'
 export const BUILD_DATE = '2026-10-10'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 15
+export const THEME_INDEX = 16
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.22.0', date: '2026-10-10', notes: [
+    'Turn on notifications from the dashboard \u2014 no terminal, no laptop, all on your phone',
+    'It makes the keys on your own phone and sends them nowhere, then links you straight to Vercel',
+    'The box disappears by itself once the keys are in, which is how you know it worked',
+  ] },
   { version: '1.21.0', date: '2026-10-10', notes: [
     'The what3words box no longer assumes you already know your three words',
     'A link straight to their map, which finds you \u2014 then copy them back',
