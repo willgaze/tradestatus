@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.26.0'
-export const BUILD_DATE = '2026-10-10'
+export const VERSION = '1.26.1'
+export const BUILD_DATE = '2026-10-11'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.26.1', date: '2026-10-11', notes: [
+    'Two roadmap items, both honest about their state. Pay to book: a call-out charge or a deposit of any size from the card, after the pilot on the owner\u2019s own jobs. Escrow: the money set aside and visible to the trade, later, through a regulated partner, never TurnUp holding funds.',
+    'The order was reset the same day: the real pilot is the owner\u2019s own jobs beside ServiceM8. White Horse is parked until that has run.',
+  ] },
   { version: '1.26.0', date: '2026-10-10', notes: [
     'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. On the dashboard, last 30 or 90 days.',
     'Built for the first enterprise wedge, decided today: a social landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',
