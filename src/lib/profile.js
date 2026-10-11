@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { termsFrom, DEFAULT_TERMS } from '@/lib/terms'
 
 /**
  * What a customer is allowed to see about the person coming to their house.
@@ -59,5 +60,20 @@ export async function publicBrand() {
     return p?.brandLogo ? { logo: p.brandLogo } : null
   } catch {
     return null
+  }
+}
+
+/**
+ * The booking terms as currently set: the notice period and the short-notice
+ * charge, if any. Numbers only; the words live in src/lib/terms.js. Falls
+ * back to the defaults rather than failing, because the customer's page must
+ * render whether or not the profile row exists yet.
+ */
+export async function publicTerms() {
+  try {
+    const p = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } })
+    return termsFrom(p)
+  } catch {
+    return { ...DEFAULT_TERMS }
   }
 }

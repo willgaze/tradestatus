@@ -104,6 +104,9 @@ export function publicNoAccess(n) {
     photoTaken: Boolean(n.photoAt),
     reply: n.reply || null,
     replyAt: n.replyAt ? n.replyAt.toISOString() : null,
+    // The charge the note stated, if one was agreed before the day. Null is
+    // "nothing is charged", and the page says so in those words.
+    fee: n.fee ?? null,
   }
 }
 
@@ -167,6 +170,15 @@ export function publicShape(row) {
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,
     missedChoice: row.missedChoice || null,
     missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
+    // The booking terms the customer agreed to, from their own phone: when,
+    // and the two numbers the words are built from. The words themselves are
+    // rebuilt from src/lib/terms.js, so the page shows what was agreed even
+    // if the trade has changed the fee since. Nothing here is theirs to hide:
+    // it is the trade's terms and a time.
+    termsAgreedAt: row.termsAgreedAt ? row.termsAgreedAt.toISOString() : null,
+    termsAgreed: row.termsAgreed && typeof row.termsAgreed === 'object'
+      ? { noticeHours: row.termsAgreed.noticeHours ?? 24, fee: row.termsAgreed.fee ?? null }
+      : null,
     // Customer not home: the facts of the visit, never the location or the
     // photo. "Was at the door at 10:04, knocked and called, waited until 10:14."
     noAccess: publicNoAccess(row.noAccess?.[0]),

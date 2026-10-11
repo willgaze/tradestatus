@@ -6,8 +6,10 @@ import { HouseIcon } from '@/components/icons'
 
 /**
  * "Sorry we missed you." The facts of the visit — at the door at 10:04,
- * knocked and called, waited until 10:14 — and three replies. No blame, no
- * fee, and the photo stays with the trade; this page only says one was taken.
+ * knocked and called, waited until 10:14 — and three replies. No blame; the
+ * charge only if the customer agreed one before the day, and then the figure
+ * they agreed; and the photo stays with the trade — this page only says one
+ * was taken.
  */
 const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 const first = TRADE_NAME.split(' ')[0]
@@ -34,7 +36,7 @@ export default function MissedYou({ status, onReplied }) {
         <div className="min-w-0 flex-1">
           <p className="text-[16px] font-semibold">Sorry we missed you</p>
           <p className="mt-0.5 text-[14px] leading-snug muted">
-            {first} was at the door at {hhmm(n.at)}, {tried}{n.leftAt ? `, and waited until ${hhmm(n.leftAt)}` : ''}. No one answered{n.photoTaken ? ' — a photo of the door was taken for the record' : ''}. Nothing is charged. When suits you?
+            {first} was at the door at {hhmm(n.at)}, {tried}{n.leftAt ? `, and waited until ${hhmm(n.leftAt)}` : ''}. No one answered{n.photoTaken ? ' — a photo of the door was taken for the record' : ''}. {n.fee ? `As agreed when you booked, a visit with no one in and no notice is £${n.fee}. Say if something happened.` : 'Nothing is charged.'} When suits you?
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {[['HERE', 'I’m here now'], ['LATER', 'Later today'], ['REBOOK', 'Another day']].map(([k, label]) => (

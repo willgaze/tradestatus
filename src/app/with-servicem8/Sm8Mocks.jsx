@@ -10,7 +10,7 @@
 const BLUE = '#2a6fdb'
 
 export const SM8_LINE = (host) =>
-  `Hi {job.contact_first}, your booking with {vendor.name} is confirmed for {job.next_booking_date}, arriving {job.next_booking_time}. Follow the job here — it moves as the day does: https://${host}/j/{job.generated_job_id}  — {calculation.current_user_first}`
+  `Hi {job.contact_first}, your booking with {vendor.name} is confirmed for {job.next_booking_date}, arriving {job.next_booking_time}. Follow the job here — it moves as the day does, and has the booking terms and your right to cancel: https://${host}/j/{job.generated_job_id}  — {calculation.current_user_first}`
 
 function Window({ title, nav, children }) {
   return (

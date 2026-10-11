@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
   try {
     const row = await prisma.tradeStatus.findUnique({
       where: { code: code.toUpperCase() },
-      include: { events: { orderBy: { createdAt: 'asc' } }, noAccess: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, startedAt: true, leftAt: true, attempts: true, photoAt: true, reply: true, replyAt: true, lat: true, lng: true, accuracy: true } } },
+      include: { events: { orderBy: { createdAt: 'asc' } }, noAccess: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, startedAt: true, leftAt: true, attempts: true, photoAt: true, reply: true, replyAt: true, fee: true, lat: true, lng: true, accuracy: true } } },
     })
     if (!row || !row.isActive) return NextResponse.json({ error: 'not_found' }, { status: 404 })
 

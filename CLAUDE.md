@@ -618,6 +618,39 @@ locks itself out.
 Rules that must not drift: the product never estimates a time; a late figure
 is only ever one the trade typed, shown with when they said it.
 
+## Terms are agreed, not announced (`src/lib/terms.js`)
+
+The customer's page carries **Before the visit**: the notice the trade asks for
+to move or cancel, the short-notice charge if there is one, what happens when
+nobody is in, and the 14-day right to cancel. One tap, **Got it, go ahead**,
+writes `termsAgreedAt` and `termsAgreed` (a snapshot: the two numbers and the
+exact text shown) and an event in the timeline. The numbers live on
+`TradeProfile` (`noticeHours`, `shortNoticeFee`, set under **Booking terms** on
+the dashboard); the words live in one place, `termsParagraphs()`, so the page,
+the dashboard preview and the stored record are the same text.
+
+Why a tap and a snapshot, rather than a line in the confirmation: a charge for
+a late cancellation or a missed visit is only enforceable if the customer agreed
+it **before the day**, it is a fair estimate of the loss, and notice avoids it
+(Consumer Rights Act 2015 Sch 2; GOV.UK's cancellation guidance). And a booking
+made by phone or online carries a 14-day cooling-off period in which a trade who
+starts without an express request can end up unpaid (Consumer Contracts
+Regulations 2013, reg 36). The tap is that request, with a time on it.
+
+Rules that must not drift:
+
+- **TurnUp states a fee; it never takes one, never adds one and never decides
+  one is owed.** `recordNoAccess()` writes the figure into the note only when
+  `agreedFee(tracker)` finds one in the snapshot, and otherwise writes "Nothing
+  is charged" in those words. The figure comes from the **snapshot**, never the
+  live profile: a fee raised after the booking is not what they agreed.
+- **Nothing is ever un-agreed by a route.** A second POST returns the first
+  record. Changing the terms changes future pages; agreed jobs keep their words.
+- The confirmation the trade sends (the ServiceM8 line on `/with-servicem8`)
+  says the terms and the right to cancel are **on the link**, which is what
+  makes the link the durable copy. Do not put a fee in the SMS that the page
+  does not also show.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.

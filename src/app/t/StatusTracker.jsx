@@ -10,6 +10,7 @@ import Window from './Window'
 import AddToWallet from './AddToWallet'
 import StillComing from './StillComing'
 import MissedYou from './MissedYou'
+import Terms from './Terms'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
@@ -19,13 +20,13 @@ import { windowLabel, positionLabel } from '@/lib/calendar'
 import { windowSummary } from '@/lib/window'
 import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
-import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon } from '@/components/icons'
+import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon, TickIcon } from '@/components/icons'
 
 // Dates come from src/lib/when.js and never from toLocaleString(): this page
 // renders on the server and again on the phone, and the two ship different
 // locale data, which tore the page down mid-hydration.
 
-export default function StatusTracker({ initialStatus, initialProfile, initialBrand, walletReady = false }) {
+export default function StatusTracker({ initialStatus, initialProfile, initialBrand, initialTerms = null, walletReady = false }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
   const [brand, setBrand] = useState(initialBrand || null)
@@ -254,6 +255,22 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
                 </div>
               </div>
             )}
+          </Disclosure>
+        )}
+
+        {/* The booking terms, read here and agreed with one tap. First in the
+            list until it is done, because a short-notice charge only holds if
+            it was agreed before the day, and the 14-day right to cancel wants
+            an express "go ahead" before work starts inside it. Gone once the
+            job is done: nothing left to agree. */}
+        {status.stage !== 'DONE' && (
+          <Disclosure icon={<TickIcon size={19} />} title="Before the visit" delay="135ms"
+                      accent={!status.termsAgreedAt}
+                      summary={status.termsAgreedAt
+                        ? `Agreed ${dayAndTime(status.termsAgreedAt)}`
+                        : 'The booking terms — read and agree in one tap'}
+                      open={openRow === 'terms'} onToggle={() => toggle('terms')}>
+            <Terms status={status} terms={initialTerms} onAgreed={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
           </Disclosure>
         )}
 

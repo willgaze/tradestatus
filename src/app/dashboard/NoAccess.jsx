@@ -11,7 +11,8 @@ import { HouseIcon } from '@/components/icons'
  * it — knocked, called, texted — take a photo of the door if you want the
  * evidence, and when you leave, tap once more. The card goes to Paused with
  * a plain note, the customer's page says sorry we missed you with the facts
- * and three replies, and their phone buzzes. Nothing is charged from here.
+ * and three replies, and their phone buzzes. Nothing is taken from here; a
+ * charge is only stated if they agreed one before the day.
  *
  * The photo is shrunk in the browser to about a thousand pixels wide before
  * it is sent, so a 4 MB phone photo becomes a hundred kilobytes of evidence.
@@ -90,7 +91,7 @@ export default function NoAccess({ tracker, onDone }) {
           const n = attempts.filter((a) => a.kind === k).length
           return <button key={k} type="button" onClick={() => tried(k)} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">{label}{n ? ` · ${n}` : ''}</button>
         })}
-        <button type="button" onClick={() => fileRef.current?.click()} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">{photo ? 'Door photo ✓' : 'Photo of the door'}</button>
+        <button type="button" onClick={() => fileRef.current?.click()} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">{photo ? 'Door photo added' : 'Photo of the door'}</button>
         <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
       </div>
       {attempts.length > 0 && <p className="mt-2 text-[12px] muted">{attempts.map((a) => `${a.kind.toLowerCase()} ${hhmm(a.at)}`).join(' · ')}</p>}
@@ -99,7 +100,7 @@ export default function NoAccess({ tracker, onDone }) {
         <button type="button" onClick={leave} disabled={busy} className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">{busy ? '…' : 'Leave and tell them'}</button>
         <button type="button" onClick={() => { setOpen(false); setStartedAt(null); setAttempts([]); setPhoto(null) }} disabled={busy} className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">They answered</button>
       </div>
-      <p className="mt-2 text-[12px] muted">Leaving sets the card to Paused with a plain note. Their page says sorry we missed you, with what you tried and when, and asks what suits. Nothing is charged.</p>
+      <p className="mt-2 text-[12px] muted">Leaving sets the card to Paused with a plain note. Their page says sorry we missed you, with what you tried and when, and asks what suits. {tracker.termsAgreedAt && tracker.termsAgreed?.fee ? `They agreed a £${tracker.termsAgreed.fee} short-notice charge when they booked, so the note says so. Nothing is taken from here; that is yours to raise, with this record.` : 'Nothing is charged.'}</p>
     </div>
   )
 }

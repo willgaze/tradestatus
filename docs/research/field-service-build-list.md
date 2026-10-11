@@ -22,7 +22,7 @@ capability we do not have) · No.
 | Feature | Verdict | Status |
 |---|---|---|
 | Arrival window on every booking, headline above the start time | Copy | Done 1.17.1 (from ServiceM8); manual windows done earlier |
-| Booking confirmation carrying cancellation info, express-start request, no-access terms (CCR 2013 regs 28/36) | Improve | Next — template text + a terms line on the Booked-in page |
+| Booking confirmation carrying cancellation info, express-start request, no-access terms (CCR 2013 regs 28/36) | Improve | Done 1.29.0 — Before the visit on the customer page (notice, charge if any, 14-day right), one-tap Got it, go ahead recorded with the words; Booking terms panel on the dashboard; confirmation line points at it |
 | Day-before reminder with reply: confirm / reschedule / someone else will be in | Copy | Next — push + email now; SMS when we have it |
 | Non-push fallback for every customer-critical event | Copy | Next — email first; SMS is the capability to buy |
 | Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Next — dashboard service worker + IndexedDB |

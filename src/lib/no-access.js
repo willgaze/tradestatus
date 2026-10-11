@@ -9,10 +9,13 @@ import { TRADE_NAME } from '@/lib/trade'
  * when the trade was at the door (their phone's clock and the server's), where
  * the phone said it was, what they tried and when, how long they waited, and a
  * photo of the door. Then the customer is told, plainly and without blame,
- * and offered the next step. No fee is ever charged from here — the next step
- * is offered first, and a charge is only ever something agreed before the
- * day. The card goes to Paused with a note, so the page tells the truth: the
- * trade came, could not get in, and will come back.
+ * and offered the next step. No fee is ever TAKEN from here — the next step
+ * is offered first. A charge is only ever STATED, and only when the customer
+ * agreed the booking terms from their own phone before the day (termsAgreedAt
+ * on the job, src/lib/terms.js); then the note says the figure they agreed,
+ * not whatever the profile says now. Otherwise the note says nothing is
+ * charged, in those words. The card goes to Paused with the note, so the
+ * page tells the truth: the trade came, could not get in, and will come back.
  */
 const hhmm = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })
 const first = TRADE_NAME.split(' ')[0]
@@ -42,20 +45,24 @@ export async function recordNoAccess(tracker, body) {
     if (photo.length > MAX_PHOTO) throw new Error('photo_too_big')
   }
   const waited = Math.max(0, Math.round((leftAt - startedAt) / 60_000))
-  const note = `No one was home at ${hhmm(startedAt)}. I ${tried(attempts)} and waited ${waited} minute${waited === 1 ? '' : 's'}. Nothing is charged — tell me when suits and I will come back.`
+  const fee = agreedFee(tracker)
+  const ending = fee
+    ? `As agreed when you booked, a visit with no one in and no notice is £${fee}. Say if something happened, and tell me when suits — I will come back.`
+    : 'Nothing is charged — tell me when suits and I will come back.'
+  const note = `No one was home at ${hhmm(startedAt)}. I ${tried(attempts)} and waited ${waited} minute${waited === 1 ? '' : 's'}. ${ending}`
 
   const row = await prisma.noAccess.create({ data: {
     tradeStatusId: tracker.id, startedAt, leftAt,
     deviceStartedAt: body.deviceStartedAt ? new Date(body.deviceStartedAt) : null,
     lat: num(body.lat), lng: num(body.lng), accuracy: num(body.accuracy),
-    attempts, photo, photoAt: photo ? new Date() : null,
+    attempts, photo, photoAt: photo ? new Date() : null, fee,
   } })
   const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
     stage: 'PAUSED', stageNote: note, askAnsweredAt: tracker.askedAt && !tracker.askAnsweredAt ? new Date() : undefined,
     events: { create: { stage: 'PAUSED', note } },
   } })
   notifyCustomer(updated, { title: 'Sorry we missed you', body: `${TRADE_NAME} was at the door and could not get in. Open the page to say when suits.` }).catch(() => {})
-  return { row: { id: row.id, startedAt, leftAt, attempts, photoTaken: Boolean(photo) }, tracker: updated }
+  return { row: { id: row.id, startedAt, leftAt, attempts, photoTaken: Boolean(photo), fee }, tracker: updated }
 }
 
 export async function replyNoAccess(tracker, noAccessId, choice) {
@@ -67,6 +74,17 @@ export async function replyNoAccess(tracker, noAccessId, choice) {
   const next = choice === 'HERE' ? 'Go back if you still can, or say how long.' : 'Set new hours on the card.'
   const r = await pushTrade({ title: `${who} ${REPLIES[choice]}`, body: next, tag: `nudge-${tracker.code}` })
   return { ok: true, sent: r.sent }
+}
+
+/**
+ * The short-notice charge the customer agreed to before the day, or null.
+ * Read from the snapshot taken when they tapped, never from the live profile:
+ * a fee raised since the booking was not what they agreed to.
+ */
+export function agreedFee(tracker) {
+  if (!tracker?.termsAgreedAt) return null
+  const n = Number(tracker.termsAgreed?.fee)
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null
 }
 
 const num = (v) => (v === null || v === undefined || v === '' || Number.isNaN(Number(v)) ? null : Number(v))

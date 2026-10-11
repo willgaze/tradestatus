@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
-import { publicProfile, publicBrand } from '@/lib/profile'
+import { publicProfile, publicBrand, publicTerms } from '@/lib/profile'
 import { TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import StatusTracker from '../StatusTracker'
 import { passkitConfigured } from '@/lib/passkit'
@@ -15,16 +15,18 @@ export default async function TrackPage({ params }) {
   let status = null
   let profile = null
   let brand = null
+  let terms = null
   let unavailable = false
   try {
     const row = await prisma.tradeStatus.findUnique({
       where: { code: String(code).toUpperCase() },
-      include: { events: { orderBy: { createdAt: 'asc' } }, noAccess: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, startedAt: true, leftAt: true, attempts: true, photoAt: true, reply: true, replyAt: true, lat: true, lng: true, accuracy: true } } },
+      include: { events: { orderBy: { createdAt: 'asc' } }, noAccess: { orderBy: { createdAt: 'desc' }, take: 1, select: { id: true, startedAt: true, leftAt: true, attempts: true, photoAt: true, reply: true, replyAt: true, fee: true, lat: true, lng: true, accuracy: true } } },
     })
     if (row?.isActive) {
       status = publicShape(row)
       if (status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE') profile = await publicProfile()
       brand = await publicBrand()
+      terms = await publicTerms()
       // One visit, one count — this runs per page load (force-dynamic) rather
       // than per poll. Deliberately not awaited: a counter must never hold up
       // or break the customer's page.
@@ -61,5 +63,5 @@ export default async function TrackPage({ params }) {
 
   // Whether this deployment can sign an Apple Wallet pass. Decided here, on
   // the server, so the client never has to guess from a 503.
-  return <StatusTracker initialStatus={status} initialProfile={profile} initialBrand={brand} walletReady={passkitConfigured()} />
+  return <StatusTracker initialStatus={status} initialProfile={profile} initialBrand={brand} initialTerms={terms} walletReady={passkitConfigured()} />
 }

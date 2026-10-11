@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.28.0'
-export const BUILD_DATE = '2026-10-10'
+export const VERSION = '1.29.0'
+export const BUILD_DATE = '2026-10-11'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.29.0', date: '2026-10-11', notes: [
+    'Booking terms, agreed from the customer\'s phone. Before the visit, their page now carries three short paragraphs: how much notice you ask for to move or cancel, what happens if nobody is in, and their 14-day right to cancel. One tap, Got it, go ahead, records the time and the exact words. That tap is the express request the Consumer Contracts Regulations want before work starts inside the fortnight, and the thing that makes a short-notice charge enforceable at all.',
+    'Booking terms on the dashboard: the notice period and a short-notice charge in whole pounds, or none. A preview shows the exact words every customer reads. TurnUp states a charge and records the agreement; it never takes one.',
+    'The card says Terms agreed 10:22 or Terms not agreed yet until the job is done. The sorry-we-missed-you note and page now say the figure the customer agreed, if they agreed one, and still say nothing is charged otherwise.',
+    'The ServiceM8 confirmation line now says the terms and the right to cancel are on the link, which is what makes the link the durable copy the regulations ask for.',
+  ] },
   { version: '1.28.0', date: '2026-10-10', notes: [
     'Customer not home, in one tap. "No one home" on the card starts the clock and takes a location fix; knocked, called and texted are logged as you do them; a photo of the door if you want one; "Leave and tell them" sets the card to Paused with a plain note. The customer\'s page says sorry we missed you, with what was tried and when, and three replies: I am here now, later today, another day. Nothing is charged from here; the photo never leaves the dashboard.',
   ] },

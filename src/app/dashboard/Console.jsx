@@ -9,6 +9,7 @@ import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import Changelog from './Changelog'
 import Profile from './Profile'
+import Terms from './Terms'
 import WalletShowcase from './WalletShowcase'
 import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
@@ -359,6 +360,17 @@ export default function Console({ assistant = false }) {
                       <span className="h-1.5 w-1.5 rounded-full bg-current" />Follows ServiceM8 job {t.jobRef ? `#${t.jobRef}` : ''}
                     </p>
                   )}
+                  {/* Whether they have read the terms and tapped Go ahead. Until
+                      Job done it is worth a glance: a short-notice charge only
+                      holds if this happened before the day. */}
+                  {t.stage !== 'DONE' && (
+                    <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold"
+                       style={{ color: t.termsAgreedAt ? 'var(--tint)' : 'var(--label-2)' }}>
+                      {t.termsAgreedAt
+                        ? `Terms agreed ${new Date(t.termsAgreedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}${t.termsAgreed?.fee ? ` · £${t.termsAgreed.fee}` : ''}`
+                        : 'Terms not agreed yet'}
+                    </p>
+                  )}
                 </div>
                 <p className="inline-flex shrink-0 items-center gap-1.5 text-[14px] font-semibold"
                    style={{ color: 'var(--tint)' }}>
@@ -633,7 +645,7 @@ export default function Console({ assistant = false }) {
         <span className="min-w-0">
           <span className="block text-[16px] font-semibold leading-tight">Setup and settings</span>
           <span className="mt-px block truncate text-[13px]" style={{ color: 'var(--label-2)' }}>
-            Who to expect, Nudge me, notifications, ServiceM8, Face ID, the wallet card, what is next
+            Who to expect, Booking terms, Nudge me, notifications, ServiceM8, Face ID, the wallet card, what is next
           </span>
         </span>
         <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
@@ -642,6 +654,7 @@ export default function Console({ assistant = false }) {
 
       {setupOpen && (<>
         <div id="panel-profile" className="scroll-mt-4"><Profile /></div>
+        <div id="panel-terms" className="scroll-mt-4"><Terms /></div>
         <div id="panel-nudges" className="scroll-mt-4"><Nudges /></div>
         <div id="panel-push" className="scroll-mt-4"><PushSetup /></div>
         <div id="panel-servicem8" className="scroll-mt-4"><ServiceM8 onChanged={load} /></div>

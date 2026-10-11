@@ -1,0 +1,38 @@
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { termsFrom, termsSnapshot } from '@/lib/terms'
+import { TRADE_NAME } from '@/lib/trade'
+
+export const dynamic = 'force-dynamic'
+
+// "Got it, go ahead." Public, like the page; the code is the credential.
+//
+// Records the time and the exact words on the screen when the customer
+// tapped, built from the profile as it stands at that moment. Once agreed it
+// stays agreed: a second tap, from a forwarded link or a refresh, hands back
+// the first record rather than overwriting it. Nothing is ever un-agreed
+// from here; that would need a reason, and a human.
+export async function POST(request, { params }) {
+  const { code } = await params
+  if (!code || code.length > 32) return NextResponse.json({ error: 'not_found' }, { status: 404 })
+  try {
+    const row = await prisma.tradeStatus.findUnique({ where: { code: code.toUpperCase() } })
+    if (!row || !row.isActive || row.stage === 'DONE') return NextResponse.json({ error: 'not_found' }, { status: 404 })
+    if (row.termsAgreedAt) {
+      return NextResponse.json({ ok: true, already: true, termsAgreedAt: row.termsAgreedAt.toISOString(), termsAgreed: pick(row.termsAgreed) })
+    }
+    const profile = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }).catch(() => null)
+    const snapshot = termsSnapshot(termsFrom(profile), TRADE_NAME.split(' ')[0])
+    const now = new Date()
+    const updated = await prisma.tradeStatus.update({ where: { id: row.id }, data: {
+      termsAgreedAt: now, termsAgreed: snapshot,
+      events: { create: { stage: row.stage, note: 'Booking terms read and agreed from the customer’s phone.' } },
+    } })
+    return NextResponse.json({ ok: true, termsAgreedAt: updated.termsAgreedAt.toISOString(), termsAgreed: pick(snapshot) })
+  } catch (error) {
+    console.error('terms failed:', error)
+    return NextResponse.json({ error: 'unavailable' }, { status: 503 })
+  }
+}
+
+const pick = (t) => (t && typeof t === 'object' ? { noticeHours: t.noticeHours ?? 24, fee: t.fee ?? null } : null)

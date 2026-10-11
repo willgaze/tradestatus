@@ -56,15 +56,15 @@ model TradeStatus {
   // any reply: a stage change, or a late estimate. lateMinutes is the trade
   // saying "about 30 minutes" — an estimate they chose to give, never one the
   // product worked out, and it is shown with the time it was said.
-  askedAt       DateTime?
-  askAnsweredAt DateTime?
-  lateMinutes   Int?
-  lateAt        DateTime?
+  askedAt        DateTime?
+  askAnsweredAt  DateTime?
+  lateMinutes    Int?
+  lateAt         DateTime?
   // Nudges to the trade: 1 after the window started with the card still
   // Booked in, 2 after it ended with nobody On site. nudgedAt also paces the
   // reminder for an unanswered question.
-  nudgeLevel Int       @default(0)
-  nudgedAt   DateTime?
+  nudgeLevel     Int       @default(0)
+  nudgedAt       DateTime?
   // The window was missed and the customer was told: when, and what they
   // chose — WAIT, LATER (today) or REBOOK (another day). The choice is a
   // request; the trade still proposes the new window, because the product
@@ -72,6 +72,13 @@ model TradeStatus {
   missedAt       DateTime?
   missedChoice   String?
   missedChoiceAt DateTime?
+
+  // The booking terms, agreed from the customer's phone: when, and the exact
+  // words they read (notice period, short-notice charge, the 14-day right).
+  // A charge is only ever stated as owed if this was recorded before the day,
+  // and the words are the ones agreed, not whatever the profile says later.
+  termsAgreedAt DateTime?
+  termsAgreed   Json?
 
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.
@@ -154,6 +161,13 @@ model TradeProfile {
   // Free tier shows TurnUp on the card. Paid shows the trade's own.
   brandLogo   String?
   brandColour String?
+
+  // The booking terms every customer reads before the visit (src/lib/terms.js).
+  // Notice asked for before a visit is moved or cancelled, and the charge, in
+  // whole pounds, for less notice than that or for nobody being in. Null fee
+  // means none is ever mentioned. TurnUp states a fee; it never takes one.
+  noticeHours    Int  @default(24)
+  shortNoticeFee Int?
 
   updatedAt DateTime @updatedAt
 }
@@ -240,8 +254,8 @@ model Sm8Link {
   jobUuid       String    @unique
   jobNumber     String?
   syncedAt      DateTime?
-  lastStatus    String?                      // ServiceM8's own status word
-  lastOutcome   String?                      // what the last sync did, in a word
+  lastStatus    String? // ServiceM8's own status word
+  lastOutcome   String? // what the last sync did, in a word
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -249,10 +263,10 @@ model Sm8Link {
 // Every delivery and every sync, so "did it fire?" has an answer.
 model Sm8Event {
   id            String   @id @default(cuid())
-  event         String                       // job.checked_in, sync.pull, ...
+  event         String // job.checked_in, sync.pull, ...
   jobUuid       String?
   tradeStatusId String?
-  outcome       String?                      // moved:ON_SITE | unchanged | unlinked | error:...
+  outcome       String? // moved:ON_SITE | unchanged | unlinked | error:...
   receivedAt    DateTime @default(now())
 
   @@index([receivedAt])
@@ -281,7 +295,7 @@ model TradeDevice {
 model NoAccess {
   id              String    @id @default(cuid())
   tradeStatusId   String
-  startedAt       DateTime  // the trade's tap, server time
+  startedAt       DateTime // the trade's tap, server time
   deviceStartedAt DateTime? // the phone's own clock at that tap
   leftAt          DateTime?
   lat             Float?
@@ -290,8 +304,9 @@ model NoAccess {
   attempts        Json      @default("[]") // [{ kind: 'KNOCKED'|'CALLED'|'TEXTED', at }]
   photo           Bytes?
   photoAt         DateTime?
-  reply           String?   // HERE | LATER | REBOOK
+  reply           String? // HERE | LATER | REBOOK
   replyAt         DateTime?
+  fee             Int? // pounds stated in the note; null when nothing was charged
   createdAt       DateTime  @default(now())
 
   tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
