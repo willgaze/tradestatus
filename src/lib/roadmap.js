@@ -56,6 +56,8 @@ export const PHASES = [
         what: 'Apple and Google. All day, or the window if you have set one.' },
       { key: 'installable', name: 'Add to home screen', state: 'live',
         what: 'Opens like an app, no address bar.' },
+      { key: 'attendance-csv', name: 'Attendance record as a spreadsheet', state: 'live',
+        what: 'Set off, arrived, finished, one row per visit, from your own taps. For a landlord who pays per visit and is marked per missed one.' },
     ],
   },
   {
@@ -96,6 +98,8 @@ export const PHASES = [
         what: 'A camera button on their page. Needs photo storage — an unsigned Cloudinary preset is a five-minute job.' },
       { key: 'branded-card', name: 'Your own logo on the wallet card', state: 'idea',
         what: 'The paid tier. Free shows TurnUp instead.' },
+      { key: 'deposit-to-book', name: 'Pay to book: a call-out charge or a deposit, from the card', state: 'idea',
+        what: 'Before the visit, not after it. The customer pays the call-out in full or a deposit of any size from the same link that says who is coming, and a trade with no software at all gets it too. ServiceM8 and Jobber take deposits on an accepted quote already, so the difference is where it sits: on the card, for every job, including the ones nobody quoted. Decided 11 Oct 2026: after the pilot on the owner\u2019s own jobs, never before. Needs Stripe Connect, the Ltd, and wording that respects the 14-day cancellation right.' },
     ],
   },
   {
@@ -138,6 +142,8 @@ export const PHASES = [
         what: 'A message to the customer in plain words: the window has passed, here is a new one, and three buttons — wait, later today, rebook. Sent on an objective trigger, the way Ofcom and Ofgem fire a payment, not left to whoever remembers.' },
       { key: 'not-home', name: 'Customer not home, in one tap', state: 'live',
         what: 'Door photo, location fix, two logged attempts, a short wait, and a sorry-we-missed-you message with a rebook link. The evidence a carrier keeps, from a one-van firm. A fee only if it was agreed in the booking and no notice was given.' },
+      { key: 'escrow', name: 'The money is there, and the trade can see it', state: 'idea',
+        what: 'Deposit now, balance at Job done, and in between the customer can show the trade the balance is set aside. Holding a customer\u2019s money is regulated in the UK, so this is a regulated escrow partner plugged into the card, never TurnUp holding funds. Decided 11 Oct 2026: later, through a partner, after pay-to-book has earned its place.' },
       { key: 'customer-late', name: 'The customer is running late too', state: 'idea',
         what: 'Three buttons on their page before you arrive: I am running late, someone else will let you in, rebook. Their delay shifts your expected start and tells your next customer only if it moves their window.' },
       { key: 'offline-taps', name: 'A tap with no signal still counts', state: 'idea',

@@ -125,3 +125,9 @@ export function dayNumber(value) {
   const t = zoned(value)
   return t ? t.day : ''
 }
+
+/** "2026-10-10", in the trade's zone. For a spreadsheet: it sorts and Excel reads it as a date. */
+export function isoDay(value) {
+  const t = zoned(value)
+  return t ? `${t.year}-${pad(t.month)}-${pad(t.day)}` : ''
+}

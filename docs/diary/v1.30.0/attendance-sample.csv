@@ -1,0 +1,6 @@
+﻿Date,Job ref,Customer,Address,Job,Booked for,Visit,Visits,Set off,Arrived,Finished,Minutes on site,Outcome,Note
+2026-10-08,2718,Sarah Whitfield,"14 Church Lane, Burbage SN8 3AQ",Unvented cylinder swap,2026-10-08,1,2,08:12,08:40,11:30,170,Paused,'=Waiting on the cylinder. Merchant has it Monday.
+2026-10-12,2718,Sarah Whitfield,"14 Church Lane, Burbage SN8 3AQ",Unvented cylinder swap,2026-10-08,2,2,08:50,09:20,12:05,165,Done,"Commissioned, ""all"" good"
+2026-10-09,2719,Janet Pryce,"The Old Forge, Oare SN8 4JQ",Leaking rad valve,2026-10-09,,0,,,,,No visit recorded,
+2026-10-10,2720,Mr & Mrs Doherty,"3 Mill Cottages, Pewsey SN9 5LW",Bathroom second fix,,1,1,,08:30,,,Still open,
+2026-10-02,2721,A N Other,1 High St,Quote only,,1,1,,,10:00,,Done,Quoted by phone

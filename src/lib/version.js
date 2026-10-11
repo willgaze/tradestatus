@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.29.0'
+export const VERSION = '1.30.0'
 export const BUILD_DATE = '2026-10-11'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 20
+export const THEME_INDEX = 21
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.30.0', date: '2026-10-11', notes: [
+    'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. Under Setup and settings, last 30 or 90 days.',
+    'Built for the first enterprise wedge, social housing: a landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',
+    'Two roadmap items, both honest about their state. Pay to book: a call-out charge or a deposit of any size from the card, after the pilot on the owner\u2019s own jobs. Escrow: later, through a regulated partner, never TurnUp holding funds.',
+    'The order was reset the same day: the real pilot is the owner\u2019s own jobs beside ServiceM8. White Horse is parked until that has run.',
+  ] },
   { version: '1.29.0', date: '2026-10-11', notes: [
     'Booking terms, agreed from the customer\'s phone. Before the visit, their page now carries three short paragraphs: how much notice you ask for to move or cancel, what happens if nobody is in, and their 14-day right to cancel. One tap, Got it, go ahead, records the time and the exact words. That tap is the express request the Consumer Contracts Regulations want before work starts inside the fortnight, and the thing that makes a short-notice charge enforceable at all.',
     'Booking terms on the dashboard: the notice period and a short-notice charge in whole pounds, or none. A preview shows the exact words every customer reads. TurnUp states a charge and records the agreement; it never takes one.',

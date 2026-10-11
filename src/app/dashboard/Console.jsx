@@ -645,7 +645,7 @@ export default function Console({ assistant = false }) {
         <span className="min-w-0">
           <span className="block text-[16px] font-semibold leading-tight">Setup and settings</span>
           <span className="mt-px block truncate text-[13px]" style={{ color: 'var(--label-2)' }}>
-            Who to expect, Booking terms, Nudge me, notifications, ServiceM8, Face ID, the wallet card, what is next
+            Who to expect, Booking terms, Nudge me, notifications, ServiceM8, Face ID, the wallet card, the attendance record, what is next
           </span>
         </span>
         <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
@@ -660,6 +660,17 @@ export default function Console({ assistant = false }) {
         <div id="panel-servicem8" className="scroll-mt-4"><ServiceM8 onChanged={load} /></div>
         <div id="panel-passkeys" className="scroll-mt-4"><Passkeys /></div>
         <div id="panel-wallet" className="scroll-mt-4"><WalletShowcase tracker={trackers[0]} /></div>
+        {/* The attendance record. One row per visit, timestamped from the taps
+            above, for whoever pays per visit and is marked per missed one. */}
+        <section id="panel-attendance" className="glass r-outer mt-4 scroll-mt-4 p-5">
+          <h2 className="text-[20px] font-bold tracking-[-0.02em]">Attendance record</h2>
+          <p className="mt-1 text-[14px] muted">Every set-off, arrival and finish, one row per visit, as a spreadsheet. A repeat visit is a second row. A job nobody went to says so.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href="/api/dashboard/attendance?days=30" download className="btn btn-grey text-[14px]">Last 30 days</a>
+            <a href="/api/dashboard/attendance?days=90" download className="btn btn-grey text-[14px]">Last 90 days</a>
+          </div>
+          <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, and nor does the link.</p>
+        </section>
         <div id="panel-waitlist" className="scroll-mt-4"><WaitlistPanel /></div>
         <div id="panel-roadmap" className="scroll-mt-4"><Roadmap /></div>
         <div id="panel-changelog" className="scroll-mt-4"><Changelog /></div>

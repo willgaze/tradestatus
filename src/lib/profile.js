@@ -76,7 +76,7 @@ export async function publicBrand() {
 export async function publicTerms() {
   try {
     const p = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } })
-    // The first name the words use: "Tell Will", not "Tell Rosebourne". The
+    // The first name the words use: "Tell Will", not "Tell <the firm>". The
     // engineer's name is already public once they set off; here it is the
     // trade's own choice of how the terms read, nothing about the customer.
     return { ...termsFrom(p), first: firstName(p?.engineerName) }
