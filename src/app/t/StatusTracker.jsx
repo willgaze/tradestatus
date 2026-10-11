@@ -284,7 +284,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           return (
             <Disclosure icon={<HouseIcon size={19} />} title="Will someone be in?" delay="150ms" accent={!answered}
                         summary={!answered
-                          ? 'Tap to answer — saves a trip'
+                          ? (status.presenceAskedAt && stage.key === 'BOOKED' ? 'Booked for tomorrow — will someone be in? Tap to answer' : 'Tap to answer — saves a trip')
                           : cur
                             ? `You said: ${cur.short} · ${presenceAgeLabel(status.presenceAt)}`
                             : `Answered ${presenceAgeLabel(status.presenceAt)} — tap to change`}

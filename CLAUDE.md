@@ -618,6 +618,31 @@ locks itself out.
 Rules that must not drift: the product never estimates a time; a late figure
 is only ever one the trade typed, shown with when they said it.
 
+## The day before: will someone be in? (`src/lib/day-before.js`)
+
+The one moment a courier gets right and a trade never had. At **16:00 the
+afternoon before** a job, in the trade's zone, the customer is asked once
+whether anyone will be in: a push if they switched one on, the page's own row
+either way ("Booked for tomorrow, will someone be in?"), and a line in the
+timeline saying it was asked. If none of the customer's phones can be
+reached, the **trade** is nudged to text the link, because an ask that
+reaches nobody is not an ask. The dashboard card says "asked, no answer yet"
+until they answer.
+
+The decision is pure and tested without a database
+(`node scripts/check-day-before.mjs`, 16 cases, the clock change included);
+`askPresenceIfDue()` in `nudge.js` does the sending and runs first in every
+`nudgeIfDue` sweep. Rules that must not drift:
+
+- **Once per job.** `presenceAskedAt` is claimed with an atomic `updateMany`
+  before anything is sent, so the five-minute cron and the customer's poll
+  cannot both send it.
+- **It asks, it never promises.** The notification says "booked for tomorrow"
+  and nothing else about time. `LINES` and the lock-screen rule above apply.
+- **The answer stays private.** `presenceAskedAt` is public (the trade asked);
+  `presence` is not. The same line as `presenceAt`.
+- The hour is `ASK_HOUR` via `zoned()`, never a UTC comparison.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for

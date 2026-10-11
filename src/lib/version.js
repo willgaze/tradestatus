@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.30.0'
+export const VERSION = '1.31.0'
 export const BUILD_DATE = '2026-10-11'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 21
+export const THEME_INDEX = 22
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.31.0', date: '2026-10-11', notes: [
+    'The day before the job, the customer is asked whether anyone will be in. Once, at four in the afternoon in the trade\u2019s own time, never again for that job. A notification if they switched one on, the page asks either way, and the timeline records that it was asked.',
+    'If none of the customer\u2019s phones can be reached, the trade is nudged to text the link instead, because an ask that reaches nobody is not an ask. The dashboard card says asked, no answer yet. The answer itself stays between the two of them, as before.',
+    'The first thing built for the pilot on the owner\u2019s own jobs: the moment a courier gets right and a trade never had.',
+  ] },
   { version: '1.30.0', date: '2026-10-11', notes: [
     'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. Under Setup and settings, last 30 or 90 days.',
     'Built for the first enterprise wedge, social housing: a landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',

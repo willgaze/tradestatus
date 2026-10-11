@@ -100,6 +100,9 @@ model TradeStatus {
   presence     String? // IN | OUT | BACK_SOON | SOMEONE_ELSE
   presenceNote String? // "bottom of the garden, ring twice"
   presenceAt   DateTime? // stale after a while; say when it was said
+  // The afternoon before the job, the customer is asked this once
+  // (src/lib/day-before.js). Set before anything is sent, so it fires once.
+  presenceAskedAt DateTime?
   arrivingAt   DateTime? // when they set off — a record, never a promise
   isActive     Boolean   @default(true)
   viewCount    Int       @default(0)
