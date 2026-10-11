@@ -177,7 +177,7 @@ export function publicShape(row) {
     // it is the trade's terms and a time.
     termsAgreedAt: row.termsAgreedAt ? row.termsAgreedAt.toISOString() : null,
     termsAgreed: row.termsAgreed && typeof row.termsAgreed === 'object'
-      ? { noticeHours: row.termsAgreed.noticeHours ?? 24, fee: row.termsAgreed.fee ?? null }
+      ? { noticeHours: row.termsAgreed.noticeHours ?? 24, fee: row.termsAgreed.fee ?? null, first: row.termsAgreed.first || null }
       : null,
     // Customer not home: the facts of the visit, never the location or the
     // photo. "Was at the door at 10:04, knocked and called, waited until 10:14."

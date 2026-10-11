@@ -15,13 +15,15 @@ import { TickIcon } from '@/components/icons'
  * The button is the express request the Consumer Contracts Regulations want
  * before work starts inside the 14 days, in words a person would use.
  */
-const first = TRADE_NAME.split(' ')[0]
+const fallback = TRADE_NAME.split(' ')[0]
 
 export default function Terms({ status, terms, onAgreed }) {
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
   const agreed = Boolean(status.termsAgreedAt)
-  const paras = termsParagraphs(agreed && status.termsAgreed ? status.termsAgreed : terms, first)
+  const shown = agreed && status.termsAgreed ? status.termsAgreed : terms
+  const first = shown?.first || terms?.first || fallback
+  const paras = termsParagraphs(shown, first)
 
   const agree = async () => {
     setBusy(true); setFailed(false)

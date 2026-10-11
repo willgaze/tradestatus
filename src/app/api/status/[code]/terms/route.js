@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { termsFrom, termsSnapshot } from '@/lib/terms'
-import { TRADE_NAME } from '@/lib/trade'
+import { firstName } from '@/lib/profile'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +22,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ ok: true, already: true, termsAgreedAt: row.termsAgreedAt.toISOString(), termsAgreed: pick(row.termsAgreed) })
     }
     const profile = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }).catch(() => null)
-    const snapshot = termsSnapshot(termsFrom(profile), TRADE_NAME.split(' ')[0])
+    const snapshot = termsSnapshot(termsFrom(profile), firstName(profile?.engineerName))
     const now = new Date()
     const updated = await prisma.tradeStatus.update({ where: { id: row.id }, data: {
       termsAgreedAt: now, termsAgreed: snapshot,
@@ -35,4 +35,4 @@ export async function POST(request, { params }) {
   }
 }
 
-const pick = (t) => (t && typeof t === 'object' ? { noticeHours: t.noticeHours ?? 24, fee: t.fee ?? null } : null)
+const pick = (t) => (t && typeof t === 'object' ? { noticeHours: t.noticeHours ?? 24, fee: t.fee ?? null, first: t.first || null } : null)

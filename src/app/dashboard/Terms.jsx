@@ -14,7 +14,7 @@ import { TRADE_NAME } from '@/lib/trade'
  * customer did not agree to before the day is one the trade cannot keep (CRA
  * 2015, Schedule 2), which is the whole reason the words and the tap exist.
  */
-const first = TRADE_NAME.split(' ')[0]
+const fallback = TRADE_NAME.split(' ')[0]
 const NOTICE = [[12, '12 hours'], [24, '24 hours'], [48, '48 hours'], [72, '3 days']]
 
 export default function Terms() {
@@ -22,13 +22,16 @@ export default function Terms() {
   const [hours, setHours] = useState(24)
   const [fee, setFee] = useState('')
   const [loaded, setLoaded] = useState(false)
+  const [first, setFirst] = useState(fallback)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
   const load = useCallback(async () => {
     const r = await fetch('/api/dashboard/profile')
     if (!r.ok) return
-    const t = termsFrom((await r.json()).profile)
+    const profile = (await r.json()).profile
+    const t = termsFrom(profile)
+    setFirst(String(profile?.engineerName || '').trim().split(/\s+/)[0] || fallback)
     setHours(t.noticeHours); setFee(t.fee ? String(t.fee) : ''); setLoaded(true)
   }, [])
   useEffect(() => { load() }, [load])
