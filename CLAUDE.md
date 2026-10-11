@@ -11,6 +11,13 @@ are written down:
    `cd` to the folder (name it), paste this, what the last line should say.
 2. **Say it once.** If he has decided (a key he will not rotate, a password he will
    not change), do not raise it again.
+3. **Anything that is clicking through Vercel, Anthropic or another console is a
+   Cowork job, not a step list.** Four rounds of "open this page, tap that" for
+   one environment variable did not land; a single paste into Cowork on his Mac
+   did it in one go (11 Oct 2026, `ANTHROPIC_API_KEY`). Write the whole job as
+   one prompt he can paste: every URL, every field name, what done looks like,
+   and "never paste the key into this chat". A session here cannot start Cowork
+   for him; it hands over the prompt.
 
 
 ## This is not Rosebourne Plumbing

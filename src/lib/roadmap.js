@@ -13,9 +13,9 @@ export const PHASES = [
     title: 'Working now',
     blurb: 'Everything below is live on this app today.',
     items: [
-      { key: 'ask-or-tell', name: 'Ask it or tell it', state: 'ready',
+      { key: 'ask-or-tell', name: 'Ask it or tell it', state: 'live',
         what: 'The box at the top of the dashboard. "What is on today?" gets an answer. "On my way to Whitfield", "paused on Hale, waiting on the cylinder", a pasted booking email: a card to confirm. It never saves anything itself and never promises a time. The rest of the dashboard learns you one tip at a time.',
-        needs: 'An Anthropic API key, about a penny a go' },
+        needs: 'Live since 11 Oct 2026. About a penny a go.' },
       { key: 'terms', name: 'Terms agreed before the day, in one tap', state: 'live',
         what: 'Your notice period, your short-notice charge if you have one, and the customer’s 14-day right to cancel, in plain words on their page under Before the visit. They tap Got it, go ahead; the time and the exact words are recorded, and the card says whether it has happened. A charge only ever holds if it was agreed before the day, and TurnUp never takes one: it states it, and the sorry-we-missed-you note says the figure they agreed.' },
       { key: 'still-coming', name: 'Are you still coming?', state: 'live',
