@@ -1,4 +1,9 @@
 import { prisma } from '@/lib/prisma'
+import { termsFrom, DEFAULT_TERMS } from '@/lib/terms'
+import { TRADE_NAME } from '@/lib/trade'
+
+/** The name the customer's page uses for the person coming. */
+export const firstName = (engineerName) => String(engineerName || TRADE_NAME).trim().split(/\s+/)[0] || 'us'
 
 /**
  * What a customer is allowed to see about the person coming to their house.
@@ -59,5 +64,23 @@ export async function publicBrand() {
     return p?.brandLogo ? { logo: p.brandLogo } : null
   } catch {
     return null
+  }
+}
+
+/**
+ * The booking terms as currently set: the notice period and the short-notice
+ * charge, if any. Numbers only; the words live in src/lib/terms.js. Falls
+ * back to the defaults rather than failing, because the customer's page must
+ * render whether or not the profile row exists yet.
+ */
+export async function publicTerms() {
+  try {
+    const p = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } })
+    // The first name the words use: "Tell Will", not "Tell <the firm>". The
+    // engineer's name is already public once they set off; here it is the
+    // trade's own choice of how the terms read, nothing about the customer.
+    return { ...termsFrom(p), first: firstName(p?.engineerName) }
+  } catch {
+    return { ...DEFAULT_TERMS, first: firstName(null) }
   }
 }

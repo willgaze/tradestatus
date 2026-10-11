@@ -4,14 +4,42 @@ import { nudgeAll } from '@/lib/nudge'
 export const dynamic = 'force-dynamic'
 
 /**
- * Sweep every live job and send whatever nudge is due. Idempotent and cheap,
- * so it is left open: each level fires once and a repeat is paced to ten
- * minutes, whoever calls it. Point a scheduler at it every five minutes —
- * Vercel Cron on a plan that allows it, or any free pinger. Without one the
- * same check still runs every time a customer's page polls, which is when
- * it matters most.
+ * Sweep every live job and send whatever nudge is due.
+ *
+ * A scheduled ping lives in .github/workflows/nudge.yml and runs every five
+ * minutes. Without one the same check still runs on the customer's 30-second
+ * poll and after every ServiceM8 sync — but only while somebody has the page
+ * open, which is exactly the case a trade cannot rely on. A window passing
+ * unnoticed because nobody happened to be looking is the failure this closes.
+ *
+ * OPEN BY DEFAULT, AND THAT IS A CHOICE. Every level fires once and a repeat is
+ * paced to ten minutes inside nudgeAll(), whoever calls it, so hammering this
+ * cannot produce extra notifications. Set CRON_SECRET and it starts requiring
+ * `Authorization: Bearer <secret>` — the header Vercel Cron sends — without
+ * anything else changing. Unset, it stays open, so the schedule works today
+ * with nothing to configure.
  */
-export async function GET() {
+
+// A sweep reads every live job. The nudges are already paced, so this is about
+// the database rather than the notifications: one sweep every twenty seconds is
+// far more than a five-minute schedule needs, and caps what an open URL costs.
+const MIN_GAP_MS = 20 * 1000
+let lastSweep = 0
+
+export async function GET(request) {
+  const secret = process.env.CRON_SECRET
+  if (secret && request.headers.get('authorization') !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  const now = Date.now()
+  if (now - lastSweep < MIN_GAP_MS) {
+    // Not an error: the caller asked, the answer is that nothing is due to be
+    // re-checked yet. A scheduler seeing 200 keeps quiet, which is right.
+    return NextResponse.json({ ok: true, at: new Date().toISOString(), skipped: 'too soon' })
+  }
+  lastSweep = now
+
   try {
     const r = await nudgeAll()
     return NextResponse.json({ ok: true, at: new Date().toISOString(), ...r })

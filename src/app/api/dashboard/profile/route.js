@@ -25,16 +25,28 @@ export async function PUT(request) {
   if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
   try {
     const b = await request.json()
+    // Only what was sent is changed. The Who to expect form sends the whole
+    // profile; the Booking terms panel sends its two numbers. Before this,
+    // any PUT without a field nulled it, so saving the terms would have wiped
+    // the van.
+    const text = (k, max) => (k in b ? { [k]: cleanText(b[k], max) } : {})
     const data = {
-      engineerName: cleanText(b.engineerName, 60),
-      aboutLine: cleanText(b.aboutLine, 120),
-      engineerPhoto: cleanText(b.engineerPhoto, 500),
-      vehicleReg: cleanText(b.vehicleReg, 12)?.toUpperCase().replace(/[^A-Z0-9]/g, '') || null,
-      vehicleMake: cleanText(b.vehicleMake, 40),
-      vehicleModel: cleanText(b.vehicleModel, 40),
-      vehicleColour: cleanText(b.vehicleColour, 30),
-      vehiclePhoto: cleanText(b.vehiclePhoto, 500),
-      brandLogo: cleanText(b.brandLogo, 500),
+      ...text('engineerName', 60),
+      ...text('aboutLine', 120),
+      ...text('engineerPhoto', 500),
+      ...('vehicleReg' in b ? { vehicleReg: cleanText(b.vehicleReg, 12)?.toUpperCase().replace(/[^A-Z0-9]/g, '') || null } : {}),
+      ...text('vehicleMake', 40),
+      ...text('vehicleModel', 40),
+      ...text('vehicleColour', 30),
+      ...text('vehiclePhoto', 500),
+      ...text('brandLogo', 500),
+      // The terms: hours between 1 and 336 (a fortnight), a fee in whole
+      // pounds or nothing. Nothing else about a charge is stored anywhere.
+      ...('noticeHours' in b ? { noticeHours: Math.min(336, Math.max(1, Math.round(Number(b.noticeHours)) || 24)) } : {}),
+      ...('shortNoticeFee' in b ? { shortNoticeFee: (() => {
+        const n = Math.round(Number(b.shortNoticeFee))
+        return b.shortNoticeFee === null || b.shortNoticeFee === '' || !Number.isFinite(n) || n <= 0 ? null : Math.min(9999, n)
+      })() } : {}),
     }
     const profile = await prisma.tradeProfile.upsert({
       where: { id: ID }, create: { id: ID, ...data }, update: data,

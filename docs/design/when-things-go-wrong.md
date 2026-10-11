@@ -34,7 +34,7 @@ when they said it.
 | 4 | Trade cancels before the day | Dashboard cancel records notice time; customer gets a rebook link; the 24-hour rule applies to the trade too | Next |
 | 5 | Trade cancels en route or same day | Treated as a missed visit: apology, gesture, priority rebook, reason logged | Next |
 | 6 | Customer says "I'm running late" | Button on their page with a stated delay up to a cap; trade's expected start shifts; later jobs told only if it leaves their window | Next |
-| 7 | Customer not home | One tap on the card: fix, door photo, two logged attempts, ten-minute wait (a judgement, not a standard), "sorry we missed you" message with a rebook link. Fee only if pre-agreed in the confirmation and no notice was given | Next |
+| 7 | Customer not home | One tap on the card starts the clock and takes a fix; knocked / called / texted logged as tried; door photo kept trade-side; "Leave and tell them" sets Paused with a plain note. The customer's page: sorry we missed you, the facts, and I'm here now / later today / another day, pushed to the trade. No fee from here | Live 1.26.0 |
 | 8 | Someone else lets the trade in | Allowed if an adult; "Will someone be in?" captures who, before the day; same evidence trail | Partly live |
 | 9 | Access refused / unsafe / cannot proceed | Reason + photo; visit marked attended-not-completed; rebook offered; no fee by default | Next |
 | 10 | Wrong address | Trade taps "wrong address" with a fix; customer asked to confirm or drop a pin; nobody's no-show unless the customer supplied it | Next (pin drop exists) |

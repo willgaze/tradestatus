@@ -216,6 +216,47 @@ A deploy is part of the script because `NEXT_PUBLIC_*` is **inlined at build
 time**. Setting the variable without rebuilding changes nothing, and the row
 stays missing while the dashboard says the key is set.
 
+## The box: ask it or tell it (`src/lib/assistant.js`)
+
+The top of the dashboard is one box. "What's on today?" gets an answer; "on my
+way to Whitfield", "paused on Hale, waiting on the cylinder", "I'm about half
+an hour late for Beck", "agree Janet's hours" or a pasted booking email gets a
+card to confirm. It exists because the dashboard had become a wall of buttons
+nobody could learn, and because a good banking app takes "pay this" and hands
+back a review screen, not a form. Three rules hold, and they are the rules of
+the rest of this file:
+
+- **It proposes, never acts.** `propose()` returns JSON to the browser; the
+  trade taps Confirm; `/api/dashboard/trackers` does the work exactly as if
+  the form or a stage button had been used. Do not give the model a tool that
+  touches the database. An answer is only words. A wrong reading costs one tap.
+- **It never promises a time.** The prompt forbids it and `stripTimePromise()`
+  is the second lock: "with you by 2" is dropped from the note, with a warning
+  on the card, and hours go into the window where the customer can agree or
+  counter them. Running late is only 15, 30 or 60, as the trade said, the
+  same as the buttons.
+- **Its output is untrusted.** `sanitiseProposal()` treats the model's JSON
+  as a body from a stranger: `cleanText()`, the stage whitelist, the date and
+  time checks, a job id that must be one it was shown, and `windowAgree` only
+  when that job has a customer proposal on the table. Adding a field to the
+  proposal means adding it there, deliberately.
+
+What reaches the model is the trade's own view of the jobs, behind the
+trade's own password, **minus every phone number** (the route's `select`
+never includes one), plus the setup facts so "how do I turn on nudges" gets a
+true answer. Trade side only: the customer's page is a status bar, and a chat
+on that side is how the product started asking the customer things last time.
+Invisible until `ANTHROPIC_API_KEY` is set, the same gate as push; the key
+never reaches the browser, only the fact that there is one.
+
+**The dashboard teaches itself one tip at a time** (`src/lib/tips.js`): no
+jobs yet, a link nobody has opened, no name on the card, nudges not on, Face
+ID not set, ServiceM8 not connected, in that order, one at a time, each with
+Got it. The seven setup panels sit shut under **Setup and settings**, and a
+tip opens the one that is the next thing to do. Do not put a panel back on the
+open page because it seems important; it was all important, and it was ten
+screens tall.
+
 ## The link is the credential
 
 A customer has no login and never will. The code in the URL is the only thing
@@ -553,9 +594,62 @@ writes `lateMinutes`/`lateAt`, a note with the time, and pushes the customer.
 Unasked nudges go to the trade at window start (`nudgeLevel` 1) and window
 end (2); an unanswered ask repeats every ten minutes. `nudgeIfDue` runs on
 the customer's 30-second poll, after every ServiceM8 sync, and from
-`GET /api/cron/nudge` (open, idempotent; point any five-minute pinger at it).
+`GET /api/cron/nudge`, which **`.github/workflows/nudge.yml` pings every five
+minutes**. Before that nothing called it, so a window could pass unnoticed
+whenever no customer happened to have their page open — which is the case a
+trade cannot rely on.
+
+Why GitHub Actions and not Vercel Cron: Vercel's free plan caps cron at once a
+day, and whether a more frequent schedule is rejected at deploy time or quietly
+run daily could not be confirmed from their docs. A rejected cron breaks the
+deploy of a live product, so the schedule runs where the cost is known. **It is
+free only because the repo is public** — GitHub bills a minimum of one minute
+per job, so every five minutes is ~8,640 minutes a month against a 2,000-minute
+allowance. Making the repo private turns this into a bill.
+
+The route is **open, and that is a choice**: every nudge level fires once and a
+repeat is paced to ten minutes inside `nudgeAll()`, whoever calls it, so
+hammering it cannot produce extra notifications. A sweep is also throttled to
+one per twenty seconds, which caps what an open URL costs the database rather
+than what it costs the customer. Setting `CRON_SECRET` makes it require
+`Authorization: Bearer <secret>` — the header Vercel Cron sends — and it must
+then be set in **both** Vercel and the repository secrets, or the schedule
+locks itself out.
 Rules that must not drift: the product never estimates a time; a late figure
 is only ever one the trade typed, shown with when they said it.
+
+## Terms are agreed, not announced (`src/lib/terms.js`)
+
+The customer's page carries **Before the visit**: the notice the trade asks for
+to move or cancel, the short-notice charge if there is one, what happens when
+nobody is in, and the 14-day right to cancel. One tap, **Got it, go ahead**,
+writes `termsAgreedAt` and `termsAgreed` (a snapshot: the two numbers and the
+exact text shown) and an event in the timeline. The numbers live on
+`TradeProfile` (`noticeHours`, `shortNoticeFee`, set under **Booking terms** on
+the dashboard); the words live in one place, `termsParagraphs()`, so the page,
+the dashboard preview and the stored record are the same text.
+
+Why a tap and a snapshot, rather than a line in the confirmation: a charge for
+a late cancellation or a missed visit is only enforceable if the customer agreed
+it **before the day**, it is a fair estimate of the loss, and notice avoids it
+(Consumer Rights Act 2015 Sch 2; GOV.UK's cancellation guidance). And a booking
+made by phone or online carries a 14-day cooling-off period in which a trade who
+starts without an express request can end up unpaid (Consumer Contracts
+Regulations 2013, reg 36). The tap is that request, with a time on it.
+
+Rules that must not drift:
+
+- **TurnUp states a fee; it never takes one, never adds one and never decides
+  one is owed.** `recordNoAccess()` writes the figure into the note only when
+  `agreedFee(tracker)` finds one in the snapshot, and otherwise writes "Nothing
+  is charged" in those words. The figure comes from the **snapshot**, never the
+  live profile: a fee raised after the booking is not what they agreed.
+- **Nothing is ever un-agreed by a route.** A second POST returns the first
+  record. Changing the terms changes future pages; agreed jobs keep their words.
+- The confirmation the trade sends (the ServiceM8 line on `/with-servicem8`)
+  says the terms and the right to cancel are **on the link**, which is what
+  makes the link the durable copy. Do not put a fee in the SMS that the page
+  does not also show.
 
 ## Not built yet
 

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.26.1'
+export const VERSION = '1.30.0'
 export const BUILD_DATE = '2026-10-11'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 19
+export const THEME_INDEX = 21
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,13 +48,30 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.26.1', date: '2026-10-11', notes: [
-    'Two roadmap items, both honest about their state. Pay to book: a call-out charge or a deposit of any size from the card, after the pilot on the owner\u2019s own jobs. Escrow: the money set aside and visible to the trade, later, through a regulated partner, never TurnUp holding funds.',
+  { version: '1.30.0', date: '2026-10-11', notes: [
+    'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. Under Setup and settings, last 30 or 90 days.',
+    'Built for the first enterprise wedge, social housing: a landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',
+    'Two roadmap items, both honest about their state. Pay to book: a call-out charge or a deposit of any size from the card, after the pilot on the owner\u2019s own jobs. Escrow: later, through a regulated partner, never TurnUp holding funds.',
     'The order was reset the same day: the real pilot is the owner\u2019s own jobs beside ServiceM8. White Horse is parked until that has run.',
   ] },
+  { version: '1.29.0', date: '2026-10-11', notes: [
+    'Booking terms, agreed from the customer\'s phone. Before the visit, their page now carries three short paragraphs: how much notice you ask for to move or cancel, what happens if nobody is in, and their 14-day right to cancel. One tap, Got it, go ahead, records the time and the exact words. That tap is the express request the Consumer Contracts Regulations want before work starts inside the fortnight, and the thing that makes a short-notice charge enforceable at all.',
+    'Booking terms on the dashboard: the notice period and a short-notice charge in whole pounds, or none. A preview shows the exact words every customer reads. TurnUp states a charge and records the agreement; it never takes one.',
+    'The card says Terms agreed 10:22 or Terms not agreed yet until the job is done. The sorry-we-missed-you note and page now say the figure the customer agreed, if they agreed one, and still say nothing is charged otherwise.',
+    'The ServiceM8 confirmation line now says the terms and the right to cancel are on the link, which is what makes the link the durable copy the regulations ask for.',
+  ] },
+  { version: '1.28.0', date: '2026-10-10', notes: [
+    'Customer not home, in one tap. "No one home" on the card starts the clock and takes a location fix; knocked, called and texted are logged as you do them; a photo of the door if you want one; "Leave and tell them" sets the card to Paused with a plain note. The customer\'s page says sorry we missed you, with what was tried and when, and three replies: I am here now, later today, another day. Nothing is charged from here; the photo never leaves the dashboard.',
+  ] },
+  { version: '1.27.0', date: '2026-10-10', notes: [
+    'Ask it or tell it. One box at the top of the dashboard: "what is on today?" gets an answer; "on my way to Whitfield", "paused on Hale, waiting on the cylinder" or a pasted booking email gets a card to confirm. It proposes, you tap, the same routes as the form do the saving. It cannot promise a time.',
+    'The dashboard stopped being a wall of buttons. Navigate and the door notes show when you are heading there; the link, hours, photos and note are under More; the seven setup panels are shut under Setup and settings.',
+    'It teaches itself one tip at a time: no jobs yet, a link nobody has opened, no name on the card, nudges not on. Got it, and the next one waits its turn.',
+    'Invisible until ANTHROPIC_API_KEY is set. No key, no box, and the New job button is back.',
+  ] },
   { version: '1.26.0', date: '2026-10-10', notes: [
-    'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. On the dashboard, last 30 or 90 days.',
-    'Built for the first enterprise wedge, decided today: a social landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',
+    'A window passing is noticed even when nobody has the page open \u2014 a scheduled check every five minutes',
+    'Before this, nudges only ran while a customer was looking, which is the one time you do not need telling',
   ] },
   { version: '1.25.0', date: '2026-10-10', notes: [
     'When the window is missed, the customer is told. Ten minutes after a window ends with nobody On site and no late estimate still running, their page says so plainly — sorry, that is on us — and offers three choices: I will wait, later today, another day. Their choice lands on your card and your phone. You propose the new window; the product never invents a time.',
@@ -105,6 +122,7 @@ export const CHANGELOG = [
   ] },
   { version: '1.17.2', date: '2026-10-09', notes: [
     'Four decisions landed on the plan: free while customer zero, a new Ltd will own it, RIBA is the first template after ServiceM8, and raising money stays undecided.',
+  ] },
   { version: '1.17.1', date: '2026-10-09', notes: [
     'A card that follows a ServiceM8 job now carries the booking window too: "Between 09:00 and 11:00" from the ServiceM8 booking, agreed, and moved when the booking moves. ServiceM8 stamps times in UK local time with no offset, so they are read as Europe/London rather than trusted as UTC.',
   ] },
@@ -123,7 +141,6 @@ export const CHANGELOG = [
     'The link ServiceM8 can send itself. /j/<job number> goes in the booking confirmation template; the customer proves it is their booking with the last four digits of their mobile, once, and the card appears on the dashboard already linked to the job.',
     '/with-servicem8: the page that says what the connector does in its current form, the exact template line, and a ten-minute test. Linked from the homepage.',
     'Two ideas logged from Will: a diary on every job, and WhatsApp as the place bookings actually arrive.',
-  ] },
   ] },
   { version: '1.16.0', date: '2026-10-09', notes: [
     'The business plan lives here now, at /plan, behind the same sign-in as Jobs. Twelve sections, arrow keys to move, P to present. Every figure says whether it is a fact with a source, a working estimate, or a decision only the owner can make.',
