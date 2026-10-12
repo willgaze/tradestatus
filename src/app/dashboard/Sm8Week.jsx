@@ -65,7 +65,7 @@ export default function Sm8Week() {
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                   <p className="text-[15px] font-semibold">{dayAndTime(b.start)}{b.end ? `–${timeOnly(b.end)}` : ''} · {b.customerName || 'No contact'}{b.jobNumber ? ` · #${b.jobNumber}` : ''}</p>
                   <p className="text-[13px] font-semibold" style={{ color: tone(c.verdict) }}>
-                    {c.verdict === 'nothing sent' ? 'Link not sent' : `Link ${c.verdict}`}
+                    {c.verdict === 'nothing sent' ? 'Link not sent' : c.verdict === 'sent, but without the link' ? 'Sent, but not the link' : `Link ${c.verdict}`}
                   </p>
                 </div>
                 <p className="mt-0.5 text-[13px] muted">{[b.jobSummary, b.jobAddress].filter(Boolean).join(' — ')}</p>
