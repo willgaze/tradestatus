@@ -19,6 +19,7 @@ import Doors from './Doors'
 import Assistant from './Assistant'
 import Tip from './Tip'
 import NoAccess from './NoAccess'
+import Pilot from './Pilot'
 import Sm8Week from './Sm8Week'
 import { AttendanceSheet } from './Pictures'
 import { queueFetch, startQueue, onQueue } from './offline-queue'
@@ -410,6 +411,11 @@ export default function Console({ assistant = false }) {
                 <div className="min-w-0 flex-1 break-words">
                   <p className="text-[19px] font-semibold tracking-[-0.01em]">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="mt-0.5 text-[15px] muted">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
+                  {!t.isActive && (
+                    <p className="mt-1.5 text-[14px] font-semibold" style={{ color: '#ff9500' }}>
+                      Link is off. The customer sees &ldquo;expired&rdquo;. Switch it back on under More.
+                    </p>
+                  )}
                   {/* Linked at birth to a ServiceM8 job: the card moves on its own. Worth
                       saying on the card, because the stage buttons below still work and
                       a trade should know which cards follow the job and which are theirs. */}
@@ -673,10 +679,18 @@ export default function Console({ assistant = false }) {
               </label>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {t.isActive && (
+                {t.isActive ? (
                   <button type="button" onClick={() => revoke(t.id)}
                           className="btn btn-danger !min-h-[44px] !px-4 !text-[14px]">
                     <LinkOffIcon size={16} /> Switch link off
+                  </button>
+                ) : (
+                  /* A link switched off by mistake used to be dead: the only way back
+                     was a new job. Same place, same size; the API took
+                     { isActive: true } all along, only the button was missing. */
+                  <button type="button" onClick={() => patch(t.id, { isActive: true })}
+                          className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">
+                    Switch link back on
                   </button>
                 )}
                 <span className="text-[14px] muted">{t.viewCount || 0} view{t.viewCount === 1 ? '' : 's'}</span>
@@ -719,7 +733,7 @@ export default function Console({ assistant = false }) {
         <span className="min-w-0">
           <span className="block text-[16px] font-semibold leading-tight">Setup and settings</span>
           <span className="mt-px block truncate text-[13px]" style={{ color: 'var(--label-2)' }}>
-            Who to expect, Booking terms, Nudge me, notifications, household cards, ServiceM8, Face ID, the wallet card, the attendance record, what is next
+            Who to expect, Booking terms, Nudge me, notifications, household cards, ServiceM8, Face ID, the wallet card, the attendance record, the pilot numbers, what is next
           </span>
         </span>
         <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
@@ -747,6 +761,7 @@ export default function Console({ assistant = false }) {
           </div>
           <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, nor the link.</p>
         </section>
+        <div id="panel-pilot" className="scroll-mt-4"><Pilot /></div>
         <div id="panel-waitlist" className="scroll-mt-4"><WaitlistPanel /></div>
         <div id="panel-roadmap" className="scroll-mt-4"><Roadmap /></div>
         <div id="panel-changelog" className="scroll-mt-4"><Changelog /></div>
