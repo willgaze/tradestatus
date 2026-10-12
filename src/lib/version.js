@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.44.0'
+export const VERSION = '1.45.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.45.0', date: '2026-10-12', notes: [
+    'Switch link back on. A link switched off by mistake used to be dead and meant a new job; now Switch link back on sits where Switch link off was, under More, same size. A switched-off card says so in words — Link is off, the customer sees expired — rather than just going pale.',
+  ] },
   { version: '1.44.0', date: '2026-10-12', notes: [
     'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
     'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',

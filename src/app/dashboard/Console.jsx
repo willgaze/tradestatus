@@ -410,6 +410,11 @@ export default function Console({ assistant = false }) {
                 <div className="min-w-0 flex-1 break-words">
                   <p className="text-[19px] font-semibold tracking-[-0.01em]">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="mt-0.5 text-[15px] muted">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
+                  {!t.isActive && (
+                    <p className="mt-1.5 text-[14px] font-semibold" style={{ color: '#ff9500' }}>
+                      Link is off. The customer sees &ldquo;expired&rdquo;. Switch it back on under More.
+                    </p>
+                  )}
                   {/* Linked at birth to a ServiceM8 job: the card moves on its own. Worth
                       saying on the card, because the stage buttons below still work and
                       a trade should know which cards follow the job and which are theirs. */}
@@ -673,10 +678,18 @@ export default function Console({ assistant = false }) {
               </label>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {t.isActive && (
+                {t.isActive ? (
                   <button type="button" onClick={() => revoke(t.id)}
                           className="btn btn-danger !min-h-[44px] !px-4 !text-[14px]">
                     <LinkOffIcon size={16} /> Switch link off
+                  </button>
+                ) : (
+                  /* A link switched off by mistake used to be dead: the only way back
+                     was a new job. Same place, same size; the API took
+                     { isActive: true } all along, only the button was missing. */
+                  <button type="button" onClick={() => patch(t.id, { isActive: true })}
+                          className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">
+                    Switch link back on
                   </button>
                 )}
                 <span className="text-[14px] muted">{t.viewCount || 0} view{t.viewCount === 1 ? '' : 's'}</span>
