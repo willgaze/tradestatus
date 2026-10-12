@@ -31,7 +31,7 @@ export const PLAN_META = {
   walletDocUrl: 'https://github.com/willgaze/tradestatus/blob/main/docs/apple-wallet.md',
   diaryUrl: 'https://github.com/willgaze/tradestatus/tree/main/docs/diary',
   liveSince: '8 Oct 2026',
-  updated: '10 Oct 2026',
+  updated: '12 Oct 2026',
 }
 
 export const STAGES = [
@@ -114,6 +114,7 @@ export const PRODUCT = {
     { label: 'Four stages, plain English' },
     { label: 'Agree a window, never announce one', note: 'either end proposes, the other agrees' },
     { label: 'Will someone be in?', note: 'answers stay on the device that gave them' },
+    { label: 'Asked the day before, once', note: 'at four, trade’s own time; built 11 Oct 2026' },
     { label: 'Van make, model, colour', note: 'DVSA lookup, pending key' },
     { label: 'Apple Wallet card', note: 'signing built, pending Apple' },
     { label: 'ServiceM8 moves it for you', note: 'webhooks: check-in, check-out' },
@@ -125,6 +126,8 @@ export const PRODUCT = {
     { label: 'No customer app to install' },
     { label: 'No customer account, ever' },
     { label: 'No logos of bodies we follow' },
+    { label: 'No job management, no invoice', note: 'ServiceM8 keeps the job' },
+    { label: 'No money held, ever', note: 'pay to book later; escrow only through a partner' },
   ],
 }
 
@@ -229,12 +232,12 @@ export const CALC_DEFAULTS = { freeSenders: 50, newFree: 20, enterprises: 0, new
 
 /** Six moves, in order. Each opens when the gate before it is passed. */
 export const GTM_PHASES = [
-  { phase: '1', label: 'Sign the pass', gate: 'One card in one wallet', moves: ['Apple Developer, as an individual', 'First real pass, on the owner’s phone', 'The update loop so it moves'], when: 'Now', state: 'amber' },
-  { phase: '2', label: 'Be ServiceM8’s card', gate: 'Ten ServiceM8 trades sending', moves: ['Connector live on customer zero', 'Add-on listing', 'Stage vocabulary published'], when: 'Q4 2026', state: 'gray' },
-  { phase: '3', label: 'Android, on a pass platform if faster', gate: 'Both wallets live', moves: ['Decide: PassKit or our own', 'Google Wallet pass class', 'Same update loop'], when: 'Q4 2026', state: 'gray' },
-  { phase: '4', label: 'The household asks for it', gate: 'Household-requested cards outnumber trade-sent', moves: ['Customer-invite: one screen', 'An account per address', 'Remembered for the next trade'], when: '2027 H1', state: 'gray' },
-  { phase: '5', label: 'One housing association', gate: 'One paid pilot, one tender', moves: ['Resident card beside their repairs system', 'Attendance record as a CSV: built 10 Oct 2026', 'Ombudsman cases as the deck', 'The Ltd before any contract'], when: '2027 H1', state: 'amber' },
-  { phase: '6', label: 'Carriers, as a tick-box', gate: 'One carrier pass live', moves: ['A button in their email, AfterShip-style', 'Then energy, broadband, water', 'Then four firms on one card'], when: '2027 H2', state: 'gray' },
+  { phase: '1', label: 'Prove it on my own jobs', gate: 'Thirty days, four numbers', moves: ['ServiceM8 connected, the link in every booking text', 'Asked the day before: will someone be in? Built 11 Oct 2026', 'Links opened, “in?” answered, wasted trips, “when are you coming?” calls', 'If the first two stay low, the product is wrong, not the pitch'], when: 'Now', state: 'amber' },
+  { phase: '2', label: 'Sign the pass', gate: 'One card in one wallet', moves: ['Apple Developer, as an individual', 'First real pass, on the owner’s phone', 'The update loop so it moves'], when: 'Now', state: 'amber' },
+  { phase: '3', label: 'Be ServiceM8’s card', gate: 'Ten ServiceM8 trades sending', moves: ['Connector live on customer zero', 'Add-on listing', 'Stage vocabulary published'], when: 'Q4 2026', state: 'gray' },
+  { phase: '4', label: 'Android, on a pass platform if faster', gate: 'Both wallets live', moves: ['Decide: PassKit or our own', 'Google Wallet pass class', 'Same update loop'], when: 'Q1 2027', state: 'gray' },
+  { phase: '5', label: 'The household asks for it', gate: 'Household-requested cards outnumber trade-sent', moves: ['Customer-invite: one screen', 'An account per address', 'Remembered for the next trade'], when: '2027 H1', state: 'gray' },
+  { phase: '6', label: 'Enterprise: housing first, then carriers', gate: 'One free pilot, one paid contract', moves: ['Parked 11 Oct 2026 until move 1 has its numbers', 'Resident card beside their repairs system; attendance record built', 'Ombudsman cases as the deck; the Ltd before any contract', 'Then a button in a carrier’s email, then energy, broadband, water'], when: '2027 H2', state: 'gray' },
 ]
 
 /** What has shipped, read from CHANGELOG in src/lib/version.js. A fact by construction. */
@@ -263,14 +266,76 @@ export const TEAM = [
 ]
 
 export const THE_ASK = {
-  lead: 'This is being sent to one person who builds apps for a living. The ask is one thing.',
+  lead: 'This is being sent to one friend who runs the UK business of a software consultancy and has sold app builds for a living. The ask is two things, both small.',
   items: [
-    { n: '1', label: 'Read it and say what is wrong', note: 'The three moats, the six moves, the wallet premise. Ten minutes' },
+    { n: '1', label: 'Use it once, as a customer', note: 'Open the demo on your phone. Tap the things a customer would tap. Two minutes' },
+    { n: '2', label: 'Read the plan and say what is wrong', note: 'The wallet premise, the three moats, the six moves, the price. Ten minutes' },
   ],
-  notAsking: ['Not asking for money', 'Not asking for code', 'Not asking for a cofounder, yet'],
+  notAsking: ['Not asking for money', 'Not asking you to build it', 'Not asking for a cofounder, yet', 'Not asking for introductions until the pilot has numbers'],
+}
+
+/**
+ * The one reader, and the ducks in a row before anything is sent.
+ *
+ * OWNER-ONLY. The guest page never renders this: a dossier on the reader,
+ * visible to the reader, is the wrong kind of honest. Everything in `facts`
+ * is public and sourced; `unconfirmed` says what is still a guess.
+ */
+export const REVIEWER = {
+  name: 'Toby Barrow',
+  relationship: 'A friend. Works in apps.',
+  unconfirmed: 'Confirmed by the owner on 12 Oct 2026: this is the Toby Barrow at Theodo. Everything below is public and sourced.',
+  facts: [
+    { figure: 'Partner, CEO UK', what: 'Theodo, a technology consultancy. On the group leadership page', source: 'theodo.com/en-uk/our-leaders', href: 'https://www.theodo.com/en-uk/our-leaders' },
+    { figure: 'Chief Commercial Officer', what: 'Theodo UK, before the CEO role', source: 'theorg.com', href: 'https://theorg.com/org/theodo-uk/org-chart/toby-barrow' },
+    { figure: 'Sales Director, 2017 to 2019', what: 'Chelsea Apps Factory, a London mobile agency (TfL, Waitrose, Ladbrokes). Pre-pack sale in 2018', source: 'RocketReach, The Fintech Times', href: 'https://thefintechtimes.com/quantuma-rescues-42-jobs-at-london-mobile-app-specialist/' },
+    { figure: 'Waracle', what: 'A UK digital product studio, listed under previous companies. Role and dates not shown', source: 'theorg.com', href: 'https://theorg.com/org/theodo-uk/org-chart/toby-barrow' },
+    { figure: '700+ people, 6 offices', what: 'Theodo group. Lean Tech method. Web and mobile platforms, AI, cloud', source: 'theodo.com/en-uk', href: 'https://www.theodo.com/en-uk' },
+    { figure: 'HomeServe, Admiral, Immediate', what: 'Named Theodo UK clients. Immediate was a white-label mobile app for many brands', source: 'theodo.com, directory listings', href: 'https://www.theodo.com/en-uk' },
+  ],
+  why: [
+    'He sells app builds to firms the size of HomeServe. He knows what a wallet pass and its update service cost in days, and what a buyer like that pays for.',
+    'Commercial, not an engineer. He will judge the price, the moats and the pitch, which is what this plan needs judged.',
+    'A friend. He will say it is wrong if it is wrong, and that is the point of asking.',
+  ],
+  ask: [
+    'Is a card in a wallet the right premise, or is a link with push enough? You sell apps; say it straight either way.',
+    'What would your team quote, in days, for the pass update service (device registration, what changed, APNs) and a Google Wallet class?',
+    'HomeServe is a client. What do they do today for “engineer on the way”? Would a firm like that buy a resident card beside their own system, and at what price per card?',
+    'Immediate was one app for many brands. What did you learn about one card, many senders? That is the recognition moat here.',
+    'Where does a one-person product like this usually die: pricing, distribution, or the Apple relationship?',
+    'Who else should read it?',
+  ],
+  watchOut: [
+    'He runs an agency. “We could build this for you” is the reflex, and the answer is thank you, no. Read it, do not build it.',
+    'Do not ask for introductions to his clients until the pilot has thirty days of numbers. Asking early spends the favour on nothing.',
+    'No NDA with a friend. Nothing in the plan is secret; the share link is the deliberate copy.',
+  ],
+  sendWhen: [
+    { id: 'toby:sm8', label: 'ServiceM8 connected and the link is in every booking text' },
+    { id: 'toby:jobs', label: 'Ten real jobs have gone through the link' },
+    { id: 'toby:daybefore', label: 'The day-before ask has fired on a real job at least once' },
+    { id: 'toby:numbers', label: 'The pilot panel shows numbers, whatever they are' },
+    { id: 'toby:read', label: 'The share link has been opened on your own phone and read end to end' },
+    { id: 'toby:updated', label: 'The plan’s “updated” date is inside the last week' },
+  ],
+  notGatedOn: 'Not waiting for Apple. The pass being unsigned is a fact on the Wallet page, and he will understand it better than anyone.',
+  message: `Toby, I'd like you to sign up to this. It's an idea I've had: one link per job that tells the customer when the plumber is actually coming, ending up as a card in their wallet. I've built it and I'm using it on my own jobs now.
+
+I'd really like your thoughts. If you think it's a good idea, tell me what's wrong with it. If you don't, tell me that.
+
+Two minutes on your phone: ${PLAN_META.demoUrl}
+Ten minutes on the plan: SHARE_LINK
+
+I'm not asking you to build it or fund it. Just read it.
+
+Will`,
 }
 
 export const DECISIONS = [
+  { key: 'askToby', question: 'When does Toby get the link?', options: ['After ten real jobs through the link', 'Now, as it stands', 'After the pass is signed'], note: 'My pick: after ten jobs. Enough to have numbers and a story; not so long the favour goes cold.' },
+  { key: 'firstPilot', question: 'Where is the real pilot?', options: ['My own jobs, beside ServiceM8', 'White Horse Housing', 'A second trade'], decided: 'My own jobs, beside ServiceM8', decidedAt: '11 Oct 2026', note: 'Prove the two-way link on jobs I control before adding a landlord and a contractor to it.' },
+  { key: 'scope', question: 'What is TurnUp, and what is it not?', options: ['The connection, never the job', 'The job too, in time', 'A job system from the start'], decided: 'The connection, never the job', decidedAt: '11 Oct 2026', note: 'Who is coming, when they set off, is anyone in, which door. ServiceM8 keeps the quote, the diary, the invoice.' },
   { key: 'pricing', question: 'Who pays?', options: ['Nobody, for now', 'Free for every sender; enterprise per card', 'Trades: a monthly plan', 'Trades: activation, then features'], decided: 'Free for every sender; enterprise per card', decidedAt: '9 Oct 2026', note: 'Third shape of the day. The card has to spread; only an enterprise is already paying for missed visits.' },
   { key: 'firstMoat', question: 'Which moat first?', options: ['The household end', 'Recognition: customer-invite', 'One integration: the API and spec'], decided: 'The household end', decidedAt: '9 Oct 2026' },
   { key: 'firstWedge', question: 'First enterprise wedge?', options: ['Social housing', 'Energy supplier', 'Broadband provider', 'Water company'], decided: 'Social housing', decidedAt: '10 Oct 2026', note: 'No incumbent tracker, a repairs manager you can meet, and a tenancy is already an account per address: the first wedge and the first moat are one build.' },

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.44.0'
+export const VERSION = '1.48.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 28
+export const THEME_INDEX = 30
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,11 +48,26 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.44.0', date: '2026-10-12', notes: [
+  { version: '1.48.0', date: '2026-10-12', notes: [
     'The household card tells a person from a parcel. Who is calling round comes first, under Coming to the door \u2014 your visit, the boiler engineer, the surveyor, the kitchen fitter. Everything that just lands sits under Also arriving. Nobody waits in for a jiffy bag and everybody waits in for an engineer, and one undifferentiated list made the reader do that sorting every time they opened it.',
     'The parser learned the difference. An email with a carrier or a tracking number is a parcel; one that says an engineer, surveyor, fitter or installer will attend is a person; a sofa with two men is goods with a crew. A boiler service and a window survey were both being dropped entirely before this, because no delivery phrase matched the way those senders write.',
     'Your own jobs go on a card and stay in step. Pick one from the dashboard under Household cards and it follows every stage you tap \u2014 On their way, Here now, Paused and why, Finished \u2014 including backwards, because a trade un-pausing a job is a fact and a carrier emailing out of order is not. Taking it off the card leaves the job untouched.',
     'Added by hand on purpose, never matched on address: two flats share a postcode, and a card is a link anyone can forward.',
+  ] },
+  { version: '1.47.0', date: '2026-10-12', notes: [
+    'The /j/ page, the one a customer lands on from the ServiceM8 text, drawn like the page it leads to: the glass, the wash, Booked in\'s blue, and under the four-digit box a picture of the card the digits unlock, so the person who just tapped a link can see what they are typing for. The words are shorter. The dead ends (no such job, still a quote, cancelled) say one line and show the number to ring.',
+  ] },
+  { version: '1.46.0', date: '2026-10-12', notes: [
+    'Switch link back on. A link switched off by mistake used to be dead and meant a new job; now Switch link back on sits where Switch link off was, under More, same size. A switched-off card says so in words — Link is off, the customer sees expired — rather than just going pale.',
+  ] },
+  { version: '1.45.0', date: '2026-10-12', notes: [
+    'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
+    'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',
+    'The ask has a reader, confirmed. The plan’s last section carries, for the owner only, who is being sent it and why, six questions only he can answer, three things to watch, six ducks to tick before it goes, and the message in the owner’s own words with a copy button. The guest page never shows it.',
+    'Every build updates the words. Standing Rule 24: the plan, the homepage, the guides and the instructions are part of every build and every nightly. scripts/check-current.mjs checks what a script can and must pass before a push; the nightly reads the rest.',
+  ] },
+  { version: '1.44.0', date: '2026-10-12', notes: [
+    'The dashboard\'s setup panels get the homepage treatment: a picture of the part instead of a paragraph about it. Who to expect shows the row the customer opens; Booking terms shows what they read and tap; Nudge me shows the two buzzes as they land on your lock screen, in the words actually sent; Turn on notifications shows the row it switches on; ServiceM8 shows Check In beside On site; the attendance record shows three rows of itself. Every one of them is shorter.',
   ] },
   { version: '1.43.0', date: '2026-10-12', notes: [
     'After Job done: how did it go? The customer\'s page offers a Google review and a note to you, both always, to everyone. Nobody is sorted into happy and unhappy first; a one-person firm\'s reviews are worth having only if they are real. Two hours on, one notification, once per job.',

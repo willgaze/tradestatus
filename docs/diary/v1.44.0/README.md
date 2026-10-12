@@ -2,10 +2,7 @@
 
 **2026-10-12** · background `#f5f5fc` · accent `#463a94`
 
-- The household card tells a person from a parcel. Who is calling round comes first, under Coming to the door — your visit, the boiler engineer, the surveyor, the kitchen fitter. Everything that just lands sits under Also arriving. Nobody waits in for a jiffy bag and everybody waits in for an engineer, and one undifferentiated list made the reader do that sorting every time they opened it.
-- The parser learned the difference. An email with a carrier or a tracking number is a parcel; one that says an engineer, surveyor, fitter or installer will attend is a person; a sofa with two men is goods with a crew. A boiler service and a window survey were both being dropped entirely before this, because no delivery phrase matched the way those senders write.
-- Your own jobs go on a card and stay in step. Pick one from the dashboard under Household cards and it follows every stage you tap — On their way, Here now, Paused and why, Finished — including backwards, because a trade un-pausing a job is a fact and a carrier emailing out of order is not. Taking it off the card leaves the job untouched.
-- Added by hand on purpose, never matched on address: two flats share a postcode, and a card is a link anyone can forward.
+- The dashboard's setup panels get the homepage treatment: a picture of the part instead of a paragraph about it. Who to expect shows the row the customer opens; Booking terms shows what they read and tap; Nudge me shows the two buzzes as they land on your lock screen, in the words actually sent; Turn on notifications shows the row it switches on; ServiceM8 shows Check In beside On site; the attendance record shows three rows of itself. Every one of them is shorter.
 
 
 ### wallet-in-stack
@@ -27,10 +24,6 @@
 ### customer-dark
 
 ![customer-dark](./customer-dark.webp)
-
-### customer-booked
-
-![customer-booked](./customer-booked.webp)
 
 ### dashboard
 

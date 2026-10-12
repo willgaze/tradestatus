@@ -791,6 +791,15 @@ under When suits you? like any other window. `dayWord()` lives in
 `src/lib/nudge-words.js` because the page needs it without Prisma. The hours on
 the card are stated only when the window is AGREED.
 
+**The pilot is four numbers** (`src/lib/pilot.js`, panel under Setup and
+settings, `node scripts/check-pilot.mjs`): links opened, "will someone be in?"
+answered, wasted trips (No one home records), and "when are you coming?" calls
+to the booking line. The product cannot see a phone ring, so the fourth is
+counted by a person and the panel says so; "Are you still coming?" taps are
+shown beside it as the nearest thing the product sees, never as calls. Decided
+11 Oct 2026: nothing moves on housing or pricing until thirty days of these
+are in.
+
 ## A tap with no signal still counts (`src/app/dashboard/offline-queue.js`)
 
 Every write from the dashboard that is safe to replay — a stage tap, a note, a
@@ -910,6 +919,20 @@ same component and the same folder (`sm8-*`), cut from the captures in
 which needs no browser; ServiceM8's own screens stay drawn (`Sm8Mocks.jsx`), at
 a readable size rather than inside a 150px phone.
 
+The dashboard's setup panels follow the same rule (v1.43.0): Who to expect, Booking
+terms and Turn on notifications each show the customer's row they change (`Shot`, the
+same crops), ServiceM8 shows its Check In button beside On site, and Nudge me and the
+attendance record are drawn in `src/app/dashboard/Pictures.jsx`. The banner words there
+are the ones `src/lib/nudge.js` sends; change them there and the drawing follows by
+hand. A panel that needs a paragraph to explain itself wants a picture instead.
+
+The `/j/<job number>` claim page follows it too (v1.47.0): drawn as the customer's
+page is (glass, wash, `tone-booked`), one line, the box, and under it `Shot`'s
+`stage-booked` card so the digits have a visible reason. Its capture on
+`/with-servicem8` is `public/with-servicem8/claim.webp` from
+`scripts/capture-with-servicem8.mjs`, which needs a stand-in ServiceM8 on
+`SM8_API_BASE`; re-shoot it when that page changes.
+
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
 drift. It carries the same badges the posters do, and the lock screen shows
@@ -937,6 +960,30 @@ repository does not have:
 
 Until those exist, the honest position is that this is a link, not a card. Do
 not describe it as a wallet pass anywhere customer-facing.
+
+## Every build updates the words (Standing Rule 24, Will, 12 Oct 2026)
+
+Several sessions build this app in a day, and the words that describe it fall
+behind within a night. Will: "all plans, homepages, guides and instructions
+need to be part of the routine updates done every night to make sure
+everything is up to date by morning." So **a build is not done until the words
+are**, and a push that leaves them stale is a defect:
+
+| What | Where | Must say |
+|---|---|---|
+| The business plan | `src/lib/plan.js` (STATUS, GTM_PHASES, PRODUCT, MOATS, WALLET, DECISIONS, FACTS_TABLE, `PLAN_META.updated`) | what the app is tonight. `/plan/<code>` is what gets sent to people |
+| The homepage and the guide | `src/app/page.js`, `src/app/with-servicem8/page.js`, `public/home/crops/` | every claim true, every picture of the current screen |
+| The roadmap | `src/lib/roadmap.js` | shipped is `live`, unshipped is not |
+| The instructions | this file, `docs/*.md`, the Claude project description | the section for what changed |
+| The record | `src/lib/version.js`, `docs/diary/` | the entry, the folder, the table row |
+
+`node scripts/check-current.mjs` (also `npm run check:current`) checks what a
+script can: the changelog's top entry is this version and date, the diary has
+its folder and row, the plan's date is within three days of the build, the
+roadmap and changelog agree on what is live, and every file the guides name
+exists. **It must pass before every push**, nightly or daytime. What it cannot
+check, a person reads: the nightly build's step 4 is that reading, against
+everything that landed on main since the last night, not only its own change.
 
 ## The nightly build
 
