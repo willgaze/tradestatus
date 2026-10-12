@@ -84,6 +84,9 @@ model TradeStatus {
   // and the words are the ones agreed, not whatever the profile says later.
   termsAgreedAt DateTime?
   termsAgreed   Json?
+  // When TurnUp itself texted the link (through ServiceM8), or noticed that
+  // ServiceM8 already had. Set once; the auto-follow sweep never sends twice.
+  linkSentAt DateTime?
 
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.
@@ -176,6 +179,11 @@ model TradeProfile {
   // means none is ever mentioned. TurnUp states a fee; it never takes one.
   noticeHours    Int  @default(24)
   shortNoticeFee Int?
+
+  // Follow every ServiceM8 booking: make the card as soon as a booking exists
+  // and text the link through ServiceM8 ten minutes later unless ServiceM8's
+  // own automation already has. Off by default: it spends SMS credits.
+  autoFollow Boolean @default(false)
 
   updatedAt DateTime @updatedAt
 }

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.35.0'
+export const VERSION = '1.36.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.36.0', date: '2026-10-12', notes: [
+    'Follow every booking. Switch it on under ServiceM8 and every booking made in ServiceM8 gets its TurnUp card straight away, and ten minutes later the link is texted through ServiceM8 unless ServiceM8\'s own confirmation already texted it. One text per job, ever; a job dragged onto the calendar is no longer a job nobody told. The Booking Confirmation automation becomes optional.',
+    'Because the card now exists from the moment of booking, the day-before ask, the nudges and the terms work for every ServiceM8 job, not just the ones whose customer opened the link first.',
+    'This week in ServiceM8 says TurnUp sent it, with the time, when it did.',
+  ] },
   { version: '1.35.0', date: '2026-10-12', notes: [
     'The homepage says less and shows more. Every row the customer can open and every part of the dashboard the trade taps is now a picture of that part — cut from the real screen at 2x by scripts/capture-home-crops.mjs, never a whole phone — under a label of a few words. The paragraphs are gone; the two walkthrough strips went with them.',
     'The wallet card gets the section it always needed: the card pulled apart with each band named (the same bands buildPassJson signs), the same card at all four stages, its back, and the lock screen the notification lands on. Drawn from PassCard, so it cannot drift from the real pass. The badge still says it: built, waiting on Apple. The buzz on the lock screen is live today; the card updating itself in Wallet is not.',

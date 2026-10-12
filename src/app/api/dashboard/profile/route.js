@@ -42,6 +42,7 @@ export async function PUT(request) {
       ...text('brandLogo', 500),
       // The terms: hours between 1 and 336 (a fortnight), a fee in whole
       // pounds or nothing. Nothing else about a charge is stored anywhere.
+      ...('autoFollow' in b ? { autoFollow: Boolean(b.autoFollow) } : {}),
       ...('noticeHours' in b ? { noticeHours: Math.min(336, Math.max(1, Math.round(Number(b.noticeHours)) || 24)) } : {}),
       ...('shortNoticeFee' in b ? { shortNoticeFee: (() => {
         const n = Math.round(Number(b.shortNoticeFee))
