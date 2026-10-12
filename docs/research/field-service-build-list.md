@@ -23,14 +23,14 @@ capability we do not have) · No.
 |---|---|---|
 | Arrival window on every booking, headline above the start time | Copy | Done 1.17.1 (from ServiceM8); manual windows done earlier |
 | Booking confirmation carrying cancellation info, express-start request, no-access terms (CCR 2013 regs 28/36) | Improve | Done 1.29.0 — Before the visit on the customer page (notice, charge if any, 14-day right), one-tap Got it, go ahead recorded with the words; Booking terms panel on the dashboard; confirmation line points at it |
-| Day-before reminder with reply: confirm / reschedule / someone else will be in | Copy | Next — push + email now; SMS when we have it |
+| Day-before reminder with reply: confirm / reschedule / someone else will be in | Copy | Done 1.31.0 + 1.32.0 — asked at 16:00 the day before (push + page); replies still fine / someone else / move it reach the trade; SMS via ServiceM8's Booking Reminder automation |
 | Non-push fallback for every customer-critical event | Copy | Next — email first; SMS is the capability to buy |
 | Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Next — dashboard service worker + IndexedDB |
 | Customer page shows "last updated hh:mm" and the last honest stage | Improve | Next |
 | "Customer not home" in one tap: fix, door photo, attempts, wait clock, message with three replies | Copy | Done 1.26.0 (fee deliberately absent; the next step is offered first) |
 | Automatic concrete message at window end: wait / later today / rebook | Improve | Done 1.24.0 (the new window is proposed by the trade, never generated) |
 | Revised promise shown as revised, original kept | Copy | Next |
-| Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Next — "Will someone be in?" exists; add the three actions |
+| Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Partly 1.32.0 — someone else and move it exist from the day before; I'm running late on the day: Next |
 | Paused visible to the customer with reason and expected return | Improve | Done (Paused + note); expected return: Next |
 | Name and photo of who is coming, on the page and in the On-my-way message | Copy | Done (Who to expect, van, name); photo: Next |
 
@@ -42,12 +42,12 @@ capability we do not have) · No.
 | "On my way" offered automatically at the previous job's Job done | Improve | Next |
 | Ordered day with running expected start; next customer told only if the shift leaves their window | Improve | Later |
 | "You are next" / stop count on the customer page | Improve | Done (position: "You are 2nd today") |
-| Confirmation re-sent on every reschedule, however the booking moved | Copy | Later — window follows the ServiceM8 booking already; the message does not |
-| Red "Not sent" badge on the dashboard until the customer has been told | Copy | Next |
+| Confirmation re-sent on every reschedule, however the booking moved | Copy | Done 1.38.0 — Follow every booking texts the new hours once a move has settled, through ServiceM8, with the old hours in brackets |
+| Red "Not sent" badge on the dashboard until the customer has been told | Copy | Done 1.33.0 — This week in ServiceM8 reads ServiceM8's own email/SMS history: Link texted / emailed, opened / not sent, with Text the link in one tap |
 | Logged send and logged open of every customer message | Improve | Partly (viewCount, lastViewedAt); per-message log: Later |
 | Per-visit status audit, back-dating allowed but labelled | Copy | Partly (events); labelled back-dating: Later |
 | Private attachments that never reach the customer page | Copy | Later |
-| Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Later — `publish_diary_items` needs an OAuth app, not the API key |
+| Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Built 1.34.0, waiting on the add-on App ID (docs/servicem8-add-on.md); badge: Later |
 | "Certificate issued" optional final stage for notifiable work | Improve | Later — part of process templates |
 | Pre-agreed goodwill gesture, configured once, fired on a missed window | Copy | Later |
 | Review request after Job done, routed to Google | Copy | Next |

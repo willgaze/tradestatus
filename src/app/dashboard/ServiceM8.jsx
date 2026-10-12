@@ -94,6 +94,37 @@ export default function ServiceM8({ onChanged }) {
                 )}
                 <button type="button" onClick={() => act('sync')} disabled={busy} className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">{busy === 'sync' ? '…' : 'Check all linked jobs now'}</button>
               </div>
+              {/* Follow every booking: the card at once, the link ten minutes
+                  later through ServiceM8 unless ServiceM8 already texted it. */}
+              <div className="r-inner mt-4 px-4 py-3.5 text-[14px]" style={{ background: s.autoFollow ? 'color-mix(in srgb, var(--stage-done) 12%, transparent)' : 'rgb(var(--glass-line) / 0.07)' }}>
+                <p className="font-semibold">Follow every booking {s.autoFollow ? '· on' : '· off'}</p>
+                <p className="mt-1 muted">Every booking made in ServiceM8 gets its TurnUp card straight away, and ten minutes later the link is texted through ServiceM8 — one of your SMS credits — unless ServiceM8’s own confirmation already texted it. One text per job, ever. With this on, the Booking Confirmation automation becomes optional.</p>
+                <button type="button" disabled={busy} onClick={async () => { setBusy('follow'); try { await fetch('/api/dashboard/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ autoFollow: !s.autoFollow }) }); await load() } finally { setBusy(null) } }}
+                        className={`btn mt-2.5 !min-h-[42px] !px-4 !text-[14px] ${s.autoFollow ? 'btn-grey' : 'accent-fill'}`}>
+                  {busy === 'follow' ? '…' : s.autoFollow ? 'Switch off' : 'Switch on'}
+                </button>
+              </div>
+
+              {/* The add-on half: the diary. The key cannot write there; an
+                  authorised add-on can. Three states, each with its next step. */}
+              <div className="r-inner mt-4 px-4 py-3.5 text-[14px]" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
+                <p className="font-semibold">As an add-on: TurnUp writes to the job diary</p>
+                {s.oauth?.connected ? (
+                  <>
+                    <p className="mt-1 muted">Connected{s.oauth.vendorName ? ` to ${s.oauth.vendorName}` : ''} since {new Date(s.oauth.connectedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Set off, on site, paused, done, terms agreed, no one home and the customer’s replies each go into the job diary as a line from TurnUp.</p>
+                    <button type="button" onClick={() => act('oauth_disconnect')} disabled={busy} className="btn btn-grey mt-2.5 !min-h-[40px] !px-4 !text-[13px]">Disconnect the add-on</button>
+                  </>
+                ) : s.oauth?.configured ? (
+                  <>
+                    <p className="mt-1 muted">The app details are in. One more step: authorise it on your ServiceM8 account.</p>
+                    <a href="/api/servicem8/oauth/start" className="btn accent-fill mt-2.5 !min-h-[44px] !px-4 !text-[14px]">Connect ServiceM8 as an add-on</a>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-1 muted">Needs a free ServiceM8 developer account and two settings in Vercel (<code className="font-mono">SM8_APP_ID</code>, <code className="font-mono">SM8_APP_SECRET</code>). The steps are in <code className="font-mono">docs/servicem8-add-on.md</code>. Return URL for the app: <code className="font-mono break-all">{s.oauth?.redirectUri}</code></p>
+                  </>
+                )}
+              </div>
               {!s.hasToken && <p className="mt-2 text-[13px] muted">No SM8_WEBHOOK_TOKEN set, so webhooks cannot be received. Pull-on-read still works.</p>}
               {s.subscriptionsError && <p className="mt-2 text-[13px] muted">Could not list subscriptions: {s.subscriptionsError}</p>}
               {note && <p className="mt-3 text-[14px]">{note}</p>}

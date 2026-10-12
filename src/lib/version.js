@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.33.0'
+export const VERSION = '1.39.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 24
+export const THEME_INDEX = 25
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,13 +48,45 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.33.0', date: '2026-10-12', notes: [
-    'The ask has a reader. The plan’s last section now carries, for the owner only, who is being sent it and why, the six questions only he can answer, three things to watch, six ducks to tick before it goes, and the message in the owner’s own words with a copy button. The guest page never shows it.',
-    'The ask itself grew from one thing to two: use the demo once as a customer, then read the plan and say what is wrong. Still not money, not a build, not a cofounder, and no introductions until the pilot has numbers.',
-  ] },
-  { version: '1.32.0', date: '2026-10-12', notes: [
+  { version: '1.39.0', date: '2026-10-12', notes: [
     'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
     'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',
+    'The ask has a reader. The plan’s last section carries, for the owner only, who is being sent it and why, six questions only he can answer, three things to watch, six ducks to tick before it goes, and the message in the owner’s own words with a copy button. The guest page never shows it. The ask is two things now: use the demo once, read the plan and say what is wrong.',
+  ] },
+  { version: '1.38.0', date: '2026-10-12', notes: [
+    'A booking that moves in ServiceM8 after the customer was texted earns them one more text: the new hours, the old ones in brackets, the same link. Sent through ServiceM8 once the move has settled for ten minutes, so a job dragged three times in two minutes is one text, not three. Only while the job is still Booked in, and never for a booking taken off the diary — that is yours to say.',
+    'What the customer was last told is kept on the card. The window follows a move at once, as before; the message now follows it once.',
+  ] },
+  { version: '1.37.0', date: '2026-10-12', notes: [
+    '/with-servicem8 gets the homepage treatment: fewer words, and a picture of the part for every step. The customer\'s status card at each stage, the claim screen, the linked card and the ServiceM8 panel are cut from the existing captures (scripts/capture-home-crops.mjs, ONLY=sm8); the ServiceM8 app\'s four buttons and the booking text are drawn at a readable size instead of inside a 150px phone. What moves the card is a row per stage: what you press, an arrow, what they see.',
+    'The wallet section on the homepage, second pass at the owner\'s request: it opens with three phones — the lock screen, double-click, the wallet open with the card in the stack, the card tapped — so a visitor sees it is a card before anything is explained. The pulled-apart card, the four stage cards and the back now stand in three dimensions on the same dark floor as the hero, instead of lying flat.',
+  ] },
+  { version: '1.36.0', date: '2026-10-12', notes: [
+    'Follow every booking. Switch it on under ServiceM8 and every booking made in ServiceM8 gets its TurnUp card straight away, and ten minutes later the link is texted through ServiceM8 unless ServiceM8\'s own confirmation already texted it. One text per job, ever; a job dragged onto the calendar is no longer a job nobody told. The Booking Confirmation automation becomes optional.',
+    'Because the card now exists from the moment of booking, the day-before ask, the nudges and the terms work for every ServiceM8 job, not just the ones whose customer opened the link first.',
+    'This week in ServiceM8 says TurnUp sent it, with the time, when it did.',
+  ] },
+  { version: '1.35.0', date: '2026-10-12', notes: [
+    'The homepage says less and shows more. Every row the customer can open and every part of the dashboard the trade taps is now a picture of that part — cut from the real screen at 2x by scripts/capture-home-crops.mjs, never a whole phone — under a label of a few words. The paragraphs are gone; the two walkthrough strips went with them.',
+    'The wallet card gets the section it always needed: the card pulled apart with each band named (the same bands buildPassJson signs), the same card at all four stages, its back, and the lock screen the notification lands on. Drawn from PassCard, so it cannot drift from the real pass. The badge still says it: built, waiting on Apple. The buzz on the lock screen is live today; the card updating itself in Wallet is not.',
+    'Instead of this, with this: the “between eight and six” text beside the status card, as two panels rather than two paragraphs.',
+  ] },
+  { version: '1.34.0', date: '2026-10-12', notes: [
+    'Send the link via ServiceM8. The booking text now goes out through ServiceM8 itself from This week in ServiceM8: one of the account\'s SMS credits, and it lands in the job\'s own SMS history and diary exactly as if ServiceM8 had sent it. Checked against the live account on 12 Oct: the API key may send. Text it from my phone stays as the free way.',
+    'TurnUp as a ServiceM8 add-on, built and waiting on an App ID: Connect ServiceM8 as an add-on under Setup and settings, and from then on set off, on site, paused, done, terms agreed, no one home, running late and every customer reply are written into the job diary as a line from TurnUp. The diary is the one thing the key cannot write; the add-on can. docs/servicem8-add-on.md has the sign-up steps.',
+    'Texts are plain ASCII: ServiceM8\'s SMS endpoint turns a curly quote into question marks or a second credit.',
+  ] },
+  { version: '1.33.0', date: '2026-10-12', notes: [
+    'This week in ServiceM8, on the dashboard: every booking in the next seven days, whether ServiceM8 sent the link by text or email, whether the email was opened, and whether the TurnUp card exists yet. Read from ServiceM8\'s own email and SMS history, which the API key turns out to be allowed to see. Nothing is guessed.',
+    'Where ServiceM8 sent nothing, one tap: Text the link opens Messages with the number and the words in. Make the card now builds the card before the customer opens the link.',
+    'The box can answer "did the link go?" now. It is given the same ServiceM8 lines, and says why a confirmation usually fails to send: a booking not made from the job card with the tick, or the automation\'s text method off.',
+    'docs/design/servicem8-connection.md: what the key can and cannot do, and the plan for the full connection — a private add-on so TurnUp can send the text through ServiceM8 and write to the job diary.',
+  ] },
+  { version: '1.32.0', date: '2026-10-12', notes: [
+    'The day-before ask now carries the answers. The card on the customer\'s page — tomorrow, these hours, still fine? — has three replies: still fine, someone else will be in, need to move it. Each one lands on your card and your phone. Still fine and someone else also answer will someone be in?, so one tap does both. Two-way reminders are the best-evidenced cut in no-shows there is; the reply is what makes it two-way.',
+    'Need to move it asks; the new hours are still yours to offer and theirs to agree under When suits you?.',
+    'The card says Confirmed 18:02, Someone else will be in, or Wants to move it, beside the terms chip.',
+    'On /with-servicem8: the optional Booking Reminder text that gets them to open the page the day before.',
   ] },
   { version: '1.31.0', date: '2026-10-11', notes: [
     'The day before the job, the customer is asked whether anyone will be in. Once, at four in the afternoon in the trade\u2019s own time, never again for that job. A notification if they switched one on, the page asks either way, and the timeline records that it was asked.',

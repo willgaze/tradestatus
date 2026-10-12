@@ -13,7 +13,10 @@ export default function Device({ screen, alt, width = 300, height, tilt = false,
   return (
     <div className={`relative shrink-0 ${className}`}
          style={{ width, height: h,
-                  transform: tilt ? 'perspective(1800px) rotateY(-11deg) rotateX(5deg) rotateZ(-1deg)' : undefined,
+                  /* `tilt` is true for the house angle, or a number of degrees
+                     to turn it about the vertical, so three phones in a row can
+                     fan rather than all lean the same way */
+                  transform: tilt ? `perspective(1800px) rotateY(${typeof tilt === 'number' ? tilt : -11}deg) rotateX(5deg) rotateZ(${typeof tilt === 'number' && tilt > 0 ? 1 : -1}deg)` : undefined,
                   filter: 'drop-shadow(0 34px 44px rgba(0,0,0,.45)) drop-shadow(0 8px 12px rgba(0,0,0,.25))' }}>
       <div className="absolute inset-0 rounded-[13%/6.4%] bg-[#0c0c0e] ring-1 ring-white/10"
            style={{ boxShadow: 'inset 0 0 0 2px #2a2a2e, inset 0 0 0 5px #0c0c0e' }} />

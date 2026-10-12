@@ -72,6 +72,11 @@ model TradeStatus {
   missedAt       DateTime?
   missedChoice   String?
   missedChoiceAt DateTime?
+  // The customer's one-tap reply to the day-before ask (presenceAskedAt,
+  // below): OK, SOMEONE_ELSE (will let you in) or MOVE (wants different
+  // hours). A reply is a message to the trade; MOVE moves nothing by itself.
+  reminderReply   String?
+  reminderReplyAt DateTime?
 
   // The booking terms, agreed from the customer's phone: when, and the exact
   // words they read (notice period, short-notice charge, the 14-day right).
@@ -79,6 +84,16 @@ model TradeStatus {
   // and the words are the ones agreed, not whatever the profile says later.
   termsAgreedAt DateTime?
   termsAgreed   Json?
+  // When TurnUp itself texted the link (through ServiceM8), or noticed that
+  // ServiceM8 already had. Set once; the auto-follow sweep never sends twice.
+  linkSentAt DateTime?
+  // The hours the customer was last TOLD by text, so a booking that moves in
+  // ServiceM8 afterwards gets one more text with the new time. Compared with
+  // the booking, never with the window: the window follows the move at once,
+  // the message only once the move has settled.
+  toldStart DateTime?
+  toldEnd   DateTime?
+  toldAt    DateTime?
 
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.
@@ -172,6 +187,11 @@ model TradeProfile {
   noticeHours    Int  @default(24)
   shortNoticeFee Int?
 
+  // Follow every ServiceM8 booking: make the card as soon as a booking exists
+  // and text the link through ServiceM8 ten minutes later unless ServiceM8's
+  // own automation already has. Off by default: it spends SMS credits.
+  autoFollow Boolean @default(false)
+
   updatedAt DateTime @updatedAt
 }
 
@@ -261,6 +281,17 @@ model Sm8Link {
   lastOutcome   String? // what the last sync did, in a word
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+/// TurnUp as a ServiceM8 add-on: the OAuth tokens, encrypted, one row. Only
+/// the diary and staff notifications need this; everything else is the key.
+model Sm8OAuth {
+  id          String   @id @default("singleton")
+  cipher      String // AES-256-GCM of { access, refresh, expiresAt }, key from JWT_SECRET
+  scope       String?
+  vendorName  String?
+  connectedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Every delivery and every sync, so "did it fire?" has an answer.

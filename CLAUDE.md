@@ -582,6 +582,42 @@ minutes, counted in `Sm8Event` (`claim.miss`) so it holds across instances. The 
 (`findOrCreateForJob`), linked at birth and synced. `/with-servicem8` is the
 public how-to and must stay true to what the connector does today.
 
+**What the key can see (checked 12 Oct 2026).** Jobs, bookings (`jobactivity`),
+contacts, notes, inbox messages, and the **job email and SMS history**:
+`email.json` and `sms.json`, filtered by `related_object_uuid`, with
+`direction`, `timestamp`, `to_*`, `opened`/`first_opened_at`/`bounced` on email
+and the full text of each. That is how `fetchMessages()` and
+`confirmationState()` know whether ServiceM8 sent the link and whether it was
+read, and how **This week in ServiceM8** (`Sm8Week.jsx`, `fetchUpcoming()`,
+`/api/dashboard/servicem8/week`) answers "did the text go?" from ServiceM8's own
+record rather than guessing. Before this the box said it could not look inside
+ServiceM8; it can, for reading. The key also **sends SMS** through
+`POST /platform_service_sms` (`sendSms()`; tested 12 Oct 2026, the text lands
+in the job's SMS history with `regardingJobUUID`), which is what **Send the link
+via ServiceM8** does. What it **cannot** do: write to the job diary (403) or
+notify staff. Those are the add-on's: `src/lib/sm8-oauth.js` (OAuth, encrypted
+tokens in `Sm8OAuth`, `publishDiary()`, `diaryFor()`), steps for the owner in
+`docs/servicem8-add-on.md`. `diaryFor()` is fire-and-forget wherever it is
+called and a no-op until the add-on is authorised. Texts go through
+`src/lib/sm8-words.js` and stay plain ASCII.
+
+**Follow every booking (`src/lib/sm8-auto.js`, v1.35.0).** When
+`TradeProfile.autoFollow` is on, the cron sweep calls `autoFollow()`: every
+scheduled visit edited in the last six hours gets its card at once
+(`findOrCreateForJob`) and, **ten minutes after the booking was made**, the link
+texted through ServiceM8 — unless `confirmationState().linkTexted` says
+ServiceM8's own automation already did, in which case `linkSentAt` is set to
+that time and nothing is sent. The ten minutes is the automation's head start,
+so the two never race to one phone. `linkSentAt` makes it once per job, ever.
+**Re-send on a move (v1.38.0):** `toldStart`/`toldEnd`/`toldAt` on the card are
+what the customer was last texted. `resendIfMoved()` compares them with the
+job's next booking (`bookingMoved()`, five minutes either end) and, once the
+edit is ten minutes old, texts `moveText()` once and moves `told*` on. Only
+while the card is BOOKED; a job with no booking left is never announced.
+Rules that must not drift: never send without the trade's switch on; never send
+the link twice; never send to a job that is Completed or Unsuccessful; the texts
+are `linkText()` and `moveText()` and nothing else.
+
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 
 The one thing the card could not do until v1.18.0 was notice that a time the
@@ -643,6 +679,17 @@ The decision is pure and tested without a database
   `presence` is not. The same line as `presenceAt`.
 - The hour is `ASK_HOUR` via `zoned()`, never a UTC comparison.
 
+**The three replies (v1.32.0).** Once `presenceAskedAt` is set and until the
+window starts, the customer's page shows `Tomorrow.jsx`: **still fine / someone
+else will be in / need to move it**, posted to `/api/status/[code]/reminder`
+(`replyReminder()` in `nudge.js`), each one pushed to the trade and written to
+`reminderReply`/`reminderReplyAt`. `OK` and `SOMEONE_ELSE` also set `presence`,
+so the ask above is answered by the same tap and the door note and the card
+never disagree. `MOVE` moves nothing: it is a request, and the hours are agreed
+under When suits you? like any other window. `dayWord()` lives in
+`src/lib/nudge-words.js` because the page needs it without Prisma. The hours on
+the card are stated only when the window is AGREED.
+
 **The pilot is four numbers** (`src/lib/pilot.js`, panel under Setup and
 settings, `node scripts/check-pilot.mjs`): links opened, "will someone be in?"
 answered, wasted trips (No one home records), and "when are you coming?" calls
@@ -684,6 +731,41 @@ Rules that must not drift:
   says the terms and the right to cancel are **on the link**, which is what
   makes the link the durable copy. Do not put a fee in the SMS that the page
   does not also show.
+
+## The homepage shows parts of screens, not phones
+
+Since v1.35.0 the front page explains each thing the app does with a picture of
+the part of the screen that does it — the row opened, the stage buttons, the
+send box — under a label of a few words, instead of a paragraph beside a whole
+phone. The owner's verdict on the page before was that it was a lot of writing
+and overwhelming, and a whole device at 250px wide makes the one row being
+talked about unreadable. Keep it that way: **add a picture, not a paragraph.**
+
+The pictures live in `public/home/crops/` and come from one script:
+
+```bash
+NEXT_PUBLIC_TRADE_NAME="Sam Hale Plumbing" npm run build && npx next start -p 3100 &
+BASE=http://localhost:3100 node scripts/capture-home-crops.mjs   # then rebuild
+```
+
+It photographs the customer's page from `/preview` one element at a time (the
+status card at each stage, each row opened) and cuts the trade's screens from
+the full captures already in `public/home/` — those need a database, so the
+boxes in the script are in those files' pixels. It writes
+`src/lib/home-crops.json` with each file's size, which `Shot.jsx` needs.
+**When a screen changes, re-run it**: a crop of last month's row is a lie
+about this month's app. Recapture; never retouch. `/with-servicem8` uses the
+same component and the same folder (`sm8-*`), cut from the captures in
+`public/with-servicem8/` with `ONLY=sm8 node scripts/capture-home-crops.mjs`,
+which needs no browser; ServiceM8's own screens stay drawn (`Sm8Mocks.jsx`), at
+a readable size rather than inside a 150px phone.
+
+The wallet section (`src/components/WalletStory.jsx`) is drawn from
+`PassCard`, the same component the real pass is built from, so it cannot
+drift. It carries the same badges the posters do, and the lock screen shows
+the push notification (live) and not the Wallet card (not yet): see *Not built
+yet* below, and do not let that section say the card updates itself in Wallet
+until the pass web service exists.
 
 ## Not built yet
 

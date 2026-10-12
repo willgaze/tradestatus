@@ -172,6 +172,13 @@ export function publicShape(row) {
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,
     missedChoice: row.missedChoice || null,
     missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
+    // The customer's one-tap reply to the day-before ask. It is their own
+    // answer, but it says nothing a forwarded link could use: "still fine"
+    // and "wants to move it" are not a door, a time or a way in. (OK and
+    // SOMEONE_ELSE also set presence, which stays private as before: only
+    // presenceAt and presenceAskedAt are public.)
+    reminderReply: row.reminderReply || null,
+    reminderReplyAt: row.reminderReplyAt ? row.reminderReplyAt.toISOString() : null,
     // The booking terms the customer agreed to, from their own phone: when,
     // and the two numbers the words are built from. The words themselves are
     // rebuilt from src/lib/terms.js, so the page shows what was agreed even

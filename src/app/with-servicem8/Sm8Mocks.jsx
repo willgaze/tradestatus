@@ -173,3 +173,38 @@ export function SmsMock({ host = 'www.getturnup.com', from = 'Sam Hale Plumbing'
     </div>
   )
 }
+
+/* The part of the ServiceM8 app that matters, without the phone around it:
+   the job strip and the four buttons, the one pressed picked out. Readable at
+   the size a page can give it, which a whole phone at 150px never was. */
+export function Sm8Buttons({ kind }) {
+  const on = { navigate: 'Navigate', checkin: 'Check In', checkout: 'Check Out', complete: 'Complete Job' }[kind]
+  return (
+    <div className="rounded-2xl bg-[#f2f3f5] p-3 text-[#1d2430]">
+      <div className="rounded-xl bg-white px-3.5 py-2.5 shadow-sm">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8a93a3]">Job 2718 · Work Order</p>
+        <p className="text-[15px] font-bold leading-tight">Sarah Whitfield</p>
+      </div>
+      <div className="mt-2.5 grid grid-cols-2 gap-2">
+        {['Navigate', 'Check In', 'Check Out', 'Complete Job'].map((l) => (
+          <span key={l} className={`rounded-xl px-3 py-2.5 text-center text-[13px] font-semibold ${l === on ? 'text-white shadow-md' : 'bg-white text-[#5b6472]'}`}
+                style={l === on ? { background: l === 'Complete Job' ? '#34c759' : BLUE } : undefined}>{l}</span>
+        ))}
+      </div>
+      {kind === 'job' && <p className="mt-2.5 text-[11px] text-[#5b6472]">Contact: you, your own mobile</p>}
+    </div>
+  )
+}
+
+/* The text as it lands: the bubble only. */
+export function SmsBubble({ host = 'www.getturnup.com', from = 'Sam Hale Plumbing' }) {
+  return (
+    <div className="rounded-2xl bg-white p-3 text-[#15161a] ring-1 ring-black/[.06]">
+      <p className="mb-1.5 text-[11px] text-[#8e8e93]">{from} · Text Message · 07:48</p>
+      <div className="rounded-[18px] rounded-bl-[6px] bg-[#e9e9eb] px-3.5 py-2.5 text-[14px] leading-snug">
+        Hi Sarah, your booking with {from} is confirmed for Thursday 16 October, arriving 09:00–11:00. Follow the job here — it moves as the day does: <span className="underline" style={{ color: '#0a84ff' }}>{host}/j/2718</span> — Sam
+      </div>
+      <p className="ml-1.5 mt-1 text-[11px] text-[#8e8e93]">Sent by ServiceM8 · Booking Confirmation</p>
+    </div>
+  )
+}
