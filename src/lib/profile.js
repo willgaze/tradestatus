@@ -84,3 +84,8 @@ export async function publicTerms() {
     return { ...DEFAULT_TERMS, first: firstName(null) }
   }
 }
+
+/** When the trade's dashboard last reached the server. A time only. */
+export async function tradeSeenAt() {
+  try { return (await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }))?.lastSeenAt?.toISOString() || null } catch { return null }
+}

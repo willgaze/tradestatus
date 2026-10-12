@@ -172,6 +172,9 @@ export function publicShape(row) {
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,
     missedChoice: row.missedChoice || null,
     missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
+    // The customer said they are running late: the TIME they said it. The
+    // minutes stay with the trade and on the device that chose them.
+    customerLateAt: row.customerLateAt ? row.customerLateAt.toISOString() : null,
     // The customer's one-tap reply to the day-before ask. It is their own
     // answer, but it says nothing a forwarded link could use: "still fine"
     // and "wants to move it" are not a door, a time or a way in. (OK and

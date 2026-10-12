@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.39.0'
+export const VERSION = '1.40.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.40.0', date: '2026-10-12', notes: [
+    'The customer\'s page says how fresh it is. The line at the bottom now reads Updated 10:42, checks again every half minute, or Last checked 10:40, not reaching the server just now. And during the visit, if your phone has not reached the server for a quarter of an hour, the card says so with the time — out of signal, most likely — instead of passing a quiet phone off as a live feed. The dashboard sends a heartbeat once a minute while it is open to make that true.',
+    'The customer can be the late one. Running late yourself? on their page: about 15, 30 or 60 minutes, or I am there now. Your phone buzzes with when to expect them from; the card says it in amber. Their minutes stay with you and on their phone, never on a forwarded link.',
+  ] },
   { version: '1.39.0', date: '2026-10-12', notes: [
     'A tap with no signal still counts. Every stage tap and every No one home record from the dashboard is saved on the phone when the network is not there — with the time of the tap and the fix the phone had — and sent in order the moment signal comes back. The strip says No signal and how many taps are waiting; the card says Saved on this phone. Nothing is ever dropped.',
     'The customer reads the true time: Set off at 07:42, sent 07:58 when back in signal. The event keeps both clocks, and the job diary line says the same.',

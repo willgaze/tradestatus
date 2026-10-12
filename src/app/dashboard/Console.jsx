@@ -153,7 +153,11 @@ export default function Console({ assistant = false }) {
     window.addEventListener('online', up); window.addEventListener('offline', down)
     const offQueue = onQueue(setQueued)
     const stop = startQueue(() => load())
-    return () => { window.removeEventListener('online', up); window.removeEventListener('offline', down); offQueue(); stop() }
+    // A heartbeat while the dashboard is open, so the customer's page can say
+    // when this phone last reached the server rather than imply a live feed.
+    const beat = () => { if (document.visibilityState === 'visible' && navigator.onLine !== false) fetch('/api/dashboard/seen', { method: 'POST' }).catch(() => {}) }
+    beat(); const hb = setInterval(beat, 60_000); document.addEventListener('visibilitychange', beat)
+    return () => { window.removeEventListener('online', up); window.removeEventListener('offline', down); offQueue(); stop(); clearInterval(hb); document.removeEventListener('visibilitychange', beat) }
   }, [load])
   const queuedFor = (id) => queued.filter((q) => q.url === `/api/dashboard/trackers/${id}` || q.url.startsWith(`/api/dashboard/trackers/${id}/`))
 
@@ -376,6 +380,14 @@ export default function Console({ assistant = false }) {
                 </div>
               )}
 
+              {/* The customer is the late one. Their minutes, their time, and when
+                  to expect them from — worked out from what THEY said. */}
+              {t.customerLateMinutes && ['BOOKED', 'ON_MY_WAY'].includes(t.stage) && t.customerLateAt && (Date.now() - new Date(t.customerLateAt) < 6 * 3600_000) && (
+                <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: 'color-mix(in srgb, #ff9500 13%, transparent)' }}>
+                  <span className="block font-semibold">{greetingName(t.customerName) || 'The customer'} is running about {t.customerLateMinutes} minutes late</span>
+                  <span className="block text-[13px] opacity-75">Said at {new Date(t.customerLateAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}. Expect them from about {new Date(new Date(t.customerLateAt).getTime() + t.customerLateMinutes * 60_000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.</span>
+                </div>
+              )}
               {!(presenceOf(t.presence) && presenceIsFresh(t.presenceAt)) && !t.reminderReply && t.presenceAskedAt && t.stage === 'BOOKED' && (
                 <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: 'rgb(var(--glass-line) / 0.08)' }}>
                   <span className="block font-semibold">Asked whether anyone will be in tomorrow. No answer yet.</span>

@@ -716,6 +716,24 @@ which the build never passes, and the deploy would then run new code on an old
 schema) on the event and on `NoAccess`, so a flush cut off by a page change after the request went but
 before the item was deleted replays as the same tap, not a second one.
 
+## The page says how fresh it is, and the customer can be the late one
+
+`StatusTracker` keeps `checkedAt`/`pollFailed` from its own poll and prints them
+in the footer ("Updated 10:42" / "Last checked 10:40, not reaching the server"),
+set after mount so hydration is untouched. `TradeProfile.lastSeenAt` is stamped
+by every dashboard load and by `POST /api/dashboard/seen`, a heartbeat the
+dashboard sends once a minute while visible; the status route and page hand it
+to the customer as `tradeSeenAt` (never on a DONE job), and the status card says
+"Will's phone last reached us at 08:12" once it is fifteen minutes old during
+ON_MY_WAY / ON_SITE / PAUSED. It is a time, never a place, and never a guess.
+
+`POST /api/status/[code]/customer-late` takes 15, 30, 60 or null, only while
+BOOKED or ON_MY_WAY, writes `customerLateMinutes`/`customerLateAt`, pushes the
+trade with "expect them from about HH:MM" (worked out from what the customer
+said, which is theirs to say), and writes a diary line. The minutes are the
+customer's own answer: `publicShape` carries `customerLateAt` only; the device
+remembers its minutes in own-answers, the same line as presence.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for
