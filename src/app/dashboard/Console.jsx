@@ -15,10 +15,16 @@ import WaitlistPanel from './WaitlistPanel'
 import Roadmap from './Roadmap'
 import ServiceM8 from './ServiceM8'
 import Nudges from './Nudges'
+import Doors from './Doors'
 import Assistant from './Assistant'
 import Tip from './Tip'
 import NoAccess from './NoAccess'
+import Pilot from './Pilot'
+import Sm8Week from './Sm8Week'
+import { AttendanceSheet } from './Pictures'
+import { queueFetch, startQueue, onQueue } from './offline-queue'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
+import { dayAndTime } from '@/lib/when'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
 import FindWords from '@/components/FindWords'
@@ -139,19 +145,37 @@ export default function Console({ assistant = false }) {
     if (await createFields(form)) { setForm(EMPTY); setShowForm(false) }
   }
 
+  // Taps saved on this phone because there was no signal, by job. They go
+  // the moment the page is back online (offline-queue.js); until then the
+  // card says so, and the optimistic state above stands.
+  const [queued, setQueued] = useState([])
+  const [online, setOnline] = useState(true)
+  useEffect(() => {
+    setOnline(navigator.onLine !== false)
+    const up = () => setOnline(true), down = () => setOnline(false)
+    window.addEventListener('online', up); window.addEventListener('offline', down)
+    const offQueue = onQueue(setQueued)
+    const stop = startQueue(() => load())
+    // A heartbeat while the dashboard is open, so the customer's page can say
+    // when this phone last reached the server rather than imply a live feed.
+    const beat = () => { if (document.visibilityState === 'visible' && navigator.onLine !== false) fetch('/api/dashboard/seen', { method: 'POST' }).catch(() => {}) }
+    beat(); const hb = setInterval(beat, 60_000); document.addEventListener('visibilitychange', beat)
+    return () => { window.removeEventListener('online', up); window.removeEventListener('offline', down); offQueue(); stop(); clearInterval(hb); document.removeEventListener('visibilitychange', beat) }
+  }, [load])
+  const queuedFor = (id) => queued.filter((q) => q.url === `/api/dashboard/trackers/${id}` || q.url.startsWith(`/api/dashboard/trackers/${id}/`))
+
   const patch = async (id, body) => {
     // Optimistic: signal is patchy in a van, and a button that does nothing for
     // three seconds gets pressed four times.
     setTrackers((rows) => rows.map((r) => (r.id === id ? { ...r, ...body } : r)))
     let ok = false
     try {
-      const r = await fetch(`/api/dashboard/trackers/${id}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      })
+      const r = await queueFetch(`/api/dashboard/trackers/${id}`, { method: 'PATCH', body })
+      if (r.queued) return true // saved on this phone; the card says so
       ok = r.ok
-      if (!r.ok) setError(await failure(r, 'Update failed'))
+      if (!r.ok) setError({ title: 'Update failed', fix: r.json?.error ? String(r.json.error) : `The server answered ${r.status}.` })
     } catch {
-      setError({ title: 'Update failed', fix: 'Check your connection and try again.' })
+      setError({ title: 'Update failed', fix: 'Try again in a moment.' })
     } finally { await load() }
     return ok
   }
@@ -270,6 +294,12 @@ export default function Console({ assistant = false }) {
         {loading ? 'Loading…' : openJobs === 0 ? 'Nothing open.' : `${openJobs} job${openJobs === 1 ? '' : 's'} open. Tap the stage as the day goes.`}
       </p>
 
+      {(!online || queued.length > 0) && (
+        <div className="r-outer mt-5 px-5 py-4" style={{ background: 'color-mix(in srgb, #ff9500 13%, transparent)' }}>
+          <p className="font-semibold">{!online ? 'No signal' : 'Back in signal'}{queued.length ? ` · ${queued.length} tap${queued.length === 1 ? '' : 's'} saved on this phone` : ''}</p>
+          <p className="mt-1 text-sm muted">{!online ? 'Keep tapping. Each tap is saved with its time and goes the moment signal comes back.' : 'Sending the saved taps now, in order, with the times they were made.'}</p>
+        </div>
+      )}
       {error && (
         <div className="r-outer mt-5 p-5"
              style={{ background: 'color-mix(in srgb, #ff3b30 12%, transparent)', color: '#ff3b30' }}>
@@ -318,6 +348,11 @@ export default function Console({ assistant = false }) {
       </form>
       )}
 
+      {/* What ServiceM8 has booked this week and whether the link went,
+          read from ServiceM8 itself. Renders nothing unless it is connected
+          and there is something coming. */}
+      <Sm8Week />
+
       {loading ? null
        : trackers.length === 0 ? <p className="mt-8 text-center text-[15px] muted">No jobs yet.</p>
        : (
@@ -348,10 +383,39 @@ export default function Console({ assistant = false }) {
                 </div>
               )}
 
+              {/* After the job: a note the customer sent to you, and whether they
+                  went to leave a review. The note is yours alone. */}
+              {t.stage === 'DONE' && (t.feedbackText || t.reviewClickedAt) && (
+                <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: t.feedbackText ? 'color-mix(in srgb, #ff9500 13%, transparent)' : 'color-mix(in srgb, var(--stage-done) 12%, transparent)' }}>
+                  {t.feedbackText && <span className="block font-semibold">{greetingName(t.customerName) || 'The customer'} left you a note{t.feedbackAt ? ` at ${new Date(t.feedbackAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}</span>}
+                  {t.feedbackText && <span className="block whitespace-pre-wrap">{t.feedbackText}</span>}
+                  {t.reviewClickedAt && <span className="block text-[13px] opacity-75">Went to leave a Google review at {new Date(t.reviewClickedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.</span>}
+                </div>
+              )}
+              {/* The customer is the late one. Their minutes, their time, and when
+                  to expect them from — worked out from what THEY said. */}
+              {t.customerLateMinutes && ['BOOKED', 'ON_MY_WAY'].includes(t.stage) && t.customerLateAt && (Date.now() - new Date(t.customerLateAt) < 6 * 3600_000) && (
+                <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: 'color-mix(in srgb, #ff9500 13%, transparent)' }}>
+                  <span className="block font-semibold">{greetingName(t.customerName) || 'The customer'} is running about {t.customerLateMinutes} minutes late</span>
+                  <span className="block text-[13px] opacity-75">Said at {new Date(t.customerLateAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}. Expect them from about {new Date(new Date(t.customerLateAt).getTime() + t.customerLateMinutes * 60_000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.</span>
+                </div>
+              )}
+              {!(presenceOf(t.presence) && presenceIsFresh(t.presenceAt)) && !t.reminderReply && t.presenceAskedAt && t.stage === 'BOOKED' && (
+                <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: 'rgb(var(--glass-line) / 0.08)' }}>
+                  <span className="block font-semibold">Asked whether anyone will be in tomorrow. No answer yet.</span>
+                  <span className="block text-[13px] opacity-75">Asked {dayAndTime(t.presenceAskedAt)}. If they have no notifications on, text them the link.</span>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div className="min-w-0 flex-1 break-words">
                   <p className="text-[19px] font-semibold tracking-[-0.01em]">{t.customerName || 'Unnamed customer'}{t.jobRef ? ` · #${t.jobRef}` : ''}</p>
                   <p className="mt-0.5 text-[15px] muted">{t.jobSummary || 'No description'}{t.jobAddress ? ` — ${t.jobAddress}` : ''}</p>
+                  {!t.isActive && (
+                    <p className="mt-1.5 text-[14px] font-semibold" style={{ color: '#ff9500' }}>
+                      Link is off. The customer sees &ldquo;expired&rdquo;. Switch it back on under More.
+                    </p>
+                  )}
                   {/* Linked at birth to a ServiceM8 job: the card moves on its own. Worth
                       saying on the card, because the stage buttons below still work and
                       a trade should know which cards follow the job and which are theirs. */}
@@ -363,6 +427,22 @@ export default function Console({ assistant = false }) {
                   {/* Whether they have read the terms and tapped Go ahead. Until
                       Job done it is worth a glance: a short-notice charge only
                       holds if this happened before the day. */}
+                  {queuedFor(t.id).length > 0 && (
+                    <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold" style={{ color: '#ff9500' }}>
+                      {queuedFor(t.id).length === 1 ? 'Saved on this phone — sends when back in signal' : `${queuedFor(t.id).length} taps saved — send when back in signal`}
+                    </p>
+                  )}
+                  {/* What came back from the day-before ask. Amber when they
+                      want it moved, because that one needs you to do something.
+                      "No answer yet" is the banner above, not a chip. */}
+                  {t.stage === 'BOOKED' && t.reminderReply && (
+                    <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold"
+                       style={{ color: t.reminderReply === 'MOVE' ? '#ff9500' : 'var(--tint)' }}>
+                      {t.reminderReply === 'OK' ? `Confirmed ${new Date(t.reminderReplyAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                        : t.reminderReply === 'SOMEONE_ELSE' ? 'Someone else will be in'
+                        : 'Wants to move it — offer new hours under More'}
+                    </p>
+                  )}
                   {t.stage !== 'DONE' && (
                     <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold"
                        style={{ color: t.termsAgreedAt ? 'var(--tint)' : 'var(--label-2)' }}>
@@ -599,10 +679,18 @@ export default function Console({ assistant = false }) {
               </label>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                {t.isActive && (
+                {t.isActive ? (
                   <button type="button" onClick={() => revoke(t.id)}
                           className="btn btn-danger !min-h-[44px] !px-4 !text-[14px]">
                     <LinkOffIcon size={16} /> Switch link off
+                  </button>
+                ) : (
+                  /* A link switched off by mistake used to be dead: the only way back
+                     was a new job. Same place, same size; the API took
+                     { isActive: true } all along, only the button was missing. */
+                  <button type="button" onClick={() => patch(t.id, { isActive: true })}
+                          className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">
+                    Switch link back on
                   </button>
                 )}
                 <span className="text-[14px] muted">{t.viewCount || 0} view{t.viewCount === 1 ? '' : 's'}</span>
@@ -645,7 +733,7 @@ export default function Console({ assistant = false }) {
         <span className="min-w-0">
           <span className="block text-[16px] font-semibold leading-tight">Setup and settings</span>
           <span className="mt-px block truncate text-[13px]" style={{ color: 'var(--label-2)' }}>
-            Who to expect, Booking terms, Nudge me, notifications, ServiceM8, Face ID, the wallet card, the attendance record, what is next
+            Who to expect, Booking terms, Nudge me, notifications, household cards, ServiceM8, Face ID, the wallet card, the attendance record, the pilot numbers, what is next
           </span>
         </span>
         <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
@@ -656,6 +744,7 @@ export default function Console({ assistant = false }) {
         <div id="panel-profile" className="scroll-mt-4"><Profile /></div>
         <div id="panel-terms" className="scroll-mt-4"><Terms /></div>
         <div id="panel-nudges" className="scroll-mt-4"><Nudges /></div>
+        <Doors />
         <div id="panel-push" className="scroll-mt-4"><PushSetup /></div>
         <div id="panel-servicem8" className="scroll-mt-4"><ServiceM8 onChanged={load} /></div>
         <div id="panel-passkeys" className="scroll-mt-4"><Passkeys /></div>
@@ -664,13 +753,15 @@ export default function Console({ assistant = false }) {
             above, for whoever pays per visit and is marked per missed one. */}
         <section id="panel-attendance" className="glass r-outer mt-4 scroll-mt-4 p-5">
           <h2 className="text-[20px] font-bold tracking-[-0.02em]">Attendance record</h2>
-          <p className="mt-1 text-[14px] muted">Every set-off, arrival and finish, one row per visit, as a spreadsheet. A repeat visit is a second row. A job nobody went to says so.</p>
+          <p className="mt-1 text-[14px] muted">One row per visit, timestamped from your taps. A job nobody went to says so.</p>
+          <div className="mt-3 max-w-[460px]"><AttendanceSheet /></div>
           <div className="mt-3 flex flex-wrap gap-2">
             <a href="/api/dashboard/attendance?days=30" download className="btn btn-grey text-[14px]">Last 30 days</a>
             <a href="/api/dashboard/attendance?days=90" download className="btn btn-grey text-[14px]">Last 90 days</a>
           </div>
-          <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, and nor does the link.</p>
+          <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, nor the link.</p>
         </section>
+        <div id="panel-pilot" className="scroll-mt-4"><Pilot /></div>
         <div id="panel-waitlist" className="scroll-mt-4"><WaitlistPanel /></div>
         <div id="panel-roadmap" className="scroll-mt-4"><Roadmap /></div>
         <div id="panel-changelog" className="scroll-mt-4"><Changelog /></div>

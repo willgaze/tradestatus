@@ -6,7 +6,7 @@ import { cleanText } from '@/lib/clean-text'
 import { dbReason } from '@/lib/db-errors'
 import { assistantConfigured, propose } from '@/lib/assistant'
 import { pushConfigured, tradeDeviceCount } from '@/lib/push'
-import { sm8Configured } from '@/lib/servicem8'
+import { sm8Configured, fetchUpcoming } from '@/lib/servicem8'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,7 +62,7 @@ export async function POST(request) {
         stage: true, stageNote: true, scheduledFor: true, arrivingAt: true,
         windowStart: true, windowEnd: true, windowState: true, windowBy: true, windowNote: true,
         position: true, askedAt: true, askAnsweredAt: true, lateMinutes: true, lateAt: true,
-        missedAt: true, missedChoice: true, doorToUse: true, petsOnSite: true, accessNotes: true,
+        missedAt: true, missedChoice: true, customerLateMinutes: true, customerLateAt: true, reviewClickedAt: true, feedbackText: true, doorToUse: true, petsOnSite: true, accessNotes: true,
         presence: true, presenceNote: true, presenceAt: true, viewCount: true, lastViewedAt: true,
         isActive: true,
         events: { orderBy: { createdAt: 'desc' }, take: 5, select: { stage: true, createdAt: true } },
@@ -73,8 +73,13 @@ export async function POST(request) {
     return NextResponse.json({ error: dbReason(error) }, { status: 503 })
   }
 
+  // The week in ServiceM8, when it is connected. Cached briefly in the
+  // connector; a failure here is an answer without it, never no answer.
+  let week = null
+  if (sm8Configured()) { try { week = await fetchUpcoming({ days: 7 }) } catch { week = null } }
+
   try {
-    const proposal = await propose(text, jobs, { setup: await setupFacts(), history })
+    const proposal = await propose(text, jobs, { setup: await setupFacts(), history, week })
     return NextResponse.json({ proposal })
   } catch (error) {
     if (error instanceof Anthropic.AuthenticationError) {

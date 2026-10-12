@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.30.0'
-export const BUILD_DATE = '2026-10-11'
+export const VERSION = '1.48.0'
+export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 21
+export const THEME_INDEX = 30
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,90 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.48.0', date: '2026-10-12', notes: [
+    'The household card tells a person from a parcel. Who is calling round comes first, under Coming to the door \u2014 your visit, the boiler engineer, the surveyor, the kitchen fitter. Everything that just lands sits under Also arriving. Nobody waits in for a jiffy bag and everybody waits in for an engineer, and one undifferentiated list made the reader do that sorting every time they opened it.',
+    'The parser learned the difference. An email with a carrier or a tracking number is a parcel; one that says an engineer, surveyor, fitter or installer will attend is a person; a sofa with two men is goods with a crew. A boiler service and a window survey were both being dropped entirely before this, because no delivery phrase matched the way those senders write.',
+    'Your own jobs go on a card and stay in step. Pick one from the dashboard under Household cards and it follows every stage you tap \u2014 On their way, Here now, Paused and why, Finished \u2014 including backwards, because a trade un-pausing a job is a fact and a carrier emailing out of order is not. Taking it off the card leaves the job untouched.',
+    'Added by hand on purpose, never matched on address: two flats share a postcode, and a card is a link anyone can forward.',
+  ] },
+  { version: '1.47.0', date: '2026-10-12', notes: [
+    'The /j/ page, the one a customer lands on from the ServiceM8 text, drawn like the page it leads to: the glass, the wash, Booked in\'s blue, and under the four-digit box a picture of the card the digits unlock, so the person who just tapped a link can see what they are typing for. The words are shorter. The dead ends (no such job, still a quote, cancelled) say one line and show the number to ring.',
+  ] },
+  { version: '1.46.0', date: '2026-10-12', notes: [
+    'Switch link back on. A link switched off by mistake used to be dead and meant a new job; now Switch link back on sits where Switch link off was, under More, same size. A switched-off card says so in words — Link is off, the customer sees expired — rather than just going pale.',
+  ] },
+  { version: '1.45.0', date: '2026-10-12', notes: [
+    'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
+    'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',
+    'The ask has a reader, confirmed. The plan’s last section carries, for the owner only, who is being sent it and why, six questions only he can answer, three things to watch, six ducks to tick before it goes, and the message in the owner’s own words with a copy button. The guest page never shows it.',
+    'Every build updates the words. Standing Rule 24: the plan, the homepage, the guides and the instructions are part of every build and every nightly. scripts/check-current.mjs checks what a script can and must pass before a push; the nightly reads the rest.',
+  ] },
+  { version: '1.44.0', date: '2026-10-12', notes: [
+    'The dashboard\'s setup panels get the homepage treatment: a picture of the part instead of a paragraph about it. Who to expect shows the row the customer opens; Booking terms shows what they read and tap; Nudge me shows the two buzzes as they land on your lock screen, in the words actually sent; Turn on notifications shows the row it switches on; ServiceM8 shows Check In beside On site; the attendance record shows three rows of itself. Every one of them is shorter.',
+  ] },
+  { version: '1.43.0', date: '2026-10-12', notes: [
+    'After Job done: how did it go? The customer\'s page offers a Google review and a note to you, both always, to everyone. Nobody is sorted into happy and unhappy first; a one-person firm\'s reviews are worth having only if they are real. Two hours on, one notification, once per job.',
+    'Your Google review link goes under Who to expect. The note comes to your phone and onto the card, and nowhere else; the page says only that one was sent.',
+  ] },
+  { version: '1.42.0', date: '2026-10-12', notes: [
+    'The card comes first. The owner\'s call: the wallet card is the thing to show, so it is now the hero — largest, before the phone — with the headline "One card in their wallet. Not a pile of emails." The whole card section follows straight after. The Now panel is the inbox a booking turns into, five emails deep, beside the one card that moves.',
+  ] },
+  { version: '1.41.0', date: '2026-10-12', notes: [
+    'The household card. One link per door, with everything coming to it on one list: your visit, the sofa, four parcels, whoever is booked to call round. A job link answers where is my plumber; this answers what is happening at my house this week, which is how the person living there already thinks about it.',
+    'It fills itself from forwarded email. A delivery email forwarded to the card\u2019s own address is read for who it is from, what stage it is at and what day they said \u2014 thirteen UK carriers matched on the sending domain, because a subject line can claim to be Royal Mail and a domain has to pass SPF. Anything that is not an arrival is dropped.',
+    'The row Shop drops: a sofa with two men and a Tuesday window and no tracking number anywhere. Those emails say we will deliver and a date, so that is what is read, and the card carries them alongside the parcels.',
+    'Every date is attributed \u2014 Evri said today, Loaf said tomorrow, 12:00\u201316:00. The product still never works out an arrival time; it repeats what the sender said and names them.',
+    'Two separate secrets per card, on purpose: the link is the read half and goes to the customer, the forwarding address is the write half and goes in a mail rule. Neither is ever on the card, so a link passed round a family group chat cannot be used to post onto somebody\u2019s door. scripts/check-public-shape.mjs now proves it.',
+  ] },
+  { version: '1.40.0', date: '2026-10-12', notes: [
+    'The customer\'s page says how fresh it is. The line at the bottom now reads Updated 10:42, checks again every half minute, or Last checked 10:40, not reaching the server just now. And during the visit, if your phone has not reached the server for a quarter of an hour, the card says so with the time — out of signal, most likely — instead of passing a quiet phone off as a live feed. The dashboard sends a heartbeat once a minute while it is open to make that true.',
+    'The customer can be the late one. Running late yourself? on their page: about 15, 30 or 60 minutes, or I am there now. Your phone buzzes with when to expect them from; the card says it in amber. Their minutes stay with you and on their phone, never on a forwarded link.',
+  ] },
+  { version: '1.39.0', date: '2026-10-12', notes: [
+    'A tap with no signal still counts. Every stage tap and every No one home record from the dashboard is saved on the phone when the network is not there — with the time of the tap and the fix the phone had — and sent in order the moment signal comes back. The strip says No signal and how many taps are waiting; the card says Saved on this phone. Nothing is ever dropped.',
+    'The customer reads the true time: Set off at 07:42, sent 07:58 when back in signal. The event keeps both clocks, and the job diary line says the same.',
+    'Done in the page, not the service worker, because Safari on iPhone has no background sync; a home-screen app flushes every time it is opened.',
+  ] },
+  { version: '1.38.0', date: '2026-10-12', notes: [
+    'A booking that moves in ServiceM8 after the customer was texted earns them one more text: the new hours, the old ones in brackets, the same link. Sent through ServiceM8 once the move has settled for ten minutes, so a job dragged three times in two minutes is one text, not three. Only while the job is still Booked in, and never for a booking taken off the diary — that is yours to say.',
+    'What the customer was last told is kept on the card. The window follows a move at once, as before; the message now follows it once.',
+  ] },
+  { version: '1.37.0', date: '2026-10-12', notes: [
+    '/with-servicem8 gets the homepage treatment: fewer words, and a picture of the part for every step. The customer\'s status card at each stage, the claim screen, the linked card and the ServiceM8 panel are cut from the existing captures (scripts/capture-home-crops.mjs, ONLY=sm8); the ServiceM8 app\'s four buttons and the booking text are drawn at a readable size instead of inside a 150px phone. What moves the card is a row per stage: what you press, an arrow, what they see.',
+    'The wallet section on the homepage, second pass at the owner\'s request: it opens with three phones — the lock screen, double-click, the wallet open with the card in the stack, the card tapped — so a visitor sees it is a card before anything is explained. The pulled-apart card, the four stage cards and the back now stand in three dimensions on the same dark floor as the hero, instead of lying flat.',
+  ] },
+  { version: '1.36.0', date: '2026-10-12', notes: [
+    'Follow every booking. Switch it on under ServiceM8 and every booking made in ServiceM8 gets its TurnUp card straight away, and ten minutes later the link is texted through ServiceM8 unless ServiceM8\'s own confirmation already texted it. One text per job, ever; a job dragged onto the calendar is no longer a job nobody told. The Booking Confirmation automation becomes optional.',
+    'Because the card now exists from the moment of booking, the day-before ask, the nudges and the terms work for every ServiceM8 job, not just the ones whose customer opened the link first.',
+    'This week in ServiceM8 says TurnUp sent it, with the time, when it did.',
+  ] },
+  { version: '1.35.0', date: '2026-10-12', notes: [
+    'The homepage says less and shows more. Every row the customer can open and every part of the dashboard the trade taps is now a picture of that part — cut from the real screen at 2x by scripts/capture-home-crops.mjs, never a whole phone — under a label of a few words. The paragraphs are gone; the two walkthrough strips went with them.',
+    'The wallet card gets the section it always needed: the card pulled apart with each band named (the same bands buildPassJson signs), the same card at all four stages, its back, and the lock screen the notification lands on. Drawn from PassCard, so it cannot drift from the real pass. The badge still says it: built, waiting on Apple. The buzz on the lock screen is live today; the card updating itself in Wallet is not.',
+    'Instead of this, with this: the “between eight and six” text beside the status card, as two panels rather than two paragraphs.',
+  ] },
+  { version: '1.34.0', date: '2026-10-12', notes: [
+    'Send the link via ServiceM8. The booking text now goes out through ServiceM8 itself from This week in ServiceM8: one of the account\'s SMS credits, and it lands in the job\'s own SMS history and diary exactly as if ServiceM8 had sent it. Checked against the live account on 12 Oct: the API key may send. Text it from my phone stays as the free way.',
+    'TurnUp as a ServiceM8 add-on, built and waiting on an App ID: Connect ServiceM8 as an add-on under Setup and settings, and from then on set off, on site, paused, done, terms agreed, no one home, running late and every customer reply are written into the job diary as a line from TurnUp. The diary is the one thing the key cannot write; the add-on can. docs/servicem8-add-on.md has the sign-up steps.',
+    'Texts are plain ASCII: ServiceM8\'s SMS endpoint turns a curly quote into question marks or a second credit.',
+  ] },
+  { version: '1.33.0', date: '2026-10-12', notes: [
+    'This week in ServiceM8, on the dashboard: every booking in the next seven days, whether ServiceM8 sent the link by text or email, whether the email was opened, and whether the TurnUp card exists yet. Read from ServiceM8\'s own email and SMS history, which the API key turns out to be allowed to see. Nothing is guessed.',
+    'Where ServiceM8 sent nothing, one tap: Text the link opens Messages with the number and the words in. Make the card now builds the card before the customer opens the link.',
+    'The box can answer "did the link go?" now. It is given the same ServiceM8 lines, and says why a confirmation usually fails to send: a booking not made from the job card with the tick, or the automation\'s text method off.',
+    'docs/design/servicem8-connection.md: what the key can and cannot do, and the plan for the full connection — a private add-on so TurnUp can send the text through ServiceM8 and write to the job diary.',
+  ] },
+  { version: '1.32.0', date: '2026-10-12', notes: [
+    'The day-before ask now carries the answers. The card on the customer\'s page — tomorrow, these hours, still fine? — has three replies: still fine, someone else will be in, need to move it. Each one lands on your card and your phone. Still fine and someone else also answer will someone be in?, so one tap does both. Two-way reminders are the best-evidenced cut in no-shows there is; the reply is what makes it two-way.',
+    'Need to move it asks; the new hours are still yours to offer and theirs to agree under When suits you?.',
+    'The card says Confirmed 18:02, Someone else will be in, or Wants to move it, beside the terms chip.',
+    'On /with-servicem8: the optional Booking Reminder text that gets them to open the page the day before.',
+  ] },
+  { version: '1.31.0', date: '2026-10-11', notes: [
+    'The day before the job, the customer is asked whether anyone will be in. Once, at four in the afternoon in the trade\u2019s own time, never again for that job. A notification if they switched one on, the page asks either way, and the timeline records that it was asked.',
+    'If none of the customer\u2019s phones can be reached, the trade is nudged to text the link instead, because an ask that reaches nobody is not an ask. The dashboard card says asked, no answer yet. The answer itself stays between the two of them, as before.',
+    'The first thing built for the pilot on the owner\u2019s own jobs: the moment a courier gets right and a trade never had.',
+  ] },
   { version: '1.30.0', date: '2026-10-11', notes: [
     'The attendance record. Every set-off, arrival and finish the trade has tapped, as a CSV with one row per visit: a second visit after a pause is a second row, and a job nobody went to is a row that says so. Under Setup and settings, last 30 or 90 days.',
     'Built for the first enterprise wedge, social housing: a landlord pays its contractor per visit and is marked by the Ombudsman per missed one, so the taps are the proof. Names, the address and the job go in the file; nothing the customer told the trade does, and nor does the link. scripts/check-attendance.mjs holds that line.',

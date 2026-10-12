@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { timingSafeEqual } from 'node:crypto'
 import { webhookToken, jobUuidFromDelivery, eventNameFromDelivery, syncByJobUuid, sm8Configured } from '@/lib/servicem8'
+import { autoFollowOn, followJob } from '@/lib/sm8-auto'
 
 /**
  * Where ServiceM8 rings the doorbell.
@@ -42,6 +43,12 @@ export async function POST(request, { params }) {
   if (!jobUuid) return NextResponse.json({ ok: true, outcome: 'no_job_in_delivery' })
 
   const result = await syncByJobUuid(jobUuid, { source: eventNameFromDelivery(body) })
+  // A job TurnUp does not follow yet: make its card now if the trade has
+  // asked for every booking to be followed. The text waits for the sweep,
+  // which gives ServiceM8's own automation its ten-minute head start.
+  if (result?.outcome === 'unlinked' && (await autoFollowOn())) {
+    followJob(jobUuid, { send: false }).catch(() => {})
+  }
   return NextResponse.json({ ok: true, ...result })
 }
 

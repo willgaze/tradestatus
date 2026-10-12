@@ -1,6 +1,8 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronIcon, TickIcon } from '@/components/icons'
+import Shot from '@/components/Shot'
+import { Sm8Buttons } from '../with-servicem8/Sm8Mocks'
 
 /**
  * The ServiceM8 panel: is it connected, is it listening, what has it done.
@@ -78,9 +80,16 @@ export default function ServiceM8({ onChanged }) {
             </div>
           ) : (
             <>
-              <p className="text-[15px] muted">
-                A card that follows a ServiceM8 job moves on its own: check in and the customer sees <b>On site</b>; complete the job and they see <b>Job done</b>; check out before it is finished and it reads <b>Paused</b>. Setting off stays your tap. Nothing ServiceM8 sends is trusted — every event is checked against the job itself.
-              </p>
+              {/* Check In in ServiceM8, On site on their card: the pair the
+                  whole connector comes down to. The rest is on /with-servicem8. */}
+              <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+                <div className="max-w-[340px]">
+                  <Sm8Buttons kind="checkin" />
+                  <p className="mt-2 px-0.5 text-[14px] font-semibold leading-tight">You tap Check In</p>
+                </div>
+                <Shot name="sm8-customer-onsite" label="They see On site" fade className="max-w-[340px]" />
+              </div>
+              <p className="mt-3 text-[14px] muted">Complete Job is <b>Job done</b>; Check Out early is <b>Paused</b>. Setting off stays your tap. <a className="underline" href="/with-servicem8" target="_blank" rel="noreferrer">Every step, in pictures</a>.</p>
               {s.tablesMissing && (
                 <p className="r-inner mt-3 px-4 py-3 text-[14px]" style={{ background: 'color-mix(in srgb, var(--stage-paused) 13%, transparent)' }}>
                   The log tables are not in the database yet. Run <code className="font-mono">npx prisma db push</code> against production (the connect script does this).
@@ -93,6 +102,37 @@ export default function ServiceM8({ onChanged }) {
                   <button type="button" onClick={() => act('subscribe')} disabled={busy || !s.hasToken} className="btn accent-fill !min-h-[44px] !px-4 !text-[14px]">{busy === 'subscribe' ? '…' : 'Start listening'}</button>
                 )}
                 <button type="button" onClick={() => act('sync')} disabled={busy} className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">{busy === 'sync' ? '…' : 'Check all linked jobs now'}</button>
+              </div>
+              {/* Follow every booking: the card at once, the link ten minutes
+                  later through ServiceM8 unless ServiceM8 already texted it. */}
+              <div className="r-inner mt-4 px-4 py-3.5 text-[14px]" style={{ background: s.autoFollow ? 'color-mix(in srgb, var(--stage-done) 12%, transparent)' : 'rgb(var(--glass-line) / 0.07)' }}>
+                <p className="font-semibold">Follow every booking {s.autoFollow ? '· on' : '· off'}</p>
+                <p className="mt-1 muted">Every ServiceM8 booking gets its card at once, and the link texted ten minutes later through ServiceM8 (one SMS credit) unless ServiceM8 already sent it. Once per job, ever.</p>
+                <button type="button" disabled={busy} onClick={async () => { setBusy('follow'); try { await fetch('/api/dashboard/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ autoFollow: !s.autoFollow }) }); await load() } finally { setBusy(null) } }}
+                        className={`btn mt-2.5 !min-h-[42px] !px-4 !text-[14px] ${s.autoFollow ? 'btn-grey' : 'accent-fill'}`}>
+                  {busy === 'follow' ? '…' : s.autoFollow ? 'Switch off' : 'Switch on'}
+                </button>
+              </div>
+
+              {/* The add-on half: the diary. The key cannot write there; an
+                  authorised add-on can. Three states, each with its next step. */}
+              <div className="r-inner mt-4 px-4 py-3.5 text-[14px]" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
+                <p className="font-semibold">As an add-on: TurnUp writes to the job diary</p>
+                {s.oauth?.connected ? (
+                  <>
+                    <p className="mt-1 muted">Connected{s.oauth.vendorName ? ` to ${s.oauth.vendorName}` : ''} since {new Date(s.oauth.connectedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Every stage, the terms tap, no one home and the customer’s replies go into the job diary as a line from TurnUp.</p>
+                    <button type="button" onClick={() => act('oauth_disconnect')} disabled={busy} className="btn btn-grey mt-2.5 !min-h-[40px] !px-4 !text-[13px]">Disconnect the add-on</button>
+                  </>
+                ) : s.oauth?.configured ? (
+                  <>
+                    <p className="mt-1 muted">The app details are in. One more step: authorise it on your ServiceM8 account.</p>
+                    <a href="/api/servicem8/oauth/start" className="btn accent-fill mt-2.5 !min-h-[44px] !px-4 !text-[14px]">Connect ServiceM8 as an add-on</a>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-1 muted">Needs a free ServiceM8 developer account and two settings in Vercel (<code className="font-mono">SM8_APP_ID</code>, <code className="font-mono">SM8_APP_SECRET</code>). The steps are in <code className="font-mono">docs/servicem8-add-on.md</code>. Return URL for the app: <code className="font-mono break-all">{s.oauth?.redirectUri}</code></p>
+                  </>
+                )}
               </div>
               {!s.hasToken && <p className="mt-2 text-[13px] muted">No SM8_WEBHOOK_TOKEN set, so webhooks cannot be received. Pull-on-read still works.</p>}
               {s.subscriptionsError && <p className="mt-2 text-[13px] muted">Could not list subscriptions: {s.subscriptionsError}</p>}

@@ -94,8 +94,8 @@ const SYSTEM = `You are the box at the top of the dashboard of TurnUp, an app a 
 TurnUp tracks one job per customer through the stages BOOKED (booked in), ON_MY_WAY (set off), ON_SITE (arrived), PAUSED (on hold, with a note saying why) and DONE. Each job has a link the customer opens. A job can carry an arrival window, which is an ARRANGEMENT: the trade proposes hours, the customer agrees or asks for different ones, and only an agreed window is stated as a fact. A customer can answer "will someone be in?", tell the trade which door and whether there is a dog, and ask "are you still coming?" once a window has started. The trade can answer "about 15, 30 or 60 minutes late".
 
 Decide one of:
-- answer: they asked a question, or want to know how something works. Answer from the jobs and the setup facts you are given, in plain English, short enough for a phone. Say what is true and checkable. If the answer is "nothing", say so. When asked how to do something on the dashboard: the stage is the row of five buttons on each job; sending the link, hours, photos and the note are under More on the job; Who to expect, Nudge me, Turn on notifications, ServiceM8 and Signing in are under Setup and settings at the bottom. You can also offer to do it: "Say 'on my way to Hale' and I will set it up for you to confirm."
-- create_job: a new job. Fill every field you can read from the words. Leave the rest null. Do not invent anything. A ServiceM8 job number fills the rest in, so set sm8JobNumber and nothing else you were not told.
+- answer: they asked a question, or want to know how something works. Answer from the jobs, the setup facts and, when given, the ServiceM8 bookings you are given, in plain English, short enough for a phone. The ServiceM8 lines say what ServiceM8 itself recorded sending for each booking (the confirmation email, the text, whether the email was opened) and whether a TurnUp card exists yet; answer "did the link go?" from them and never guess. Where nothing was sent, say so and say why it usually happens: ServiceM8 only sends a confirmation from a booking made on the job card with Send Booking Confirmation ticked, and only texts if the automation's text method is ticked; the trade can tap Text the link under This week in ServiceM8. Say what is true and checkable. If the answer is "nothing", say so. When asked how to do something on the dashboard: the stage is the row of five buttons on each job; sending the link, hours, photos and the note are under More on the job; Who to expect, Nudge me, Turn on notifications, ServiceM8 and Signing in are under Setup and settings at the bottom. You can also offer to do it: "Say 'on my way to Hale' and I will set it up for you to confirm."
+- create_job: a new job. Fill every field you can read from the words. Leave the rest null. Do not invent anything. A ServiceM8 job number fills the rest in, so set sm8JobNumber and nothing else you were not told. When a ServiceM8 booking in the lines has no card yet and the trade wants one, propose create_job with that sm8JobNumber.
 - update_job: something about an EXISTING job from the list: a stage change, a note, an arrival window, agreeing the customer's hours, running late, a position in the day, a corrected address or name. Set jobId to that job's id, copied exactly. Fill only the fields that change.
 - unclear: you cannot tell which job is meant, or what is wanted. Ask the one question that settles it.
 
@@ -162,6 +162,8 @@ export function jobView(t) {
     presence: t.presence ? { said: t.presence, note: t.presenceNote || null, at: localStamp(t.presenceAt) } : null,
     asked: t.askedAt ? { at: localStamp(t.askedAt), answeredAt: localStamp(t.askAnsweredAt) } : null,
     late: t.lateMinutes ? { minutes: t.lateMinutes, saidAt: localStamp(t.lateAt) } : null,
+    customerLate: t.customerLateMinutes ? { minutes: t.customerLateMinutes, saidAt: localStamp(t.customerLateAt) } : null,
+    afterJob: (t.reviewClickedAt || t.feedbackText) ? { wentToReview: localStamp(t.reviewClickedAt), note: t.feedbackText || null } : null,
     missed: t.missedAt ? { at: localStamp(t.missedAt), customerChose: t.missedChoice || null } : null,
     access: (t.doorToUse || t.petsOnSite || t.accessNotes)
       ? { door: t.doorToUse || null, dog: Boolean(t.petsOnSite), notes: t.accessNotes || null } : null,
@@ -178,6 +180,17 @@ function jobLines(jobs) {
   if (!jobs.length) return 'There are no jobs yet.'
   return `Jobs, one per line as JSON, in the order of the day's run (times are ${TRADE_TIMEZONE}):\n` +
     jobs.map((j) => JSON.stringify(jobView(j))).join('\n')
+}
+
+function sm8Lines(week) {
+  if (!Array.isArray(week) || !week.length) return ''
+  return `ServiceM8 bookings for the next 7 days, one per line as JSON (what ServiceM8 recorded sending; times are ${TRADE_TIMEZONE}):\n` +
+    week.map((b) => JSON.stringify({
+      sm8JobNumber: b.jobNumber, customer: b.customerName, start: localStamp(b.start), end: localTime(b.end),
+      job: b.jobSummary, address: b.jobAddress,
+      confirmationFromServiceM8: b.confirmation?.verdict, emailOpenedAt: localStamp(b.confirmation?.openedAt), textedAt: localStamp(b.confirmation?.textedAt),
+      turnUpCard: b.card ? { stage: b.card.stage, opened: b.card.opened, termsAgreed: b.card.termsAgreed, reply: b.card.reply } : 'none yet',
+    })).join('\n')
 }
 
 function setupLines(setup) {
@@ -268,7 +281,7 @@ export function sanitiseProposal(raw, jobs) {
  * @param {object} setup    the setup facts (see the route)
  * @param {Array}  history  this sitting's earlier exchanges, [{who, text}]
  */
-export async function propose(text, jobs, { setup = null, history = [], now = new Date() } = {}) {
+export async function propose(text, jobs, { setup = null, history = [], week = null, now = new Date() } = {}) {
   const client = new Anthropic()
   const response = await client.beta.messages.create({
     model: MODEL,
@@ -283,7 +296,7 @@ export async function propose(text, jobs, { setup = null, history = [], now = ne
     system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
     messages: [{
       role: 'user',
-      content: [todayLine(now), setupLines(setup), jobLines(jobs), historyLines(history),
+      content: [todayLine(now), setupLines(setup), jobLines(jobs), sm8Lines(week), historyLines(history),
         `What the tradesperson said or pasted:\n"""\n${text}\n"""`].filter(Boolean).join('\n\n'),
     }],
   })

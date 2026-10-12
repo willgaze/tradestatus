@@ -589,6 +589,143 @@ minutes, counted in `Sm8Event` (`claim.miss`) so it holds across instances. The 
 (`findOrCreateForJob`), linked at birth and synced. `/with-servicem8` is the
 public how-to and must stay true to what the connector does today.
 
+**What the key can see (checked 12 Oct 2026).** Jobs, bookings (`jobactivity`),
+contacts, notes, inbox messages, and the **job email and SMS history**:
+`email.json` and `sms.json`, filtered by `related_object_uuid`, with
+`direction`, `timestamp`, `to_*`, `opened`/`first_opened_at`/`bounced` on email
+and the full text of each. That is how `fetchMessages()` and
+`confirmationState()` know whether ServiceM8 sent the link and whether it was
+read, and how **This week in ServiceM8** (`Sm8Week.jsx`, `fetchUpcoming()`,
+`/api/dashboard/servicem8/week`) answers "did the text go?" from ServiceM8's own
+record rather than guessing. Before this the box said it could not look inside
+ServiceM8; it can, for reading. The key also **sends SMS** through
+`POST /platform_service_sms` (`sendSms()`; tested 12 Oct 2026, the text lands
+in the job's SMS history with `regardingJobUUID`), which is what **Send the link
+via ServiceM8** does. What it **cannot** do: write to the job diary (403) or
+notify staff. Those are the add-on's: `src/lib/sm8-oauth.js` (OAuth, encrypted
+tokens in `Sm8OAuth`, `publishDiary()`, `diaryFor()`), steps for the owner in
+`docs/servicem8-add-on.md`. `diaryFor()` is fire-and-forget wherever it is
+called and a no-op until the add-on is authorised. Texts go through
+`src/lib/sm8-words.js` and stay plain ASCII.
+
+**Follow every booking (`src/lib/sm8-auto.js`, v1.35.0).** When
+`TradeProfile.autoFollow` is on, the cron sweep calls `autoFollow()`: every
+scheduled visit edited in the last six hours gets its card at once
+(`findOrCreateForJob`) and, **ten minutes after the booking was made**, the link
+texted through ServiceM8 — unless `confirmationState().linkTexted` says
+ServiceM8's own automation already did, in which case `linkSentAt` is set to
+that time and nothing is sent. The ten minutes is the automation's head start,
+so the two never race to one phone. `linkSentAt` makes it once per job, ever.
+**Re-send on a move (v1.38.0):** `toldStart`/`toldEnd`/`toldAt` on the card are
+what the customer was last texted. `resendIfMoved()` compares them with the
+job's next booking (`bookingMoved()`, five minutes either end) and, once the
+edit is ten minutes old, texts `moveText()` once and moves `told*` on. Only
+while the card is BOOKED; a job with no booking left is never announced.
+Rules that must not drift: never send without the trade's switch on; never send
+the link twice; never send to a job that is Completed or Unsuccessful; the texts
+are `linkText()` and `moveText()` and nothing else.
+
+## The household card (`/h/<code>`)
+
+The second half of the product, and the one with a market in it. A job link
+answers *where is my plumber*. A household card answers **what is happening at
+my house this week** — the plumber, the sofa, four parcels, on one list,
+because that is how the person living there already thinks about it. A card
+that splits trades from parcels makes them do the merging in their head.
+
+**It fills itself from forwarded email, and that is the whole strategy.**
+Getting thirteen delivery firms to integrate is not a thing a sole trader can
+do. Getting one household to add a forwarding rule is. `src/lib/arrival-email.js`
+reads a forwarded email and returns an arrival or **null**; it is pure, has no
+database, and `node scripts/check-arrival-email.mjs` is its 10-case test.
+
+Three rules in that parser, each of which cost a bug:
+
+- **Carriers are matched on the sending DOMAIN, never on body text.** A
+  subject line can claim to be Royal Mail; a domain has to pass SPF.
+- **`FUTURE_TENSE` guards DONE.** A bare `/delivered/` matched "will be
+  delivered between 1 and 2 today" and took a parcel off the card while the
+  customer was waiting in for it. Every DONE pattern is explicitly past tense.
+- **`BOOKED` is the row Shop drops.** Shop's own documentation says forwarding
+  works for *"English emails with a tracking number"*. A sofa with two men and
+  a Tuesday window has no tracking number anywhere, and nor does a boiler
+  service. Those emails say "we will deliver" and a date, so that is what is
+  read. That gap is the wedge: **arrivals, not parcels.**
+
+**Nothing on the card is undated and unattributed.** "Evri said today", "Loaf
+said tomorrow, 12:00–16:00" — the same discipline as a window, for the same
+reason. The product does not work out when something will arrive; it repeats
+what the sender said and names them. A row the trade put there says the trade
+said it, via `TRADE_NAME`.
+
+**Two secrets per card, and they must never travel together.**
+
+| | Half | Goes to | On the card? |
+|---|---|---|---|
+| `code` | read | the customer, as `/h/<code>` | yes, it is the URL |
+| `inboxKey` | write | a mail rule, as `<key>@in.getturnup.com` | **never** |
+
+Collapsing those two would mean a card forwarded into a family group chat is a
+way to post rows onto a stranger's door. `cardShape()` lives in
+`src/lib/arrival-card.js` with no database import so
+`scripts/check-public-shape.mjs` can prove the inbox key is not in it, the same
+way it proves `publicShape()`.
+
+**Stages only move forwards** (`nextStage()` in `src/lib/arrivals.js`). Carriers
+email out of order — a "dispatched" can land after an "out for delivery", and a
+delayed queue replays yesterday. A card that walks backwards is a card that
+lies. `MISSED` is the one exception: it is news whenever it lands.
+
+**The inbound route always answers 200 once the token is good.** A provider
+retries a 500, and a retry storm on a parse bug puts one parcel on a card
+twenty times. `src/app/api/inbound/[token]/route.js` is provider-agnostic
+(SendGrid Inbound Parse, Mailgun, Postmark, Resend) because inbound mail is a
+commodity and the first choice of provider is usually the wrong one — reading
+all their shapes costs thirty lines and makes a switch a DNS record.
+
+**Windows go in through `atLocalTime()`, never `setUTCHours()`.** Already
+caught once here: "between 12 and 4" went in as 12:00Z and came back out as
+13:00 on the card. Same bug as the trade's 09:00 window, same fix.
+
+**It is gated, like push.** No `INBOUND_EMAIL_TOKEN` and the dashboard panel
+says forwarding is not switched on rather than handing out an address nothing
+is listening on. The push row that opened onto an empty drawer is the mistake
+being avoided.
+
+**A parcel lands; a person knocks, and the card keeps them apart.** The
+headline counts people first, *Coming to the door* comes before *Also
+arriving*, and `kindOf()` in `arrival-email.js` decides which is which:
+a carrier or a tracking number is a `PARCEL`; an engineer, surveyor, fitter or
+installer who "will attend" is a `SERVICE`; a sofa with two men is a
+`DELIVERY`. Read conservatively — a jiffy bag in the list of people you have to
+be in for makes that list worthless, which is the only thing it has.
+
+Service emails also needed their own BOOKED phrases. Before them a boiler
+service and a window survey were dropped entirely, because nothing in a
+delivery vocabulary matches "our surveyor will visit on Monday".
+
+**The trade's own job is the one row somebody can move.** `attachTracker()`
+puts it on a card from the dashboard and `syncTrackerToCards()` — un-awaited
+from the stage handler, same rule as push — keeps it in step. That row is
+**owned by the job and overwritten every sync, including backwards**, which is
+the exact opposite of `nextStage()` above and deliberately so: a carrier
+emailing out of order is noise, a trade un-pausing a job is a fact.
+`src/lib/arrival-sync.js` holds the mapping (`ON_SITE` → `HERE`, `PAUSED`
+stays `PAUSED` because it is the thing a customer most wants said), is pure,
+and `node scripts/check-arrival-sync.mjs` proves nothing the customer told the
+trade crosses over and a PROPOSED window is not stated as fact.
+
+**A job is attached by hand and never matched on address.** Two flats share a
+postcode; a landlord and a tenant share a door. A card is a link anyone can
+forward, so a guessed match would put somebody's name and booking in front of
+a stranger. One tap is cheap; that is not.
+
+Still to do: let a household make a card themselves rather than being given
+one, and a way to connect a source other than forwarding (Gmail's
+`gmail.readonly` is a restricted scope — Google verification plus a CASA
+assessment renewed yearly, weeks of lead time and a four-figure annual cost,
+which is why forwarding came first).
+
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 
 The one thing the card could not do until v1.18.0 was notice that a time the
@@ -625,6 +762,109 @@ locks itself out.
 Rules that must not drift: the product never estimates a time; a late figure
 is only ever one the trade typed, shown with when they said it.
 
+## The day before: will someone be in? (`src/lib/day-before.js`)
+
+The one moment a courier gets right and a trade never had. At **16:00 the
+afternoon before** a job, in the trade's zone, the customer is asked once
+whether anyone will be in: a push if they switched one on, the page's own row
+either way ("Booked for tomorrow, will someone be in?"), and a line in the
+timeline saying it was asked. If none of the customer's phones can be
+reached, the **trade** is nudged to text the link, because an ask that
+reaches nobody is not an ask. The dashboard card says "asked, no answer yet"
+until they answer.
+
+The decision is pure and tested without a database
+(`node scripts/check-day-before.mjs`, 16 cases, the clock change included);
+`askPresenceIfDue()` in `nudge.js` does the sending and runs first in every
+`nudgeIfDue` sweep. Rules that must not drift:
+
+- **Once per job.** `presenceAskedAt` is claimed with an atomic `updateMany`
+  before anything is sent, so the five-minute cron and the customer's poll
+  cannot both send it.
+- **It asks, it never promises.** The notification says "booked for tomorrow"
+  and nothing else about time. `LINES` and the lock-screen rule above apply.
+- **The answer stays private.** `presenceAskedAt` is public (the trade asked);
+  `presence` is not. The same line as `presenceAt`.
+- The hour is `ASK_HOUR` via `zoned()`, never a UTC comparison.
+
+**The three replies (v1.32.0).** Once `presenceAskedAt` is set and until the
+window starts, the customer's page shows `Tomorrow.jsx`: **still fine / someone
+else will be in / need to move it**, posted to `/api/status/[code]/reminder`
+(`replyReminder()` in `nudge.js`), each one pushed to the trade and written to
+`reminderReply`/`reminderReplyAt`. `OK` and `SOMEONE_ELSE` also set `presence`,
+so the ask above is answered by the same tap and the door note and the card
+never disagree. `MOVE` moves nothing: it is a request, and the hours are agreed
+under When suits you? like any other window. `dayWord()` lives in
+`src/lib/nudge-words.js` because the page needs it without Prisma. The hours on
+the card are stated only when the window is AGREED.
+
+**The pilot is four numbers** (`src/lib/pilot.js`, panel under Setup and
+settings, `node scripts/check-pilot.mjs`): links opened, "will someone be in?"
+answered, wasted trips (No one home records), and "when are you coming?" calls
+to the booking line. The product cannot see a phone ring, so the fourth is
+counted by a person and the panel says so; "Are you still coming?" taps are
+shown beside it as the nearest thing the product sees, never as calls. Decided
+11 Oct 2026: nothing moves on housing or pricing until thirty days of these
+are in.
+
+## A tap with no signal still counts (`src/app/dashboard/offline-queue.js`)
+
+Every write from the dashboard that is safe to replay — a stage tap, a note, a
+No one home record — goes through `queueFetch()`. If the network is not there
+it is written to IndexedDB with the time of the tap (`deviceAt`) and, a moment
+later, whatever fix the phone will give, and `flush()` sends the queue in order
+on `online`, on the page becoming visible, every twenty seconds, and on load. A
+replayed body carries `offline: true`, `deviceAt`, and the fix; `readTap()` in
+`src/lib/tap.js` believes `deviceAt` only within the last two days and not in
+the future, and marks the fix validated only if it was taken within three
+minutes of the tap and within 200 m. `TradeStatusEvent` keeps **both clocks**:
+`createdAt` is the server's, `deviceAt` the phone's. `arrivingAt` becomes the
+tap's time for On my way, so "Set off at" is true. The customer's timeline shows
+the tap's time and "sent HH:MM, when back in signal"; the place is never public.
+
+Why the page and not the service worker: Safari on iOS has no Background Sync,
+and that is the phone this runs on. A home-screen app flushes when opened, which
+is the moment that matters. Rules that must not drift: a 4xx from the server
+settles a queued tap (it was read and refused); a network failure or 5xx keeps
+it; order is kept, so On site never overtakes On my way; nothing is dropped;
+and nothing is doubled: every replay carries `tapId`, indexed (not unique: a
+unique constraint makes `prisma db push` refuse without `--accept-data-loss`,
+which the build never passes, and the deploy would then run new code on an old
+schema) on the event and on `NoAccess`, so a flush cut off by a page change after the request went but
+before the item was deleted replays as the same tap, not a second one.
+
+## The page says how fresh it is, and the customer can be the late one
+
+`StatusTracker` keeps `checkedAt`/`pollFailed` from its own poll and prints them
+in the footer ("Updated 10:42" / "Last checked 10:40, not reaching the server"),
+set after mount so hydration is untouched. `TradeProfile.lastSeenAt` is stamped
+by every dashboard load and by `POST /api/dashboard/seen`, a heartbeat the
+dashboard sends once a minute while visible; the status route and page hand it
+to the customer as `tradeSeenAt` (never on a DONE job), and the status card says
+"Will's phone last reached us at 08:12" once it is fifteen minutes old during
+ON_MY_WAY / ON_SITE / PAUSED. It is a time, never a place, and never a guess.
+
+`POST /api/status/[code]/customer-late` takes 15, 30, 60 or null, only while
+BOOKED or ON_MY_WAY, writes `customerLateMinutes`/`customerLateAt`, pushes the
+trade with "expect them from about HH:MM" (worked out from what the customer
+said, which is theirs to say), and writes a diary line. The minutes are the
+customer's own answer: `publicShape` carries `customerLateAt` only; the device
+remembers its minutes in own-answers, the same line as presence.
+
+## How did it go? (`src/lib/review.js`)
+
+At DONE the customer's page shows `AfterJob.jsx`: **Leave a Google review** (the
+trade's `TradeProfile.reviewUrl`, Google hosts only via `cleanReviewUrl()`) and
+**Tell Will something** (a private note). **Both doors are always open to every
+customer.** Never add a "were you happy?" step before them: inviting only the
+customers who seem happy is review gating, which the CMA treats as misleading,
+and it is also the quickest way to make the reviews worthless. `reviewAsks()`
+runs from the cron two hours after the last DONE event, pushes once per job
+(`reviewAskedAt` claimed atomically), and only while a review link is set.
+`POST /api/status/[code]/review` records the tap (`reviewClickedAt`) or the
+note (`feedbackText`/`feedbackAt`); the note goes to the trade's phone, the
+card and the diary, and `publicShape` carries only the two times.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for
@@ -658,6 +898,55 @@ Rules that must not drift:
   makes the link the durable copy. Do not put a fee in the SMS that the page
   does not also show.
 
+## The homepage shows parts of screens, not phones
+
+Since v1.35.0 the front page explains each thing the app does with a picture of
+the part of the screen that does it — the row opened, the stage buttons, the
+send box — under a label of a few words, instead of a paragraph beside a whole
+phone. The owner's verdict on the page before was that it was a lot of writing
+and overwhelming, and a whole device at 250px wide makes the one row being
+talked about unreadable. Keep it that way: **add a picture, not a paragraph.**
+
+The pictures live in `public/home/crops/` and come from one script:
+
+```bash
+NEXT_PUBLIC_TRADE_NAME="Sam Hale Plumbing" npm run build && npx next start -p 3100 &
+BASE=http://localhost:3100 node scripts/capture-home-crops.mjs   # then rebuild
+```
+
+It photographs the customer's page from `/preview` one element at a time (the
+status card at each stage, each row opened) and cuts the trade's screens from
+the full captures already in `public/home/` — those need a database, so the
+boxes in the script are in those files' pixels. It writes
+`src/lib/home-crops.json` with each file's size, which `Shot.jsx` needs.
+**When a screen changes, re-run it**: a crop of last month's row is a lie
+about this month's app. Recapture; never retouch. `/with-servicem8` uses the
+same component and the same folder (`sm8-*`), cut from the captures in
+`public/with-servicem8/` with `ONLY=sm8 node scripts/capture-home-crops.mjs`,
+which needs no browser; ServiceM8's own screens stay drawn (`Sm8Mocks.jsx`), at
+a readable size rather than inside a 150px phone.
+
+The dashboard's setup panels follow the same rule (v1.43.0): Who to expect, Booking
+terms and Turn on notifications each show the customer's row they change (`Shot`, the
+same crops), ServiceM8 shows its Check In button beside On site, and Nudge me and the
+attendance record are drawn in `src/app/dashboard/Pictures.jsx`. The banner words there
+are the ones `src/lib/nudge.js` sends; change them there and the drawing follows by
+hand. A panel that needs a paragraph to explain itself wants a picture instead.
+
+The `/j/<job number>` claim page follows it too (v1.47.0): drawn as the customer's
+page is (glass, wash, `tone-booked`), one line, the box, and under it `Shot`'s
+`stage-booked` card so the digits have a visible reason. Its capture on
+`/with-servicem8` is `public/with-servicem8/claim.webp` from
+`scripts/capture-with-servicem8.mjs`, which needs a stand-in ServiceM8 on
+`SM8_API_BASE`; re-shoot it when that page changes.
+
+The wallet section (`src/components/WalletStory.jsx`) is drawn from
+`PassCard`, the same component the real pass is built from, so it cannot
+drift. It carries the same badges the posters do, and the lock screen shows
+the push notification (live) and not the Wallet card (not yet): see *Not built
+yet* below, and do not let that section say the card updates itself in Wallet
+until the pass web service exists.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.
@@ -678,6 +967,30 @@ repository does not have:
 
 Until those exist, the honest position is that this is a link, not a card. Do
 not describe it as a wallet pass anywhere customer-facing.
+
+## Every build updates the words (Standing Rule 24, Will, 12 Oct 2026)
+
+Several sessions build this app in a day, and the words that describe it fall
+behind within a night. Will: "all plans, homepages, guides and instructions
+need to be part of the routine updates done every night to make sure
+everything is up to date by morning." So **a build is not done until the words
+are**, and a push that leaves them stale is a defect:
+
+| What | Where | Must say |
+|---|---|---|
+| The business plan | `src/lib/plan.js` (STATUS, GTM_PHASES, PRODUCT, MOATS, WALLET, DECISIONS, FACTS_TABLE, `PLAN_META.updated`) | what the app is tonight. `/plan/<code>` is what gets sent to people |
+| The homepage and the guide | `src/app/page.js`, `src/app/with-servicem8/page.js`, `public/home/crops/` | every claim true, every picture of the current screen |
+| The roadmap | `src/lib/roadmap.js` | shipped is `live`, unshipped is not |
+| The instructions | this file, `docs/*.md`, the Claude project description | the section for what changed |
+| The record | `src/lib/version.js`, `docs/diary/` | the entry, the folder, the table row |
+
+`node scripts/check-current.mjs` (also `npm run check:current`) checks what a
+script can: the changelog's top entry is this version and date, the diary has
+its folder and row, the plan's date is within three days of the build, the
+roadmap and changelog agree on what is live, and every file the guides name
+exists. **It must pass before every push**, nightly or daytime. What it cannot
+check, a person reads: the nightly build's step 4 is that reading, against
+everything that landed on main since the last night, not only its own change.
 
 ## The nightly build
 

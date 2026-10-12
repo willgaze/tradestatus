@@ -21,17 +21,19 @@ export default function Claim({ number }) {
   }
 
   return (
-    <form onSubmit={go} className="mt-6">
-      <label className="block text-[13px] font-semibold text-slate-500" htmlFor="digits">Last four digits</label>
+    <form onSubmit={go} className="glass r-outer mt-5 p-4">
+      <label className="block text-[13px] font-semibold muted" htmlFor="digits">Last four digits</label>
       <input id="digits" inputMode="numeric" autoComplete="off" pattern="[0-9 ]*" maxLength={14} value={digits}
              onChange={(e) => setDigits(e.target.value)} placeholder="1234" autoFocus
-             className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-[22px] tracking-[0.2em]" />
-      {err && <p className="mt-2 text-[14px] text-red-600">{err}</p>}
+             className="field mt-1.5 text-center !text-[24px] font-semibold tracking-[0.25em]" />
+      {err && (
+        <p className="r-inner mt-3 p-3 text-[14px]" style={{ background: 'color-mix(in srgb, #ff3b30 12%, transparent)', color: '#ff3b30' }}>{err}</p>
+      )}
       <button type="submit" disabled={busy || digits.replace(/\D/g, '').length < 4}
-              className="mt-4 w-full rounded-2xl bg-brand-600 px-6 py-3.5 text-[16px] font-semibold text-white disabled:opacity-50">
+              className="btn accent-fill mt-3 w-full disabled:opacity-50">
         {busy ? 'Checking…' : 'Show my booking'}
       </button>
-      <p className="mt-3 text-[13px] text-slate-400">You can also type the whole number.</p>
+      <p className="mt-2.5 text-center text-[13px]" style={{ color: 'var(--label-3)' }}>The whole number works too.</p>
     </form>
   )
 }

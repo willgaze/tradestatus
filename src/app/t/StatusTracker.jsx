@@ -11,6 +11,9 @@ import AddToWallet from './AddToWallet'
 import StillComing from './StillComing'
 import MissedYou from './MissedYou'
 import Terms from './Terms'
+import Tomorrow from './Tomorrow'
+import CustomerLate from './CustomerLate'
+import AfterJob from './AfterJob'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
@@ -26,11 +29,21 @@ import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, C
 // renders on the server and again on the phone, and the two ship different
 // locale data, which tore the page down mid-hydration.
 
-export default function StatusTracker({ initialStatus, initialProfile, initialBrand, initialTerms = null, walletReady = false }) {
+export default function StatusTracker({ initialStatus, initialProfile, initialBrand, initialTerms = null, initialTradeSeenAt = null, initialReviewUrl = null, walletReady = false }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
   const [brand, setBrand] = useState(initialBrand || null)
   const [pulse, setPulse] = useState(false)
+  // Honesty about freshness: when this page last heard from the server, and
+  // whether the last try failed; and when the TRADE's phone last reached the
+  // server, so a quiet phone is said to be quiet rather than passed off as
+  // live. All set after mount: the server render has no clock to compare.
+  const [checkedAt, setCheckedAt] = useState(null)
+  const [pollFailed, setPollFailed] = useState(false)
+  const [tradeSeenAt, setTradeSeenAt] = useState(initialTradeSeenAt)
+  const [reviewUrl, setReviewUrl] = useState(initialReviewUrl)
+  const [tick, setTick] = useState(0)
+  useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 60_000); return () => clearInterval(t) }, [])
   // Which rows are open. Nothing is, at rest: the page is a glance and a list.
   const [openRow, setOpenRow] = useState(null)
   const toggle = (k) => setOpenRow((o) => (o === k ? null : k))
@@ -47,16 +60,19 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
   const refresh = useCallback(async () => {
     try {
       const r = await fetch(`/api/status/${initialStatus.code}`, { cache: 'no-store' })
-      if (!r.ok) return
-      const { status: next, profile: nextProfile, brand: nextBrand } = await r.json()
+      if (!r.ok) { setPollFailed(true); return }
+      const { status: next, profile: nextProfile, brand: nextBrand, tradeSeenAt: seen, reviewUrl: rv } = await r.json()
+      setReviewUrl(rv || null)
       setProfile(nextProfile || null)
       setBrand(nextBrand || null)
+      setTradeSeenAt(seen || null)
+      setCheckedAt(new Date()); setPollFailed(false)
       setStatus((prev) => {
         // Flash the card only when the stage actually moves, not on every poll.
         if (next.stage !== prev.stage) { setPulse(true); setTimeout(() => setPulse(false), 700) }
         return next
       })
-    } catch { /* a failed poll is not worth telling anyone about */ }
+    } catch { setPollFailed(true) /* said in the footer, not as an error */ }
   }, [initialStatus.code])
 
   useEffect(() => {
@@ -162,6 +178,20 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         {status.arrivingAt && stage.key !== 'BOOKED' && (
           <p className="mt-3 text-[15px] muted">Set off at {timeOnly(status.arrivingAt)}.</p>
         )}
+        {/* A phone under a floor is not a live feed. When the trade's dashboard
+            has not reached the server for a while during the visit, say so,
+            with the time, rather than let "updates itself" imply otherwise. */}
+        {(() => {
+          void tick
+          if (!tradeSeenAt || !['ON_MY_WAY', 'ON_SITE', 'PAUSED'].includes(stage.key)) return null
+          const quiet = Date.now() - new Date(tradeSeenAt).getTime()
+          if (quiet < 15 * 60_000) return null
+          return (
+            <p className="mt-2 text-[14px] muted">
+              {TRADE_NAME.split(' ')[0]}’s phone last reached us at {timeOnly(tradeSeenAt)}. Out of signal, most likely; anything tapped since catches up when it is back.
+            </p>
+          )
+        })()}
 
         {(whenLine || positionLabel(status.position)) && stage.key !== 'DONE' && (
           /* Two facts that usually fit on one line and sometimes do not. A
@@ -284,7 +314,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           return (
             <Disclosure icon={<HouseIcon size={19} />} title="Will someone be in?" delay="150ms" accent={!answered}
                         summary={!answered
-                          ? 'Tap to answer — saves a trip'
+                          ? (status.presenceAskedAt && stage.key === 'BOOKED' ? 'Booked for tomorrow — will someone be in? Tap to answer' : 'Tap to answer — saves a trip')
                           : cur
                             ? `You said: ${cur.short} · ${presenceAgeLabel(status.presenceAt)}`
                             : `Answered ${presenceAgeLabel(status.presenceAt)} — tap to change`}
@@ -304,6 +334,22 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
             not just its contents. */}
         {/* When a time the trade gave has passed and nothing has moved: one
             question, and the answer with the time it was given. */}
+        {/* After Job done: a review, or a word to the trade. */}
+        <AfterJob status={status} reviewUrl={reviewUrl} onSaved={(d) => setStatus((s) => ({ ...s, ...(d.reviewClickedAt ? { reviewClickedAt: d.reviewClickedAt } : {}), ...(d.feedbackAt ? { feedbackAt: d.feedbackAt } : {}) }))} />
+
+        {/* The customer running late themselves, before the trade is at the door. */}
+        {['BOOKED', 'ON_MY_WAY'].includes(status.stage) && (
+          <Disclosure icon={<ClockIcon size={19} />} title="Running late yourself?" delay="158ms"
+                      summary={own.customerLateMinutes && status.customerLateAt
+                        ? `You said about ${own.customerLateMinutes} min · ${timeOnly(status.customerLateAt)} — tap to change`
+                        : 'Tell them in one tap — saves a wasted trip'}
+                      open={openRow === 'late'} onToggle={() => toggle('late')}>
+            <CustomerLate status={status} own={own} onSaved={(fromServer, mine) => { setStatus((s) => ({ ...s, ...fromServer })); setOwn(mine) }} />
+          </Disclosure>
+        )}
+
+        {/* The day before: still fine, someone else will be in, or move it. */}
+        <Tomorrow status={status} onReplied={(patch, mine) => { setStatus((s) => ({ ...s, ...patch })); if (mine) setOwn(mine) }} />
         <StillComing status={status} onAsked={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
         <MissedYou status={status} onReplied={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
 
@@ -407,7 +453,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
 
         {status.events?.length > 0 && (
           <Disclosure icon={<ClockIcon size={19} />} title="What has happened" delay="240ms"
-                      summary={`${status.events.length} update${status.events.length === 1 ? '' : 's'} · last ${timeOnly(status.events[status.events.length - 1].at)}`}
+                      summary={`${status.events.length} update${status.events.length === 1 ? '' : 's'} · last ${timeOnly(status.events[status.events.length - 1].deviceAt || status.events[status.events.length - 1].at)}`}
                       open={openRow === 'log'} onToggle={() => toggle('log')}>
             <ol className="space-y-4">
               {[...status.events].reverse().map((e, i, all) => {
@@ -424,7 +470,10 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
                     </span>
                     <span className="min-w-0 flex-1 pt-1">
                       <span className="block text-[16px] font-semibold leading-tight">{s2.label}</span>
-                      <span className="mt-0.5 block text-[13px]" style={{ color: 'var(--label-3)' }}>{dayAndTime(e.at)}</span>
+                      <span className="mt-0.5 block text-[13px]" style={{ color: 'var(--label-3)' }}>
+                        {dayAndTime(e.deviceAt || e.at)}
+                        {e.offline && e.deviceAt && ` · sent ${timeOnly(e.at)}, when back in signal`}
+                      </span>
                       {e.note && <span className="mt-1.5 block text-[15px] leading-snug muted">{e.note}</span>}
                     </span>
                   </li>
@@ -449,7 +498,13 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
       {/* Three stacked lines of small print were 95px of page doing the work of
           one. The reassurance is the only part the customer needs; the mark and
           the build stamp ride alongside it. */}
-      <p className="mt-7 text-center text-[13px] muted">This page updates itself.</p>
+      {/* What "updates itself" actually means right now. */}
+      <p className="mt-7 text-center text-[13px] muted">
+        {pollFailed && checkedAt ? `Last checked ${timeOnly(checkedAt)}. Not reaching the server just now; trying again.`
+          : pollFailed ? 'Not reaching the server just now; trying again.'
+          : checkedAt ? `Updated ${timeOnly(checkedAt)}. Checks again every half minute.`
+          : 'This page updates itself.'}
+      </p>
       <span className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 pb-safe opacity-60">
         <Mark className="h-3.5 w-auto" id="foot" />
         <span className="text-[12px] muted">Job tracking by TurnUp</span>

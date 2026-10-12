@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
-import { publicProfile, publicBrand, publicTerms } from '@/lib/profile'
+import { publicProfile, publicBrand, publicTerms, tradeSeenAt } from '@/lib/profile'
 import { TRADE_PHONE, TRADE_PHONE_TEL } from '@/lib/trade'
 import StatusTracker from '../StatusTracker'
 import { passkitConfigured } from '@/lib/passkit'
+import { reviewUrl } from '@/lib/review'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Your job | TurnUp', robots: { index: false, follow: false } }
@@ -16,6 +17,8 @@ export default async function TrackPage({ params }) {
   let profile = null
   let brand = null
   let terms = null
+  let seenAt = null
+  let review = null
   let unavailable = false
   try {
     const row = await prisma.tradeStatus.findUnique({
@@ -27,6 +30,8 @@ export default async function TrackPage({ params }) {
       if (status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE') profile = await publicProfile()
       brand = await publicBrand()
       terms = await publicTerms()
+      seenAt = status.stage === 'DONE' ? null : await tradeSeenAt()
+      review = status.stage === 'DONE' ? await reviewUrl() : null
       // One visit, one count — this runs per page load (force-dynamic) rather
       // than per poll. Deliberately not awaited: a counter must never hold up
       // or break the customer's page.
@@ -63,5 +68,5 @@ export default async function TrackPage({ params }) {
 
   // Whether this deployment can sign an Apple Wallet pass. Decided here, on
   // the server, so the client never has to guess from a 503.
-  return <StatusTracker initialStatus={status} initialProfile={profile} initialBrand={brand} initialTerms={terms} walletReady={passkitConfigured()} />
+  return <StatusTracker initialStatus={status} initialProfile={profile} initialBrand={brand} initialTerms={terms} initialTradeSeenAt={seenAt} initialReviewUrl={review} walletReady={passkitConfigured()} />
 }

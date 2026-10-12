@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 import { runningLate, answeredByStage } from '@/lib/nudge'
+import { diaryFor } from '@/lib/sm8-oauth'
+import { STAGES } from '@/lib/trade-status'
+import { readTap, hhmmLondon } from '@/lib/tap'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
 import { notifyStage } from '@/lib/push'
+import { syncTrackerToCards } from '@/lib/arrivals'
 import { proposeWindow, agreeWindow, clearWindow } from '@/lib/window'
 import { normaliseW3w, normaliseMapPin, normalisePhotoUrl } from '@/lib/places'
 
@@ -114,11 +118,29 @@ export async function PATCH(request, { params }) {
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'nothing_to_update' }, { status: 400 })
     }
+    // A tap that was queued on the phone and sent later carries its own time.
+    // The event keeps both clocks; "set off at" becomes the tap's time, which
+    // is the true one, and the customer is told it arrived late.
+    const tap = readTap(body)
+    if (tap.tapId) {
+      const seen = await prisma.tradeStatusEvent.findFirst({ where: { tapId: tap.tapId } }).catch(() => null)
+      if (seen) return NextResponse.json({ tracker: current, duplicate: true })
+    }
     if (data.stage) {
-      data.events = { create: { stage: data.stage, note: data.stageNote ?? cleanText(body.stageNote) } }
+      data.events = { create: {
+        stage: data.stage, note: data.stageNote ?? cleanText(body.stageNote),
+        deviceAt: tap.deviceAt, offline: tap.offline, lat: tap.lat, lng: tap.lng, accuracy: tap.accuracy, fixValidated: tap.fixValidated, tapId: tap.tapId,
+      } }
+      if (data.stage === 'ON_MY_WAY' && tap.deviceAt) data.arrivingAt = tap.deviceAt
     }
 
     const tracker = await prisma.tradeStatus.update({ where: { id }, data })
+
+    // A line in the ServiceM8 job diary for what the trade just did, when the
+    // add-on is connected. Not awaited: the diary is a record, not a gate.
+    if (data.stage && data.stage !== current.stage) {
+      diaryFor(tracker, `${STAGES[data.stage]?.label || data.stage}${data.stageNote ? ` - ${data.stageNote}` : ''}${tap.offline && tap.deviceAt ? ` (tapped ${hhmmLondon(tap.deviceAt)} with no signal, sent ${hhmmLondon(new Date())})` : ''}`).catch(() => {})
+    }
 
     // Tell any device watching this job that it moved.
     //
@@ -133,6 +155,14 @@ export async function PATCH(request, { params }) {
         console.error('push: notify failed after stage change:', error?.message),
       )
     }
+
+    // Any household card carrying this job moves with it. Un-awaited and
+    // swallowed for the same reason as the push above: the household card is a
+    // nicety, the stage change on a driveway is not. A job on no card at all —
+    // which is the normal case — costs one indexed query that updates nothing.
+    syncTrackerToCards(tracker).catch((error) =>
+      console.error('household card sync failed:', error?.message),
+    )
 
     return NextResponse.json({ tracker })
   } catch (error) {

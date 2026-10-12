@@ -71,3 +71,6 @@ window-end message with options; customer not home in one tap; the
 confirmation with terms; the offline tap queue; "last updated" on the
 page; customer-side running-late / someone-else / rebook; the day-before
 reminder with replies.
+
+
+*Update 12 Oct 2026: the offline tap queue shipped in 1.39.0 — see CLAUDE.md, "A tap with no signal still counts".*

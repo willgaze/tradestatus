@@ -1,5 +1,6 @@
 'use client'
 import { VanIcon, ChevronIcon } from '@/components/icons'
+import Shot from '@/components/Shot'
 
 import { useCallback, useEffect, useState } from 'react'
 
@@ -92,10 +93,8 @@ export default function Profile() {
 
       {open && (
         <div className="space-y-5 border-t hairline px-6 py-6">
-          <p className="text-[14px] muted">
-            Shown to the customer only once you tap <strong>On my way</strong> — so they know
-            who is at the door and which van is outside.
-          </p>
+          {/* The row this fills in, as the customer opens it. Shown from On my way. */}
+          <Shot name="row-who" label="What they open once you set off" note="Shown from On my way, not before." fade className="max-w-[360px]" />
 
           <Field label="Your name" hint="A first name is plenty"
                  value={p.engineerName || ''} onChange={set('engineerName')} placeholder="Will" />
@@ -157,6 +156,9 @@ export default function Profile() {
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src={p.brandLogo} alt="Your logo" className="h-10 w-auto max-w-[220px] object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
           )}
+
+          <Field label="Your Google review link" hint="After Job done the customer's page asks how it went, with this link. Google Business Profile → Ask for reviews → copy the link. Google links only."
+                 value={p.reviewUrl || ''} onChange={set('reviewUrl')} placeholder="https://g.page/r/…/review" />
 
           <button type="button" onClick={save} disabled={saving}
                   className="btn accent-fill w-full">

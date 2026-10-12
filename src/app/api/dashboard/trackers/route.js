@@ -44,6 +44,8 @@ function inRunOrder(rows) {
 export async function GET() {
   const operator = await requireOperator()
   if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
+  // Every load is a sign of life from the trade's phone. Not awaited.
+  prisma.tradeProfile.upsert({ where: { id: 'singleton' }, create: { id: 'singleton', lastSeenAt: new Date() }, update: { lastSeenAt: new Date() } }).catch(() => {})
 
   try {
     const trackers = await prisma.tradeStatus.findMany({

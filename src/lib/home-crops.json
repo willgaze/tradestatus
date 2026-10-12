@@ -1,0 +1,118 @@
+{
+  "stage-booked": {
+    "w": 716,
+    "h": 392
+  },
+  "stage-on-my-way": {
+    "w": 716,
+    "h": 630
+  },
+  "stage-on-site": {
+    "w": 716,
+    "h": 630
+  },
+  "stage-paused": {
+    "w": 716,
+    "h": 630
+  },
+  "stage-done": {
+    "w": 716,
+    "h": 564
+  },
+  "row-who": {
+    "w": 716,
+    "h": 570
+  },
+  "row-presence": {
+    "w": 716,
+    "h": 626
+  },
+  "row-window": {
+    "w": 716,
+    "h": 580
+  },
+  "row-job": {
+    "w": 716,
+    "h": 560
+  },
+  "row-door": {
+    "w": 716,
+    "h": 640
+  },
+  "row-history": {
+    "w": 716,
+    "h": 464
+  },
+  "row-terms": {
+    "w": 716,
+    "h": 500
+  },
+  "row-notify": {
+    "w": 712,
+    "h": 498
+  },
+  "trade-stage-buttons": {
+    "w": 712,
+    "h": 190
+  },
+  "trade-navigate-note": {
+    "w": 712,
+    "h": 430
+  },
+  "trade-send": {
+    "w": 680,
+    "h": 424
+  },
+  "trade-fields": {
+    "w": 712,
+    "h": 760
+  },
+  "trade-faceid": {
+    "w": 712,
+    "h": 310
+  },
+  "trade-plate": {
+    "w": 712,
+    "h": 420
+  },
+  "sm8-customer-booked": {
+    "w": 712,
+    "h": 442
+  },
+  "sm8-customer-onway": {
+    "w": 712,
+    "h": 500
+  },
+  "sm8-customer-onsite": {
+    "w": 712,
+    "h": 672
+  },
+  "sm8-customer-paused": {
+    "w": 712,
+    "h": 672
+  },
+  "sm8-customer-done": {
+    "w": 712,
+    "h": 512
+  },
+  "sm8-claim": {
+    "w": 712,
+    "h": 1280
+  },
+  "sm8-dashboard-card": {
+    "w": 712,
+    "h": 790
+  },
+  "sm8-dashboard-stage": {
+    "w": 712,
+    "h": 190
+  },
+  "sm8-panel-head": {
+    "w": 716,
+    "h": 150
+  },
+  "sm8-lately": {
+    "w": 716,
+    "h": 504
+  }
+}

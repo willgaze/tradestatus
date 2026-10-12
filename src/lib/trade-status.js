@@ -160,6 +160,8 @@ export function publicShape(row) {
     // The TIME an answer was given, never the answer. Lets the page say "you
     // answered 20 minutes ago" without saying whether anyone is home.
     presenceAt: row.presenceAt ? row.presenceAt.toISOString() : null,
+    // The TRADE asked, the afternoon before. When, never what was answered.
+    presenceAskedAt: row.presenceAskedAt ? row.presenceAskedAt.toISOString() : null,
     // "Are you still coming?" and the answer. Times and a number of minutes
     // the TRADE chose to say; nothing the customer typed.
     askedAt: row.askedAt ? row.askedAt.toISOString() : null,
@@ -170,6 +172,20 @@ export function publicShape(row) {
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,
     missedChoice: row.missedChoice || null,
     missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
+    // After Job done: when they went to leave a review, and when they left a
+    // note. The note itself goes to the trade and nowhere else.
+    reviewClickedAt: row.reviewClickedAt ? row.reviewClickedAt.toISOString() : null,
+    feedbackAt: row.feedbackAt ? row.feedbackAt.toISOString() : null,
+    // The customer said they are running late: the TIME they said it. The
+    // minutes stay with the trade and on the device that chose them.
+    customerLateAt: row.customerLateAt ? row.customerLateAt.toISOString() : null,
+    // The customer's one-tap reply to the day-before ask. It is their own
+    // answer, but it says nothing a forwarded link could use: "still fine"
+    // and "wants to move it" are not a door, a time or a way in. (OK and
+    // SOMEONE_ELSE also set presence, which stays private as before: only
+    // presenceAt and presenceAskedAt are public.)
+    reminderReply: row.reminderReply || null,
+    reminderReplyAt: row.reminderReplyAt ? row.reminderReplyAt.toISOString() : null,
     // The booking terms the customer agreed to, from their own phone: when,
     // and the two numbers the words are built from. The words themselves are
     // rebuilt from src/lib/terms.js, so the page shows what was agreed even
@@ -182,10 +198,15 @@ export function publicShape(row) {
     // Customer not home: the facts of the visit, never the location or the
     // photo. "Was at the door at 10:04, knocked and called, waited until 10:14."
     noAccess: publicNoAccess(row.noAccess?.[0]),
+    // `at` is when the server heard it; `deviceAt` is when the trade tapped,
+    // kept separately when the tap was queued with no signal. The place the
+    // phone was is never here.
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,
       at: event.createdAt.toISOString(),
+      deviceAt: event.deviceAt ? event.deviceAt.toISOString() : null,
+      offline: Boolean(event.offline),
     })),
   }
 }

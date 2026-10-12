@@ -15,6 +15,7 @@
  * with neat data is a dashboard whose awkward states nobody has seen.
  */
 import { PrismaClient } from '@prisma/client'
+import { atLocalTime } from '../src/lib/when.js'
 
 const url = process.env.DATABASE_URL || ''
 if (!/@(localhost|127\.0\.0\.1)[:/]/.test(url)) {
@@ -81,6 +82,76 @@ const JOBS = [
   },
 ]
 
+/**
+ * One household card, with a real week on it.
+ *
+ * The parcels are what a forwarded inbox actually produces: four carriers, one
+ * of them with no tracking number at all (the sofa), one that missed, one
+ * already delivered, and the trade's own job showing up alongside them with a
+ * link to its live page. That last row is the whole point of the card — the
+ * plumber and the parcels in one list, because that is how the person living
+ * there already thinks about their Thursday.
+ */
+const PLACE = { code: 'HOME24XK', inboxKey: 'q7rmt4ndkw82jp', label: '14 Church Lane' }
+
+const ARRIVALS = [
+  {
+    dedupeKey: 'royalmail:ab123456789gb', kind: 'PARCEL', source: 'EMAIL', stage: 'OUT_FOR_DELIVERY',
+    carrier: 'Royal Mail', title: 'Royal Mail parcel', reference: 'AB123456789GB',
+    trackUrl: 'https://www.royalmail.com/track-your-item#/tracking-results/AB123456789GB',
+    expectedFor: day(0), expectedSaid: 'today',
+  },
+  {
+    dedupeKey: 'sofa:two-seater', kind: 'DELIVERY', source: 'EMAIL', stage: 'BOOKED',
+    carrier: 'Loaf', title: 'Two-seater sofa', reference: null, trackUrl: null,
+    expectedFor: day(1), expectedSaid: 'Friday',
+    // Through atLocalTime, exactly as a parsed email goes in: a seed that
+    // builds the window in UTC shows 13:00 and hides the bug it is here to
+    // catch.
+    windowStart: atLocalTime(day(1), '12:00'), windowEnd: atLocalTime(day(1), '16:00'),
+    windowSaid: 'between 12pm and 4pm',
+  },
+  {
+    dedupeKey: 'turnup:2718', kind: 'SERVICE', source: 'TRADE', stage: 'BOOKED',
+    carrier: null, title: 'Unvented cylinder swap', reference: '2718', trackUrl: null,
+    expectedFor: day(0, 9), expectedSaid: null, tradeStatusCode: 'K7M4PQRT',
+  },
+  {
+    dedupeKey: 'heatingco:boiler service', kind: 'SERVICE', source: 'EMAIL', stage: 'BOOKED',
+    carrier: 'Heatwise', title: 'Your boiler service is booked', reference: null, trackUrl: null,
+    expectedFor: day(2), expectedSaid: 'Wednesday',
+    windowStart: atLocalTime(day(2), '09:00'), windowEnd: atLocalTime(day(2), '13:00'),
+    windowSaid: 'between 9am and 1pm',
+  },
+  {
+    dedupeKey: 'evri:h00ap1234567890', kind: 'PARCEL', source: 'EMAIL', stage: 'MISSED',
+    carrier: 'Evri', title: 'Parcel from Screwfix', reference: 'H00AP1234567890',
+    trackUrl: 'https://www.evri.com/track/parcel/H00AP1234567890',
+    expectedFor: day(-1), expectedSaid: 'yesterday',
+  },
+  {
+    dedupeKey: 'dpd:15502938475610', kind: 'PARCEL', source: 'EMAIL', stage: 'DONE',
+    carrier: 'DPD', title: 'DPD parcel', reference: '15502938475610',
+    trackUrl: 'https://track.dpd.co.uk/search?reference=15502938475610',
+    expectedFor: day(-1), expectedSaid: 'yesterday',
+  },
+]
+
+const seedPlace = async () => {
+  try {
+    await prisma.arrival.deleteMany({})
+    await prisma.place.deleteMany({})
+    const place = await prisma.place.create({ data: PLACE })
+    for (const a of ARRIVALS) await prisma.arrival.create({ data: { ...a, placeId: place.id } })
+    console.log(`\n  /h/${place.code}   ${ARRIVALS.length} arrivals`)
+    console.log(`  forward to: ${place.inboxKey}@in.getturnup.com`)
+  } catch {
+    // The household tables are new, which is the migration case that fails
+    // soft. No tables yet means no card, and the jobs above are untouched.
+    console.log('\n  (no Place/Arrival tables yet — run npx prisma db push)')
+  }
+}
+
 const run = async () => {
   await prisma.tradeStatusEvent.deleteMany({})
   await prisma.tradeStatus.deleteMany({})
@@ -101,6 +172,8 @@ const run = async () => {
     },
     update: {},
   })
+  await seedPlace()
+
   console.log('\nSeeded. Dashboard password: whatever OPERATOR_PASSWORD is set to.')
 }
 
