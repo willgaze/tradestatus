@@ -81,7 +81,7 @@ const SM8 = {
   'sm8-customer-onsite': ['customer-onsite.webp', 34, 364, 712, 672],
   'sm8-customer-paused': ['customer-paused.webp', 34, 364, 712, 672],
   'sm8-customer-done':   ['customer-done.webp',   34, 364, 712, 512],
-  'sm8-claim':           ['claim.webp',           34, 390, 712, 810],
+  'sm8-claim':           ['claim.webp',           34, 230, 712, 1280],
   'sm8-dashboard-card':  ['dashboard-card.webp',  34, 150, 712, 790],
   'sm8-dashboard-stage': ['dashboard-stage.webp', 34, 455, 712, 190],
   'sm8-panel-head':      ['dashboard-sm8.webp',    0,   0, 716, 150],
