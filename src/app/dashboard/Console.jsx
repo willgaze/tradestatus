@@ -19,6 +19,7 @@ import Assistant from './Assistant'
 import Tip from './Tip'
 import NoAccess from './NoAccess'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
+import { dayAndTime } from '@/lib/when'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
 import FindWords from '@/components/FindWords'
@@ -345,6 +346,13 @@ export default function Console({ assistant = false }) {
                       they said so {presenceAgeLabel(t.presenceAt)}
                     </span>
                   </span>
+                </div>
+              )}
+
+              {!(presenceOf(t.presence) && presenceIsFresh(t.presenceAt)) && t.presenceAskedAt && t.stage === 'BOOKED' && (
+                <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: 'rgb(var(--glass-line) / 0.08)' }}>
+                  <span className="block font-semibold">Asked whether anyone will be in tomorrow. No answer yet.</span>
+                  <span className="block text-[13px] opacity-75">Asked {dayAndTime(t.presenceAskedAt)}. If they have no notifications on, text them the link.</span>
                 </div>
               )}
 

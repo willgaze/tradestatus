@@ -160,6 +160,8 @@ export function publicShape(row) {
     // The TIME an answer was given, never the answer. Lets the page say "you
     // answered 20 minutes ago" without saying whether anyone is home.
     presenceAt: row.presenceAt ? row.presenceAt.toISOString() : null,
+    // The TRADE asked, the afternoon before. When, never what was answered.
+    presenceAskedAt: row.presenceAskedAt ? row.presenceAskedAt.toISOString() : null,
     // "Are you still coming?" and the answer. Times and a number of minutes
     // the TRADE chose to say; nothing the customer typed.
     askedAt: row.askedAt ? row.askedAt.toISOString() : null,

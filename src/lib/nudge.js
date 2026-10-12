@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { pushTrade, notifyCustomer } from '@/lib/push'
 import { TRADE_NAME } from '@/lib/trade'
+import { dayBeforeAskDue } from '@/lib/day-before'
 
 /**
  * What happens when the window arrives and the card has not moved.
@@ -59,9 +60,42 @@ export function nudgeDue(t, now = new Date()) {
 export const MISSED_GRACE_MS = 10 * 60_000
 export const MISSED_CHOICES = { WAIT: 'will wait', LATER: 'would like it later today', REBOOK: 'would like another day' }
 
+/**
+ * The afternoon before the job: ask the customer whether anyone will be in.
+ *
+ * Decided in src/lib/day-before.js; sent here. The row is claimed first with
+ * an atomic update (presenceAskedAt null -> now), so the cron sweep and the
+ * customer's poll cannot both send it. The customer gets a push if they
+ * switched one on; their page asks regardless. If no phone of theirs can be
+ * reached, the TRADE is nudged instead to text the link, because an ask that
+ * reaches nobody is not an ask. The timeline records it either way.
+ */
+export async function askPresenceIfDue(tracker, now = new Date()) {
+  try {
+    if (!dayBeforeAskDue(tracker, now)) return null
+    const claimed = await prisma.tradeStatus.updateMany({
+      where: { id: tracker.id, presenceAskedAt: null, stage: 'BOOKED', isActive: true },
+      data: { presenceAskedAt: now },
+    })
+    if (claimed.count !== 1) return null
+    await prisma.tradeStatusEvent.create({ data: { tradeStatusId: tracker.id, stage: 'BOOKED', note: 'Asked: will someone be in tomorrow?' } })
+    const c = await notifyCustomer(tracker, { title: 'Booked for tomorrow', body: 'Will someone be in? Open the page to answer.' })
+    let t = { sent: 0 }
+    if (!c.sent) {
+      t = await pushTrade({ title: `${first(tracker)} is booked tomorrow`, body: 'They cannot be reached by notification. Text them the link so they can say whether anyone will be in.', tag: `nudge-${tracker.code}` })
+    }
+    return { kind: 'day-before', sent: c.sent, tradeSent: t.sent }
+  } catch (error) {
+    console.error('day-before ask failed:', error?.message)
+    return null
+  }
+}
+
 /** Send what is due for one tracker. Never throws. */
 export async function nudgeIfDue(tracker) {
   try {
+    const asked = await askPresenceIfDue(tracker)
+    if (asked) return asked
     const due = nudgeDue(tracker)
     if (!due) return null
     if (due.kind === 'missed') return tellMissed(tracker, due)
