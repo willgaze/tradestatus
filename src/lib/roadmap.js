@@ -56,6 +56,8 @@ export const PHASES = [
         what: 'Apple and Google. All day, or the window if you have set one.' },
       { key: 'installable', name: 'Add to home screen', state: 'live',
         what: 'Opens like an app, no address bar.' },
+      { key: 'review', name: 'How did it go?', state: 'live',
+        what: 'After Job done, a Google review or a note to you, both always, to everyone. One notification two hours on. Your review link goes under Who to expect; the note comes to your phone and the card.' },
       { key: 'customer-late', name: 'The customer is running late too', state: 'live',
         what: 'Running late yourself? on their page: about 15, 30 or 60 minutes, or I am there now. Your phone buzzes with when to expect them from. Their minutes stay between you.' },
       { key: 'fresh', name: 'The page says how fresh it is', state: 'live',

@@ -13,6 +13,7 @@ import MissedYou from './MissedYou'
 import Terms from './Terms'
 import Tomorrow from './Tomorrow'
 import CustomerLate from './CustomerLate'
+import AfterJob from './AfterJob'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
@@ -28,7 +29,7 @@ import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, C
 // renders on the server and again on the phone, and the two ship different
 // locale data, which tore the page down mid-hydration.
 
-export default function StatusTracker({ initialStatus, initialProfile, initialBrand, initialTerms = null, initialTradeSeenAt = null, walletReady = false }) {
+export default function StatusTracker({ initialStatus, initialProfile, initialBrand, initialTerms = null, initialTradeSeenAt = null, initialReviewUrl = null, walletReady = false }) {
   const [status, setStatus] = useState(initialStatus)
   const [profile, setProfile] = useState(initialProfile || null)
   const [brand, setBrand] = useState(initialBrand || null)
@@ -40,6 +41,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
   const [checkedAt, setCheckedAt] = useState(null)
   const [pollFailed, setPollFailed] = useState(false)
   const [tradeSeenAt, setTradeSeenAt] = useState(initialTradeSeenAt)
+  const [reviewUrl, setReviewUrl] = useState(initialReviewUrl)
   const [tick, setTick] = useState(0)
   useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 60_000); return () => clearInterval(t) }, [])
   // Which rows are open. Nothing is, at rest: the page is a glance and a list.
@@ -59,7 +61,8 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
     try {
       const r = await fetch(`/api/status/${initialStatus.code}`, { cache: 'no-store' })
       if (!r.ok) { setPollFailed(true); return }
-      const { status: next, profile: nextProfile, brand: nextBrand, tradeSeenAt: seen } = await r.json()
+      const { status: next, profile: nextProfile, brand: nextBrand, tradeSeenAt: seen, reviewUrl: rv } = await r.json()
+      setReviewUrl(rv || null)
       setProfile(nextProfile || null)
       setBrand(nextBrand || null)
       setTradeSeenAt(seen || null)
@@ -331,6 +334,9 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
             not just its contents. */}
         {/* When a time the trade gave has passed and nothing has moved: one
             question, and the answer with the time it was given. */}
+        {/* After Job done: a review, or a word to the trade. */}
+        <AfterJob status={status} reviewUrl={reviewUrl} onSaved={(d) => setStatus((s) => ({ ...s, ...(d.reviewClickedAt ? { reviewClickedAt: d.reviewClickedAt } : {}), ...(d.feedbackAt ? { feedbackAt: d.feedbackAt } : {}) }))} />
+
         {/* The customer running late themselves, before the trade is at the door. */}
         {['BOOKED', 'ON_MY_WAY'].includes(status.stage) && (
           <Disclosure icon={<ClockIcon size={19} />} title="Running late yourself?" delay="158ms"

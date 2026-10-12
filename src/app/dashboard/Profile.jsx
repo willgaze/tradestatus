@@ -158,6 +158,9 @@ export default function Profile() {
             <img src={p.brandLogo} alt="Your logo" className="h-10 w-auto max-w-[220px] object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
           )}
 
+          <Field label="Your Google review link" hint="After Job done the customer's page asks how it went, with this link. Google Business Profile → Ask for reviews → copy the link. Google links only."
+                 value={p.reviewUrl || ''} onChange={set('reviewUrl')} placeholder="https://g.page/r/…/review" />
+
           <button type="button" onClick={save} disabled={saving}
                   className="btn accent-fill w-full">
             {saving ? 'Saving…' : 'Save — every job from now on'}

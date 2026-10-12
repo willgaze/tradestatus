@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.42.0'
+export const VERSION = '1.43.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.43.0', date: '2026-10-12', notes: [
+    'After Job done: how did it go? The customer\'s page offers a Google review and a note to you, both always, to everyone. Nobody is sorted into happy and unhappy first; a one-person firm\'s reviews are worth having only if they are real. Two hours on, one notification, once per job.',
+    'Your Google review link goes under Who to expect. The note comes to your phone and onto the card, and nowhere else; the page says only that one was sent.',
+  ] },
   { version: '1.42.0', date: '2026-10-12', notes: [
     'The card comes first. The owner\'s call: the wallet card is the thing to show, so it is now the hero — largest, before the phone — with the headline "One card in their wallet. Not a pile of emails." The whole card section follows straight after. The Now panel is the inbox a booking turns into, five emails deep, beside the one card that moves.',
   ] },

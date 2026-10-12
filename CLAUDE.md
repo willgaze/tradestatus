@@ -805,6 +805,20 @@ said, which is theirs to say), and writes a diary line. The minutes are the
 customer's own answer: `publicShape` carries `customerLateAt` only; the device
 remembers its minutes in own-answers, the same line as presence.
 
+## How did it go? (`src/lib/review.js`)
+
+At DONE the customer's page shows `AfterJob.jsx`: **Leave a Google review** (the
+trade's `TradeProfile.reviewUrl`, Google hosts only via `cleanReviewUrl()`) and
+**Tell Will something** (a private note). **Both doors are always open to every
+customer.** Never add a "were you happy?" step before them: inviting only the
+customers who seem happy is review gating, which the CMA treats as misleading,
+and it is also the quickest way to make the reviews worthless. `reviewAsks()`
+runs from the cron two hours after the last DONE event, pushes once per job
+(`reviewAskedAt` claimed atomically), and only while a review link is set.
+`POST /api/status/[code]/review` records the tap (`reviewClickedAt`) or the
+note (`feedbackText`/`feedbackAt`); the note goes to the trade's phone, the
+card and the diary, and `publicShape` carries only the two times.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for
