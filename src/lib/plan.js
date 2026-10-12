@@ -284,7 +284,7 @@ export const THE_ASK = {
 export const REVIEWER = {
   name: 'Toby Barrow',
   relationship: 'A friend. Works in apps.',
-  unconfirmed: 'The public profile below is the Toby Barrow who is Partner and CEO UK at Theodo. It fits “works in the apps world”, and nothing found contradicts it, but there is more than one Toby Barrow online and this was not confirmed with him. Confirm before relying on any of it.',
+  unconfirmed: 'Confirmed by the owner on 12 Oct 2026: this is the Toby Barrow at Theodo. Everything below is public and sourced.',
   facts: [
     { figure: 'Partner, CEO UK', what: 'Theodo, a technology consultancy. On the group leadership page', source: 'theodo.com/en-uk/our-leaders', href: 'https://www.theodo.com/en-uk/our-leaders' },
     { figure: 'Chief Commercial Officer', what: 'Theodo UK, before the CEO role', source: 'theorg.com', href: 'https://theorg.com/org/theodo-uk/org-chart/toby-barrow' },

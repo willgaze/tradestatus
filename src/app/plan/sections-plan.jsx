@@ -124,7 +124,7 @@ function Reviewer({ answers, set, shareUrl }) {
         <div className="glass r-inner p-4">
           <Eyebrow>Who he is, publicly</Eyebrow>
           <div className="mt-1 text-[14px]">{REVIEWER.relationship}</div>
-          <div className="mt-2 rounded-xl px-3 py-2 text-[13px]" style={{ background: 'color-mix(in srgb, var(--stage-onway) 14%, transparent)' }}>{REVIEWER.unconfirmed}</div>
+          <div className="mt-2 rounded-xl px-3 py-2 text-[13px]" style={{ background: 'color-mix(in srgb, var(--stage-done) 14%, transparent)' }}>{REVIEWER.unconfirmed}</div>
           <div className="mt-3">
             <Table head={['', 'What', 'Source']}
                    rows={REVIEWER.facts.map((f) => [
