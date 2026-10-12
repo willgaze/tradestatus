@@ -102,5 +102,27 @@ for (const [name, email, want] of TITLES) {
   else bad(name, `title "${got?.title}" != "${want}"`, got)
 }
 
+// A parcel lands; a person knocks. The card separates them, and that split is
+// only worth having if this is right — a jiffy bag in the list of people you
+// have to be in for makes the whole list untrustworthy.
+const KINDS = [
+  ['a carrier parcel', { from: 'noreply@evri.com', subject: 'Your parcel is out for delivery', text: 'Parcel H00AP1234567890 is out for delivery today.' }, 'PARCEL', 'OUT_FOR_DELIVERY'],
+  ['a boiler service', { from: 'bookings@heatingco.co.uk', subject: 'Your boiler service is booked', text: 'Our engineer will attend on Friday 17 October between 9am and 1pm.' }, 'SERVICE', 'BOOKED'],
+  ['a window survey', { from: 'surveys@windowsco.uk', subject: 'Window survey', text: 'Our surveyor will visit on Monday morning.' }, 'SERVICE', 'BOOKED'],
+  ['a kitchen fitting', { from: 'info@kitchensltd.co.uk', subject: 'Your installation date', text: 'Your fitting appointment is confirmed for Tuesday. The installer will arrive from 8am.' }, 'SERVICE', 'BOOKED'],
+  ['a sofa with a crew', { from: 'deliveries@loaf.com', subject: 'Your delivery is booked', text: 'We will deliver your two-seater sofa on Friday between 12pm and 4pm. Two men will call ahead.' }, 'DELIVERY', 'BOOKED'],
+]
+for (const [name, email, wantKind, wantStage] of KINDS) {
+  const got = readArrivalEmail(email, NOW)
+  if (got?.kind === wantKind && got?.stage === wantStage) { pass++; console.log(`  ok    ${name} -> ${got.kind} / ${got.stage}`) }
+  else bad(name, `${got?.kind} / ${got?.stage} != ${wantKind} / ${wantStage}`, got)
+}
+
+// An invoice is not an arrival. Worth its own case: it is the email most likely
+// to look like one, because it names a thing that was bought.
+const invoice = readArrivalEmail({ from: 'billing@someco.com', subject: 'Your invoice', text: 'Please find attached your invoice for last month.' }, NOW)
+if (invoice === null) { pass++; console.log('  ok    an invoice is not an arrival') }
+else bad('an invoice', 'filed something', invoice)
+
 console.log(`\n${fail ? 'FAILED' : 'PASSED'} — ${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

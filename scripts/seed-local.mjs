@@ -117,6 +117,13 @@ const ARRIVALS = [
     expectedFor: day(0, 9), expectedSaid: null, tradeStatusCode: 'K7M4PQRT',
   },
   {
+    dedupeKey: 'heatingco:boiler service', kind: 'SERVICE', source: 'EMAIL', stage: 'BOOKED',
+    carrier: 'Heatwise', title: 'Your boiler service is booked', reference: null, trackUrl: null,
+    expectedFor: day(2), expectedSaid: 'Wednesday',
+    windowStart: atLocalTime(day(2), '09:00'), windowEnd: atLocalTime(day(2), '13:00'),
+    windowSaid: 'between 9am and 1pm',
+  },
+  {
     dedupeKey: 'evri:h00ap1234567890', kind: 'PARCEL', source: 'EMAIL', stage: 'MISSED',
     carrier: 'Evri', title: 'Parcel from Screwfix', reference: 'H00AP1234567890',
     trackUrl: 'https://www.evri.com/track/parcel/H00AP1234567890',

@@ -102,7 +102,14 @@ const STAGE_PHRASES = [
   ['BOOKED', [/\bwill (be )?deliver(ed|ing|y)?\b/i, /\bdelivery (is |has been )?(booked|confirmed|scheduled|arranged)\b/i,
     /\byour (delivery|installation|appointment|visit|engineer|service) (date|slot|is|will)\b/i,
     /\bbooked (you )?in for\b/i, /\bwe('| wi)ll be with you\b/i, /\bscheduled for\b/i,
-    /\b(is |are )?(due|arriving|coming) on\b/i, /\bappointment (is )?confirmed\b/i]],
+    /\b(is |are )?(due|arriving|coming) on\b/i, /\bappointment (is )?confirmed\b/i,
+    // A person coming to DO something writes differently again. Nobody books a
+    // parcel; they book a visit, and they say "will attend" or "will call" or
+    // name the trade who is coming. Without these a boiler service and a
+    // window survey were both read as not-an-arrival and silently dropped.
+    /\b(engineer|technician|surveyor|fitter|installer|electrician|plumber)\b.{0,40}\b(will|is|are|to)\b/i,
+    /\bwill (attend|call (round|out)|come (out|round)|be (attending|visiting|calling))\b/i,
+    /\b(visit|appointment|survey|service|installation|fitting)\b.{0,30}\b(on|booked|confirmed|arranged|scheduled)\b/i]],
 
   ['ORDERED', [/\border (confirmation|confirmed|received)\b/i, /\bthanks? for your order\b/i,
     /\bwe('| ha)ve received your order\b/i, /\byour order( is)? (is )?being (prepared|picked|processed)\b/i]],
@@ -198,6 +205,50 @@ function senderName(from, domain) {
 }
 
 /**
+ * A parcel lands. A person knocks.
+ *
+ * The household already thinks about these differently, and the difference is
+ * what you have to be in for. Nobody waits in for a jiffy bag; everybody waits
+ * in for an engineer. So the card separates them, and that separation is only
+ * as good as this function.
+ *
+ * Three kinds:
+ *   PARCEL    a known carrier, or anything with a tracking number. It lands.
+ *   DELIVERY  goods with people attached — a sofa, a fridge, two men and a van.
+ *   SERVICE   somebody coming to DO something — an engineer, a survey, a fit.
+ *
+ * Read conservatively. A row wrongly called a service puts a jiffy bag in the
+ * list of people you have to be in for, which is the one list that has to stay
+ * true to be worth looking at.
+ */
+const SERVICE_WORDS = [
+  /\b(engineer|technician|surveyor|fitter|installer|electrician|plumber|gas safe)\b/i,
+  /\b(service|servicing|annual service|safety check|inspection|survey|repair|maintenance)\s+(visit|appointment|booking|call|is|has|will|booked|due|scheduled)/i,
+  /\b(appointment|visit)\s+(is |has been |now )?(booked|confirmed|scheduled|arranged|due)/i,
+  /\bwe('| wi)ll (be there|attend|call round|come (out|round))\b/i,
+  /\b(installation|fitting|instal)\s+(date|appointment|booking|is|has)/i,
+  /\bboiler (service|repair)\b/i,
+]
+
+// Goods that come with a crew. These are deliveries, not services: nobody is
+// doing a job, but somebody is carrying something through a door.
+const CREW_WORDS = [
+  /\b(two|2)[- ](man|person|people)\b/i,
+  /\bour (delivery )?(team|crew|drivers)\b/i,
+  /\b(sofa|bed|mattress|wardrobe|furniture|appliance|fridge|freezer|washing machine|cooker|dishwasher|tv|television)\b/i,
+  /\b(white glove|room of choice|assembled|assembly)\b/i,
+]
+
+function kindOf(hay, carrier, reference) {
+  if (carrier || reference) return 'PARCEL'
+  if (SERVICE_WORDS.some((re) => re.test(hay))) return 'SERVICE'
+  if (CREW_WORDS.some((re) => re.test(hay))) return 'DELIVERY'
+  // Something is coming and nothing says who carries it. "Delivery" is the
+  // safer of the two: it does not claim a person is turning up.
+  return 'DELIVERY'
+}
+
+/**
  * What to call the thing, which is not always what the subject line says.
  *
  * Most delivery subjects are a restatement of the stage: "Your parcel is out
@@ -264,7 +315,7 @@ export function readArrivalEmail({ from, subject, text, receivedAt } = {}) {
   const who = carrier?.name || senderName(from, domain)
 
   return {
-    kind: carrier ? 'PARCEL' : 'DELIVERY',
+    kind: kindOf(hay, carrier, reference),
     source: 'EMAIL',
     carrier: who,
     carrierId: carrier?.id || null,

@@ -685,9 +685,39 @@ says forwarding is not switched on rather than handing out an address nothing
 is listening on. The push row that opened onto an empty drawer is the mistake
 being avoided.
 
-Still to do: wire the trade's own jobs onto a card automatically (today
-`tradeStatusCode` is set by hand), and let a household add a card themselves
-rather than being given one.
+**A parcel lands; a person knocks, and the card keeps them apart.** The
+headline counts people first, *Coming to the door* comes before *Also
+arriving*, and `kindOf()` in `arrival-email.js` decides which is which:
+a carrier or a tracking number is a `PARCEL`; an engineer, surveyor, fitter or
+installer who "will attend" is a `SERVICE`; a sofa with two men is a
+`DELIVERY`. Read conservatively — a jiffy bag in the list of people you have to
+be in for makes that list worthless, which is the only thing it has.
+
+Service emails also needed their own BOOKED phrases. Before them a boiler
+service and a window survey were dropped entirely, because nothing in a
+delivery vocabulary matches "our surveyor will visit on Monday".
+
+**The trade's own job is the one row somebody can move.** `attachTracker()`
+puts it on a card from the dashboard and `syncTrackerToCards()` — un-awaited
+from the stage handler, same rule as push — keeps it in step. That row is
+**owned by the job and overwritten every sync, including backwards**, which is
+the exact opposite of `nextStage()` above and deliberately so: a carrier
+emailing out of order is noise, a trade un-pausing a job is a fact.
+`src/lib/arrival-sync.js` holds the mapping (`ON_SITE` → `HERE`, `PAUSED`
+stays `PAUSED` because it is the thing a customer most wants said), is pure,
+and `node scripts/check-arrival-sync.mjs` proves nothing the customer told the
+trade crosses over and a PROPOSED window is not stated as fact.
+
+**A job is attached by hand and never matched on address.** Two flats share a
+postcode; a landlord and a tenant share a door. A card is a link anyone can
+forward, so a guessed match would put somebody's name and booking in front of
+a stranger. One tap is cheap; that is not.
+
+Still to do: let a household make a card themselves rather than being given
+one, and a way to connect a source other than forwarding (Gmail's
+`gmail.readonly` is a restricted scope — Google verification plus a CASA
+assessment renewed yearly, weeks of lead time and a four-figure annual cost,
+which is why forwarding came first).
 
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 

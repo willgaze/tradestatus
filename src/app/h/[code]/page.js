@@ -31,18 +31,42 @@ const TONE = {
   BOOKED: 'tone-booked',
   ON_THE_WAY: 'tone-onway',
   OUT_FOR_DELIVERY: 'tone-onway',
+  // A trade's own job brings two stages a parcel does not have, and they get
+  // the job page's own colours so the two surfaces agree on sight.
+  HERE: 'tone-onsite',
+  PAUSED: 'tone-paused',
   MISSED: 'tone-paused',
   DONE: 'tone-done',
 }
 
+/**
+ * The same stage reads differently depending on what is arriving.
+ *
+ * "Out for delivery" is right for a parcel and absurd for a plumber; "Arrived"
+ * is right for a parcel and wrong for a job, which is finished rather than
+ * delivered. One map per kind, so neither has to carry the other's words.
+ */
 const LABEL = {
   ORDERED: 'Ordered',
   BOOKED: 'Booked in',
   ON_THE_WAY: 'On the way',
   OUT_FOR_DELIVERY: 'Out for delivery',
+  HERE: 'Here now',
+  PAUSED: 'Paused',
   MISSED: 'They missed you',
   DONE: 'Arrived',
 }
+
+const PERSON_LABEL = {
+  ...LABEL,
+  ON_THE_WAY: 'On their way',
+  OUT_FOR_DELIVERY: 'On their way',
+  MISSED: 'Nobody was in',
+  DONE: 'Finished',
+}
+
+const labelFor = (a) =>
+  (a.kind === 'SERVICE' || a.source === 'TRADE' ? PERSON_LABEL : LABEL)[a.stage] || a.stage
 
 /**
  * When it is expected, always attributed.
@@ -81,13 +105,19 @@ function Row({ a }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: 'var(--tint)' }}>
-            {LABEL[a.stage] || a.stage}
+            {labelFor(a)}
           </p>
           <p className="mt-0.5 text-[17px] font-semibold leading-snug">{a.title}</p>
           {a.carrier && !a.expectedFor && !a.windowSaid && (
             <p className="text-[15px] muted">{a.carrier}</p>
           )}
           <Expected a={a} />
+          {/* Why it is paused is the thing a customer most wants said out loud
+              and the thing least often said. It is the trade talking to this
+              customer about this job — the same words their job page shows. */}
+          {a.note && (
+            <p className="mt-1.5 text-[15px] leading-snug">{a.note}</p>
+          )}
           {a.reference && (
             <p className="mt-1 break-all font-mono text-[12px]" style={{ color: 'var(--label-3)' }}>{a.reference}</p>
           )}
@@ -112,6 +142,30 @@ function Row({ a }) {
   )
 }
 
+/** A section rule, so the two lists read as two lists and not one long one. */
+function Heading({ children }) {
+  return (
+    <h2 className="mt-8 text-[13px] font-semibold uppercase tracking-wider" style={{ color: 'var(--label-3)' }}>
+      {children}
+    </h2>
+  )
+}
+
+/**
+ * The one line at the top, which has to say the thing they opened it for.
+ *
+ * People are counted first and named first, because a person coming is the
+ * fact that changes somebody's day — it decides whether they can go out. Four
+ * parcels do not.
+ */
+function headline(people, things) {
+  const n = (c, one, many) => `${c} ${c === 1 ? one : many}`
+  if (!people && !things) return 'Nothing on its way'
+  if (!people) return `${n(things, 'thing', 'things')} arriving`
+  if (!things) return `${n(people, 'person', 'people')} coming`
+  return `${n(people, 'person', 'people')} coming, ${n(things, 'thing', 'things')} arriving`
+}
+
 export default async function HouseholdCard({ params }) {
   const { code } = await params
   const place = await placeByCode(code)
@@ -133,6 +187,22 @@ export default async function HouseholdCard({ params }) {
   const coming = card.arrivals.filter((a) => a.stage !== 'DONE')
   const settled = card.arrivals.filter((a) => a.stage === 'DONE')
 
+  /*
+   * People first, then things.
+   *
+   * The household already sorts these two ways and the difference is what you
+   * have to be in for. Nobody waits in for a jiffy bag; everybody waits in for
+   * an engineer. One undifferentiated list makes the reader do that sorting
+   * every time they open the page, which is the work the card exists to save.
+   *
+   * A row the trade put here is a person by definition — somebody is driving
+   * to the house. SERVICE is a person coming to do something. Everything else
+   * is goods, however many people carry them through the door.
+   */
+  const isPerson = (a) => a.kind === 'SERVICE' || a.source === 'TRADE'
+  const people = coming.filter(isPerson)
+  const things = coming.filter((a) => !isPerson(a))
+
   return (
     <div className="relative min-h-screen" style={{ '--tint': 'var(--mts-accent)' }}>
       <div className="stage-wash" aria-hidden="true" />
@@ -142,19 +212,29 @@ export default async function HouseholdCard({ params }) {
             {card.label || 'Your door'}
           </p>
           <h1 className="mt-1 text-[32px] font-bold leading-tight tracking-[-0.02em]">
-            {coming.length === 0
-              ? 'Nothing on its way'
-              : `${coming.length} thing${coming.length === 1 ? '' : 's'} coming`}
+            {headline(people.length, things.length)}
           </h1>
           <p className="mt-1.5 text-[16px] leading-snug muted">
-            Parcels, deliveries and anyone booked to call round. Forward the emails and they land here.
+            Who is calling round, and what else is turning up. Forward the emails and they land here.
           </p>
         </header>
 
-        {coming.length > 0 && (
-          <ul className="mt-6 grid gap-3">
-            {coming.map((a, i) => <Row key={`${a.title}-${i}`} a={a} />)}
-          </ul>
+        {people.length > 0 && (
+          <>
+            <Heading>{people.length === 1 ? 'Coming to the door' : 'Coming to the door'}</Heading>
+            <ul className="mt-3 grid gap-3">
+              {people.map((a, i) => <Row key={`p-${a.title}-${i}`} a={a} />)}
+            </ul>
+          </>
+        )}
+
+        {things.length > 0 && (
+          <>
+            <Heading>{people.length > 0 ? 'Also arriving' : 'Arriving'}</Heading>
+            <ul className="mt-3 grid gap-3">
+              {things.map((a, i) => <Row key={`t-${a.title}-${i}`} a={a} />)}
+            </ul>
+          </>
         )}
 
         {coming.length === 0 && (
@@ -165,7 +245,7 @@ export default async function HouseholdCard({ params }) {
             </span>
             <p className="mt-3 text-[17px] font-semibold">Nothing due</p>
             <p className="mt-1 text-[16px] leading-snug muted">
-              When a delivery or a booking email is forwarded here, it turns up on this card.
+              Forward a delivery email or a booking confirmation here and it turns up on this card — the engineer as well as the parcel.
             </p>
           </div>
         )}

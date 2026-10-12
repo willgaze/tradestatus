@@ -5,6 +5,7 @@ import { cleanText } from './clean-text'
 import { atLocalTime } from './when'
 import { cardShape } from './arrival-card'
 import { INBOUND_HOST, inboxAddress } from './inbox-address'
+import { arrivalFromTracker, trackerDedupeKey } from './arrival-sync'
 
 /**
  * The household card: everything coming to one door, from wherever it came.
@@ -164,3 +165,82 @@ export async function fileEmail({ inboxKey, from, subject, text, receivedAt }) {
 // checked by a script. Re-exported so callers have one place to import from.
 export { cardShape }
 export { INBOUND_HOST, inboxAddress }
+
+
+/**
+ * Put one of the trade's own jobs on a household card, and keep it there.
+ *
+ * The row is OWNED by the job: every sync overwrites it, including backwards.
+ * That is the opposite of `nextStage()` above, and deliberately so — a carrier
+ * guessing out of order is noise, but a trade un-pausing a job is a fact, and
+ * the one row on this card with a person behind it must say what that person
+ * last tapped.
+ *
+ * Fire-and-forget everywhere it is called. A household card is a nicety; the
+ * stage change on a driveway is not, and must never wait on this or fail
+ * because of it. Same rule as push.
+ */
+export async function attachTracker(placeCode, tracker) {
+  const row = arrivalFromTracker(tracker)
+  if (!row) return { ok: false, why: 'no_tracker' }
+  try {
+    const place = await prisma.place.findUnique({ where: { code: String(placeCode || '').toUpperCase() } })
+    if (!place?.isActive) return { ok: false, why: 'no_such_card' }
+    const { dedupeKey, updatedAt, ...data } = row
+    await prisma.arrival.upsert({
+      where: { placeId_dedupeKey: { placeId: place.id, dedupeKey } },
+      create: { ...data, placeId: place.id, dedupeKey },
+      update: data,
+    })
+    return { ok: true }
+  } catch (error) {
+    console.error('attach tracker failed:', error?.code || error?.message)
+    return { ok: false, why: 'unavailable' }
+  }
+}
+
+/** Take a job off a card. The job itself is untouched. */
+export async function detachTracker(placeCode, code) {
+  try {
+    const place = await prisma.place.findUnique({ where: { code: String(placeCode || '').toUpperCase() } })
+    if (!place) return { ok: false, why: 'no_such_card' }
+    await prisma.arrival.deleteMany({
+      where: { placeId: place.id, dedupeKey: trackerDedupeKey(code) },
+    })
+    return { ok: true }
+  } catch { return { ok: false, why: 'unavailable' } }
+}
+
+/**
+ * The job moved, so every card carrying it moves too.
+ *
+ * Called un-awaited from the stage handler. A job can sit on more than one
+ * card — a landlord's and a tenant's, say — so this updates all of them, and
+ * does nothing at all when the job is on none, which is the normal case.
+ */
+export async function syncTrackerToCards(tracker) {
+  const row = arrivalFromTracker(tracker)
+  if (!row) return 0
+  try {
+    const { dedupeKey, updatedAt, placeId, ...data } = row
+    const done = await prisma.arrival.updateMany({
+      where: { dedupeKey, source: 'TRADE' },
+      data,
+    })
+    return done.count
+  } catch (error) {
+    console.error('sync tracker to cards failed:', error?.code || error?.message)
+    return 0
+  }
+}
+
+/** Which jobs are on a card, so the dashboard can show and un-show them. */
+export async function trackersOnCard(placeCode) {
+  try {
+    const place = await prisma.place.findUnique({
+      where: { code: String(placeCode || '').toUpperCase() },
+      include: { arrivals: { where: { source: 'TRADE' } } },
+    })
+    return (place?.arrivals || []).map((a) => a.tradeStatusCode).filter(Boolean)
+  } catch { return [] }
+}

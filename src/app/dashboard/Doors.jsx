@@ -30,14 +30,34 @@ export default function Doors() {
   const [label, setLabel] = useState('')
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState('')
+  // Which of the trade's jobs are on each card, keyed by card code.
+  const [onCard, setOnCard] = useState({})
+  const [jobs, setJobs] = useState([])
 
   const load = useCallback(async () => {
     try {
       const r = await fetch('/api/dashboard/places', { cache: 'no-store' })
       const d = await r.json()
       if (!r.ok) throw new Error(d?.error || 'failed')
-      setPlaces(d.places || []); setConfigured(Boolean(d.configured)); setHost(d.host || '')
+      const list = d.places || []
+      setPlaces(list); setConfigured(Boolean(d.configured)); setHost(d.host || '')
       setState('ready')
+
+      // The open jobs, so a card can be given one without typing a code.
+      try {
+        const t = await fetch('/api/dashboard/trackers', { cache: 'no-store' })
+        const td = await t.json()
+        setJobs((td.trackers || []).filter((j) => j.isActive !== false && j.stage !== 'DONE'))
+      } catch { /* a card still works without the picker */ }
+
+      const pairs = await Promise.all(list.map(async (p) => {
+        try {
+          const r = await fetch(`/api/dashboard/places/jobs?code=${p.code}`, { cache: 'no-store' })
+          const j = await r.json()
+          return [p.code, j.codes || []]
+        } catch { return [p.code, []] }
+      }))
+      setOnCard(Object.fromEntries(pairs))
     } catch { setState('error') }
   }, [])
   useEffect(() => { load() }, [load])
@@ -59,6 +79,29 @@ export default function Doors() {
       await fetch('/api/dashboard/places', {
         method: 'DELETE', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
+      })
+      await load()
+    } finally { setBusy(false) }
+  }
+
+  const addJob = async (code, trackerCode) => {
+    if (!trackerCode) return
+    setBusy(true)
+    try {
+      await fetch('/api/dashboard/places/jobs', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, trackerCode }),
+      })
+      await load()
+    } finally { setBusy(false) }
+  }
+
+  const removeJob = async (code, trackerCode) => {
+    setBusy(true)
+    try {
+      await fetch('/api/dashboard/places/jobs', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, trackerCode }),
       })
       await load()
     } finally { setBusy(false) }
@@ -127,7 +170,47 @@ export default function Doors() {
                   {p.arrivals} thing{p.arrivals === 1 ? '' : 's'} on it
                 </p>
 
+                {/* Your own jobs on their card. Added by hand on purpose: two
+                    flats share a postcode, and a card is a link anyone can
+                    forward, so a guessed address match would put somebody's
+                    booking in front of a stranger. */}
                 <p className="mt-2.5 text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--label-3)' }}>
+                  Your jobs on this card
+                </p>
+                {(onCard[p.code] || []).length === 0 && (
+                  <p className="text-[14px] muted">None yet</p>
+                )}
+                {(onCard[p.code] || []).map((jc) => {
+                  const job = jobs.find((j) => j.code === jc)
+                  return (
+                    <span key={jc} className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="text-[15px]" style={{ color: 'var(--label-1)' }}>
+                        {job?.jobSummary || job?.customerName || jc}
+                      </span>
+                      <button type="button" onClick={() => removeJob(p.code, jc)} disabled={busy}
+                              className="text-[13px] underline" style={{ color: 'var(--label-3)' }}>
+                        Take off
+                      </button>
+                    </span>
+                  )
+                })}
+                {jobs.filter((j) => !(onCard[p.code] || []).includes(j.code)).length > 0 && (
+                  <select
+                    aria-label="Add one of your jobs to this card"
+                    className="field mt-2 min-h-[44px] !text-[15px]" value=""
+                    onChange={(e) => addJob(p.code, e.target.value)} disabled={busy}
+                  >
+                    <option value="">Add one of your jobs…</option>
+                    {jobs.filter((j) => !(onCard[p.code] || []).includes(j.code)).map((j) => (
+                      <option key={j.code} value={j.code}>
+                        {j.jobSummary || 'A job'}{j.customerName ? ` — ${j.customerName}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="mt-1 text-[12px]">It follows every stage you tap, including Paused and why.</p>
+
+                <p className="mt-3.5 text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--label-3)' }}>
                   Send them this
                 </p>
                 <p className="break-all font-mono text-[13px]" style={{ color: 'var(--label-1)' }}>

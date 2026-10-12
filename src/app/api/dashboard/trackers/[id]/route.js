@@ -9,6 +9,7 @@ import { isValidStage } from '@/lib/trade-status'
 import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
 import { notifyStage } from '@/lib/push'
+import { syncTrackerToCards } from '@/lib/arrivals'
 import { proposeWindow, agreeWindow, clearWindow } from '@/lib/window'
 import { normaliseW3w, normaliseMapPin, normalisePhotoUrl } from '@/lib/places'
 
@@ -154,6 +155,14 @@ export async function PATCH(request, { params }) {
         console.error('push: notify failed after stage change:', error?.message),
       )
     }
+
+    // Any household card carrying this job moves with it. Un-awaited and
+    // swallowed for the same reason as the push above: the household card is a
+    // nicety, the stage change on a driveway is not. A job on no card at all —
+    // which is the normal case — costs one indexed query that updates nothing.
+    syncTrackerToCards(tracker).catch((error) =>
+      console.error('household card sync failed:', error?.message),
+    )
 
     return NextResponse.json({ tracker })
   } catch (error) {
