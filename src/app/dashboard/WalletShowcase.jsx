@@ -44,10 +44,7 @@ export default function WalletShowcase({ tracker }) {
 
       {open && (<>
       <div className="px-6">
-        <p className="text-[15px] muted">
-          It needs an Apple signing certificate and a Google Wallet issuer account. Until those exist this
-          is a link, not a card.
-        </p>
+        <p className="text-[15px] muted">Needs Apple&rsquo;s certificate and a Google issuer account. Until then it is a link, not a card.</p>
 
         <div className="mt-4 flex gap-1.5 rounded-2xl bg-black/[.05] p-1 dark:bg-white/[.06]">
           {VIEWS.map((v) => (

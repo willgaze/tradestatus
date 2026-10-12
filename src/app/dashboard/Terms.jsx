@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { TickIcon, ChevronIcon } from '@/components/icons'
+import Shot from '@/components/Shot'
 import { termsFrom, termsParagraphs, termsSummary } from '@/lib/terms'
 import { TRADE_NAME } from '@/lib/trade'
 
@@ -69,12 +70,7 @@ export default function Terms() {
 
       {open && (
         <div className="space-y-5 border-t hairline px-6 py-6">
-          <p className="text-[14px] muted">
-            Every customer reads these on their page under <strong>Before the visit</strong> and taps
-            <strong> Got it, go ahead</strong>. The tap is recorded with the time and the exact words, and
-            the card says whether it has happened. A short-notice charge only holds if they agreed it before
-            the day; TurnUp states it and records the agreement, and never takes a penny itself.
-          </p>
+          <Shot name="row-terms" label="What they read, and tap" note="The tap is kept with the time and the exact words. TurnUp states a charge; it never takes one." fade className="max-w-[360px]" />
 
           <div>
             <span className="block text-[15px] font-semibold">Notice you ask for</span>
@@ -90,8 +86,7 @@ export default function Terms() {
           <label className="block">
             <span className="text-[15px] font-semibold">Short-notice charge</span>
             <span className="mt-0.5 block text-[14px] muted">
-              For less notice than that, or nobody in. Whole pounds; leave it empty and the page says nothing is charged.
-              Keep it to what the lost slot actually costs you — a fee that reads as a penalty is not enforceable.
+              For less notice than that, or nobody in. Empty means the page says nothing is charged. Keep it to what the lost slot costs you.
             </span>
             <div className="mt-2 flex items-center gap-2">
               <span className="text-[18px] font-semibold muted">£</span>

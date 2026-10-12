@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { BellIcon } from '@/components/icons'
+import { LockBand, TradeBanner } from './Pictures'
 
 /**
  * Nudges to the trade's own phone: "Sarah's window has started and the card
@@ -88,12 +89,19 @@ export default function Nudges() {
         </span>
       </div>
       <div className="px-6 pb-5 text-[15px] leading-snug muted">
-        <p>When a window you gave has started and the card still says <b>Booked in</b>, this phone buzzes. Again when the window ends with nobody On site. And the moment a customer taps <b>Are you still coming?</b> — answer from the card: On my way, or how late.</p>
+        {/* What lands, drawn, in the words nudge.js sends: a customer asking,
+            or a window that has started or ended with the card not moved. */}
+        <div className="max-w-[360px]">
+          <LockBand>
+            <TradeBanner title="Sarah is asking" body="“Are you still coming?” Reply from the card: On my way, or how late." />
+            <div className="mt-2"><TradeBanner title="Sarah’s window has started" body="From 09:00, and the card still says Booked in. Set off, or say you are running late." when="09:00" /></div>
+          </LockBand>
+        </div>
         {/* There are two notification buttons in this product and they are
             easy to mix up: this one is the trade's, and the one on a tracking
             page is the customer's. Somebody who had just set this one up
             could not tell which they had done. */}
-        <p className="mt-2 text-[14px]"><b>This is your phone.</b> Your customers switch their own on from their tracking link — a separate thing, and it needs nothing from you.</p>
+        <p className="mt-3 text-[14px]"><b>This is your phone.</b> Customers switch their own on from their link.</p>
         {state === 'needs-install' && <p className="mt-2 text-[14px]">On an iPhone: Share → <b>Add to Home Screen</b>, open the dashboard from there, then press the button.</p>}
         {err && <p className="mt-2 text-[14px] text-red-600">{err}</p>}
         {tested && <p className="mt-2 text-[14px]" style={{ color: 'var(--tint)' }}>{tested}</p>}

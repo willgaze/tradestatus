@@ -1,5 +1,6 @@
 'use client'
 import { VanIcon, ChevronIcon } from '@/components/icons'
+import Shot from '@/components/Shot'
 
 import { useCallback, useEffect, useState } from 'react'
 
@@ -92,10 +93,8 @@ export default function Profile() {
 
       {open && (
         <div className="space-y-5 border-t hairline px-6 py-6">
-          <p className="text-[14px] muted">
-            Shown to the customer only once you tap <strong>On my way</strong> — so they know
-            who is at the door and which van is outside.
-          </p>
+          {/* The row this fills in, as the customer opens it. Shown from On my way. */}
+          <Shot name="row-who" label="What they open once you set off" note="Shown from On my way, not before." fade className="max-w-[360px]" />
 
           <Field label="Your name" hint="A first name is plenty"
                  value={p.engineerName || ''} onChange={set('engineerName')} placeholder="Will" />

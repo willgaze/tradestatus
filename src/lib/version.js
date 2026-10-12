@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.43.0'
+export const VERSION = '1.44.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 27
+export const THEME_INDEX = 28
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.44.0', date: '2026-10-12', notes: [
+    'The dashboard\'s setup panels get the homepage treatment: a picture of the part instead of a paragraph about it. Who to expect shows the row the customer opens; Booking terms shows what they read and tap; Nudge me shows the two buzzes as they land on your lock screen, in the words actually sent; Turn on notifications shows the row it switches on; ServiceM8 shows Check In beside On site; the attendance record shows three rows of itself. Every one of them is shorter.',
+  ] },
   { version: '1.43.0', date: '2026-10-12', notes: [
     'After Job done: how did it go? The customer\'s page offers a Google review and a note to you, both always, to everyone. Nobody is sorted into happy and unhappy first; a one-person firm\'s reviews are worth having only if they are real. Two hours on, one notification, once per job.',
     'Your Google review link goes under Who to expect. The note comes to your phone and onto the card, and nowhere else; the page says only that one was sent.',
