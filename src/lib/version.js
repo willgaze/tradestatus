@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.36.0'
+export const VERSION = '1.37.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 23
+export const THEME_INDEX = 24
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.37.0', date: '2026-10-12', notes: [
+    '/with-servicem8 gets the homepage treatment: fewer words, and a picture of the part for every step. The customer\'s status card at each stage, the claim screen, the linked card and the ServiceM8 panel are cut from the existing captures (scripts/capture-home-crops.mjs, ONLY=sm8); the ServiceM8 app\'s four buttons and the booking text are drawn at a readable size instead of inside a 150px phone. What moves the card is a row per stage: what you press, an arrow, what they see.',
+    'The wallet section on the homepage, second pass at the owner\'s request: it opens with three phones — the lock screen, double-click, the wallet open with the card in the stack, the card tapped — so a visitor sees it is a card before anything is explained. The pulled-apart card, the four stage cards and the back now stand in three dimensions on the same dark floor as the hero, instead of lying flat.',
+  ] },
   { version: '1.36.0', date: '2026-10-12', notes: [
     'Follow every booking. Switch it on under ServiceM8 and every booking made in ServiceM8 gets its TurnUp card straight away, and ten minutes later the link is texted through ServiceM8 unless ServiceM8\'s own confirmation already texted it. One text per job, ever; a job dragged onto the calendar is no longer a job nobody told. The Booking Confirmation automation becomes optional.',
     'Because the card now exists from the moment of booking, the day-before ask, the nudges and the terms work for every ServiceM8 job, not just the ones whose customer opened the link first.',

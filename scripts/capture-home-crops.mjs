@@ -18,10 +18,12 @@
  *     780-wide ones the diary made). The boxes below are in those pixels.
  *
  * Playwright is not a dependency: `npm install --no-save playwright`.
+ * `ONLY=sm8 node scripts/capture-home-crops.mjs` cuts only the /with-servicem8
+ * parts (no browser needed) and leaves the homepage crops untouched.
  */
 import { chromium } from 'playwright'
 import sharp from 'sharp'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, readFile } from 'node:fs/promises'
 
 const BASE = process.env.BASE || 'http://localhost:3000'
 const ROOT = new URL('../', import.meta.url).pathname
@@ -70,9 +72,27 @@ const TRADE = {
   'trade-plate':         ['trade-profile.webp',  34, 962, 712, 420],
 }
 
+// /with-servicem8: parts of the captures scripts/capture-with-servicem8.mjs
+// made (they need the seeded database and a fake ServiceM8, so they are not
+// re-photographed here). Same output folder, sm8- prefix, so Shot.jsx reads them.
+const SM8 = {
+  'sm8-customer-booked': ['customer-booked.webp', 34, 364, 712, 442],
+  'sm8-customer-onway':  ['customer-onway.webp',  34, 364, 712, 500],
+  'sm8-customer-onsite': ['customer-onsite.webp', 34, 364, 712, 672],
+  'sm8-customer-paused': ['customer-paused.webp', 34, 364, 712, 672],
+  'sm8-customer-done':   ['customer-done.webp',   34, 364, 712, 512],
+  'sm8-claim':           ['claim.webp',           34, 390, 712, 810],
+  'sm8-dashboard-card':  ['dashboard-card.webp',  34, 150, 712, 790],
+  'sm8-dashboard-stage': ['dashboard-stage.webp', 34, 455, 712, 190],
+  'sm8-panel-head':      ['dashboard-sm8.webp',    0,   0, 716, 150],
+  'sm8-lately':          ['dashboard-lately.webp', 0,   0, 716, 504],
+}
+
 const run = async () => {
   await mkdir(OUT, { recursive: true })
-
+  // ONLY=sm8 skips the browser and keeps the existing home crops as they are
+  const existing = JSON.parse(await readFile(`${ROOT}src/lib/home-crops.json`, 'utf8').catch(() => '{}'))
+  if (process.env.ONLY !== 'sm8') {
   const browser = await chromium.launch({ executablePath: EXEC })
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: 'light' })
   const page = await ctx.newPage()
@@ -117,8 +137,14 @@ const run = async () => {
     const png = await sharp(`${ROOT}public/home/${src}`).extract({ left, top, width, height }).png().toBuffer()
     await save(png, name)
   }
+  }
 
-  await writeFile(`${ROOT}src/lib/home-crops.json`, JSON.stringify(sizes, null, 2) + '\n')
+  for (const [name, [src, left, top, width, height]] of Object.entries(SM8)) {
+    const png = await sharp(`${ROOT}public/with-servicem8/${src}`).extract({ left, top, width, height }).png().toBuffer()
+    await save(png, name)
+  }
+
+  await writeFile(`${ROOT}src/lib/home-crops.json`, JSON.stringify({ ...existing, ...sizes }, null, 2) + '\n')
   console.log('wrote', Object.keys(sizes).length, 'crops')
 }
 
