@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.54.0](./v1.54.0/) | 2026-10-13 | Indigo — the review link in pictures; How did it go? in one line |
 | [v1.53.0](./v1.53.0/) | 2026-10-13 | Clay — the household card says less and shows more; an empty card shows an example row |
 | [v1.52.0](./v1.52.0/) | 2026-10-13 | Slate — a revised promise is shown as revised, with the original kept; every change a line in the record |
 | [v1.51.0](./v1.51.0/) | 2026-10-12 | Moss — the flat look: Geist, hairline cards, one corner radius |

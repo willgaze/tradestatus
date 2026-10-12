@@ -19,7 +19,8 @@
  *
  * Playwright is not a dependency: `npm install --no-save playwright`.
  * `ONLY=sm8 node scripts/capture-home-crops.mjs` cuts only the /with-servicem8
- * parts, `ONLY=house` only the household card (no browser either way), and
+ * parts, `ONLY=house` only the household card (no browser either way),
+ * `ONLY=after` only the How-did-it-go row from /preview?stage=DONE, and
  * leaves every other crop untouched.
  */
 import { chromium } from 'playwright'
@@ -100,12 +101,21 @@ const HOUSE = {
 // browser, and leaves every other crop as it is.
 const GROUPS = { sm8: ['with-servicem8', SM8], house: ['home', HOUSE] }
 
+// How did it go?, on the DONE page: a section with no button to open, so it
+// is photographed whole. ONLY=after shoots just this one (browser needed).
+const shootAfter = async (page, open) => {
+  await open('/preview?stage=DONE')
+  const section = page.locator('section', { hasText: 'How did it go?' }).first()
+  await section.scrollIntoViewIfNeeded()
+  await save(await section.screenshot({ type: 'png' }), 'row-after')
+}
+
 const run = async () => {
   await mkdir(OUT, { recursive: true })
   const existing = JSON.parse(await readFile(`${ROOT}src/lib/home-crops.json`, 'utf8').catch(() => '{}'))
   const only = process.env.ONLY
-  if (only && !GROUPS[only]) throw new Error(`ONLY=${only}: not one of ${Object.keys(GROUPS).join(', ')}`)
-  if (!only) {
+  if (only && only !== 'after' && !GROUPS[only]) throw new Error(`ONLY=${only}: not one of after, ${Object.keys(GROUPS).join(', ')}`)
+  if (!only || only === 'after') {
   const browser = await chromium.launch({ executablePath: EXEC })
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: 'light' })
   const page = await ctx.newPage()
@@ -117,6 +127,11 @@ const run = async () => {
       throw new Error(`${BASE} is a dev server. Capture against \`next start\`.`)
     }
   }
+
+  if (only === 'after') {
+    await shootAfter(page, open)
+    await browser.close()
+  } else {
 
   // The status card, one per stage.
   for (const stage of ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']) {
@@ -144,11 +159,13 @@ const run = async () => {
     await page.waitForTimeout(250)
   }
 
+  await shootAfter(page, open)
   await browser.close()
 
   for (const [name, [src, left, top, width, height]] of [...Object.entries(CUSTOMER), ...Object.entries(TRADE)]) {
     const png = await sharp(`${ROOT}public/home/${src}`).extract({ left, top, width, height }).png().toBuffer()
     await save(png, name)
+  }
   }
   }
 

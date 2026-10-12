@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.53.0'
+export const VERSION = '1.54.0'
 export const BUILD_DATE = '2026-10-13'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 35
+export const THEME_INDEX = 36
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.54.0', date: '2026-10-13', notes: [
+    "The review link, in pictures. Under Who to expect, the Google review field now sits beneath the row every customer sees after Job done, so the link has a visible reason; the hint is only the three steps to get it. On the customer's page, How did it go? says one line: a review helps most, a note reaches the trade alone. The preview fixture carries a review link at DONE, so that row can be photographed.",
+  ] },
   { version: '1.53.0', date: '2026-10-13', notes: [
     'The household card says less and shows more. The sentence under the heading is gone: the rows say what they are. An empty card shows one example row, drawn with the real row, so a household can see what forwarding a delivery email does before they have done it. On the dashboard, Household cards shows the card itself instead of describing it, and its small print is one line.',
     'Fixed in the local seed: the household card was never created when the Prisma client was stale, so three diaries photographed a card that said it had expired. The seed now says so when it happens.',

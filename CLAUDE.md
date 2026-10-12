@@ -1045,6 +1045,11 @@ Household cards panel shows `house-card`, cut with `ONLY=house` from
 **If that shot says "That card has expired", the seed skipped the Place table**: run
 `npx prisma generate` and the seed again. Three diaries photographed that dead end.
 
+The review link (v1.54.0): the Google review field under Who to expect sits beneath
+`row-after`, the How-did-it-go row photographed from `/preview?stage=DONE` (the fixture
+carries an invented Google link at DONE so both doors show) with `ONLY=after`. The row
+itself says one line. The two doors stay open to everyone; see *How did it go?* above.
+
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
 drift. It carries the same badges the posters do, and the lock screen shows
