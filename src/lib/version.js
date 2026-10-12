@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.38.0'
+export const VERSION = '1.38.1'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.38.1', date: '2026-10-12', notes: [
+    'Fix: the dashboard crashed (React error 300, a blank "Application error" page) whenever ServiceM8 was not connected or had no bookings in the next seven days. This week in ServiceM8 declared a hook after its early returns. Shipped in 1.34.0; the seeded local database caught it the first time the dashboard was looked at since.',
+  ] },
   { version: '1.38.0', date: '2026-10-12', notes: [
     'A booking that moves in ServiceM8 after the customer was texted earns them one more text: the new hours, the old ones in brackets, the same link. Sent through ServiceM8 once the move has settled for ten minutes, so a job dragged three times in two minutes is one text, not three. Only while the job is still Booked in, and never for a booking taken off the diary — that is yours to say.',
     'What the customer was last told is kept on the card. The window follows a move at once, as before; the message now follows it once.',

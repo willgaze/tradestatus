@@ -31,10 +31,15 @@ export default function Sm8Week() {
   }, [])
   useEffect(() => { load() }, [load])
 
+  // Every hook above the early returns. This one used to sit below them, so
+  // the moment ServiceM8 answered "not configured" or "no bookings" the
+  // component rendered fewer hooks than the render before and React tore the
+  // whole dashboard down (error #300). Shipped in v1.34.0; found 12 Oct 2026.
+  const [sent, setSent] = useState({})
+
   if (data && !data.configured) return null
   if (data && data.bookings.length === 0 && !error) return null
 
-  const [sent, setSent] = useState({})
   const sendLink = async (b) => {
     setBusy(`send-${b.jobUuid}`)
     try {
