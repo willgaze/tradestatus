@@ -1050,6 +1050,13 @@ The review link (v1.54.0): the Google review field under Who to expect sits bene
 carries an invented Google link at DONE so both doors show) with `ONLY=after`. The row
 itself says one line. The two doors stay open to everyone; see *How did it go?* above.
 
+What this could become (v1.55.0, `src/app/dashboard/Roadmap.jsx`): each roadmap item
+shows its screen, from `PICTURE` there: a homepage frame (`public/home/frame-*.webp`,
+the files `src/lib/posters.js` lists) or a crop. A frame for an idea is a drawing, and
+the chip beside it says Not built; never put a real capture beside an idea. The
+sentence and the Needs line open on tap; the live phase is folded behind its count.
+A new roadmap item wants a line in `PICTURE` when a screen for it exists.
+
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
 drift. It carries the same badges the posters do, and the lock screen shows
