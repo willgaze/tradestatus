@@ -706,6 +706,37 @@ Rules that must not drift:
   makes the link the durable copy. Do not put a fee in the SMS that the page
   does not also show.
 
+## The homepage shows parts of screens, not phones
+
+Since v1.35.0 the front page explains each thing the app does with a picture of
+the part of the screen that does it — the row opened, the stage buttons, the
+send box — under a label of a few words, instead of a paragraph beside a whole
+phone. The owner's verdict on the page before was that it was a lot of writing
+and overwhelming, and a whole device at 250px wide makes the one row being
+talked about unreadable. Keep it that way: **add a picture, not a paragraph.**
+
+The pictures live in `public/home/crops/` and come from one script:
+
+```bash
+NEXT_PUBLIC_TRADE_NAME="Sam Hale Plumbing" npm run build && npx next start -p 3100 &
+BASE=http://localhost:3100 node scripts/capture-home-crops.mjs   # then rebuild
+```
+
+It photographs the customer's page from `/preview` one element at a time (the
+status card at each stage, each row opened) and cuts the trade's screens from
+the full captures already in `public/home/` — those need a database, so the
+boxes in the script are in those files' pixels. It writes
+`src/lib/home-crops.json` with each file's size, which `Shot.jsx` needs.
+**When a screen changes, re-run it**: a crop of last month's row is a lie
+about this month's app. Recapture; never retouch.
+
+The wallet section (`src/components/WalletStory.jsx`) is drawn from
+`PassCard`, the same component the real pass is built from, so it cannot
+drift. It carries the same badges the posters do, and the lock screen shows
+the push notification (live) and not the Wallet card (not yet): see *Not built
+yet* below, and do not let that section say the card updates itself in Wallet
+until the pass web service exists.
+
 ## Not built yet
 
 **The wallet pass.** This is the premise of the product and it does not exist.

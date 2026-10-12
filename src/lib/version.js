@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.34.0'
+export const VERSION = '1.35.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 22
+export const THEME_INDEX = 23
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.35.0', date: '2026-10-12', notes: [
+    'The homepage says less and shows more. Every row the customer can open and every part of the dashboard the trade taps is now a picture of that part — cut from the real screen at 2x by scripts/capture-home-crops.mjs, never a whole phone — under a label of a few words. The paragraphs are gone; the two walkthrough strips went with them.',
+    'The wallet card gets the section it always needed: the card pulled apart with each band named (the same bands buildPassJson signs), the same card at all four stages, its back, and the lock screen the notification lands on. Drawn from PassCard, so it cannot drift from the real pass. The badge still says it: built, waiting on Apple. The buzz on the lock screen is live today; the card updating itself in Wallet is not.',
+    'Instead of this, with this: the “between eight and six” text beside the status card, as two panels rather than two paragraphs.',
+  ] },
   { version: '1.34.0', date: '2026-10-12', notes: [
     'Send the link via ServiceM8. The booking text now goes out through ServiceM8 itself from This week in ServiceM8: one of the account\'s SMS credits, and it lands in the job\'s own SMS history and diary exactly as if ServiceM8 had sent it. Checked against the live account on 12 Oct: the API key may send. Text it from my phone stays as the free way.',
     'TurnUp as a ServiceM8 add-on, built and waiting on an App ID: Connect ServiceM8 as an add-on under Setup and settings, and from then on set off, on site, paused, done, terms agreed, no one home, running late and every customer reply are written into the job diary as a line from TurnUp. The diary is the one thing the key cannot write; the add-on can. docs/servicem8-add-on.md has the sign-up steps.',
