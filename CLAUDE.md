@@ -618,6 +618,77 @@ Rules that must not drift: never send without the trade's switch on; never send
 the link twice; never send to a job that is Completed or Unsuccessful; the texts
 are `linkText()` and `moveText()` and nothing else.
 
+## The household card (`/h/<code>`)
+
+The second half of the product, and the one with a market in it. A job link
+answers *where is my plumber*. A household card answers **what is happening at
+my house this week** — the plumber, the sofa, four parcels, on one list,
+because that is how the person living there already thinks about it. A card
+that splits trades from parcels makes them do the merging in their head.
+
+**It fills itself from forwarded email, and that is the whole strategy.**
+Getting thirteen delivery firms to integrate is not a thing a sole trader can
+do. Getting one household to add a forwarding rule is. `src/lib/arrival-email.js`
+reads a forwarded email and returns an arrival or **null**; it is pure, has no
+database, and `node scripts/check-arrival-email.mjs` is its 10-case test.
+
+Three rules in that parser, each of which cost a bug:
+
+- **Carriers are matched on the sending DOMAIN, never on body text.** A
+  subject line can claim to be Royal Mail; a domain has to pass SPF.
+- **`FUTURE_TENSE` guards DONE.** A bare `/delivered/` matched "will be
+  delivered between 1 and 2 today" and took a parcel off the card while the
+  customer was waiting in for it. Every DONE pattern is explicitly past tense.
+- **`BOOKED` is the row Shop drops.** Shop's own documentation says forwarding
+  works for *"English emails with a tracking number"*. A sofa with two men and
+  a Tuesday window has no tracking number anywhere, and nor does a boiler
+  service. Those emails say "we will deliver" and a date, so that is what is
+  read. That gap is the wedge: **arrivals, not parcels.**
+
+**Nothing on the card is undated and unattributed.** "Evri said today", "Loaf
+said tomorrow, 12:00–16:00" — the same discipline as a window, for the same
+reason. The product does not work out when something will arrive; it repeats
+what the sender said and names them. A row the trade put there says the trade
+said it, via `TRADE_NAME`.
+
+**Two secrets per card, and they must never travel together.**
+
+| | Half | Goes to | On the card? |
+|---|---|---|---|
+| `code` | read | the customer, as `/h/<code>` | yes, it is the URL |
+| `inboxKey` | write | a mail rule, as `<key>@in.getturnup.com` | **never** |
+
+Collapsing those two would mean a card forwarded into a family group chat is a
+way to post rows onto a stranger's door. `cardShape()` lives in
+`src/lib/arrival-card.js` with no database import so
+`scripts/check-public-shape.mjs` can prove the inbox key is not in it, the same
+way it proves `publicShape()`.
+
+**Stages only move forwards** (`nextStage()` in `src/lib/arrivals.js`). Carriers
+email out of order — a "dispatched" can land after an "out for delivery", and a
+delayed queue replays yesterday. A card that walks backwards is a card that
+lies. `MISSED` is the one exception: it is news whenever it lands.
+
+**The inbound route always answers 200 once the token is good.** A provider
+retries a 500, and a retry storm on a parse bug puts one parcel on a card
+twenty times. `src/app/api/inbound/[token]/route.js` is provider-agnostic
+(SendGrid Inbound Parse, Mailgun, Postmark, Resend) because inbound mail is a
+commodity and the first choice of provider is usually the wrong one — reading
+all their shapes costs thirty lines and makes a switch a DNS record.
+
+**Windows go in through `atLocalTime()`, never `setUTCHours()`.** Already
+caught once here: "between 12 and 4" went in as 12:00Z and came back out as
+13:00 on the card. Same bug as the trade's 09:00 window, same fix.
+
+**It is gated, like push.** No `INBOUND_EMAIL_TOKEN` and the dashboard panel
+says forwarding is not switched on rather than handing out an address nothing
+is listening on. The push row that opened onto an empty drawer is the mistake
+being avoided.
+
+Still to do: wire the trade's own jobs onto a card automatically (today
+`tradeStatusCode` is set by hand), and let a household add a card themselves
+rather than being given one.
+
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 
 The one thing the card could not do until v1.18.0 was notice that a time the

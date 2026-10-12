@@ -19,6 +19,7 @@
  */
 
 import { publicShape } from '../src/lib/trade-status.js'
+import { cardShape } from '../src/lib/arrival-card.js'
 
 /** Anything the CUSTOMER told the TRADE, and anything internal. */
 const MUST_NOT_LEAK = [
@@ -129,3 +130,53 @@ dashboard, which is behind a password. Take these back out of publicShape().
 
 console.log(`publicShape() is clean — ${Object.keys(out).length} fields, none of them the customer's own:`)
 console.log(`  ${Object.keys(out).join(', ')}`)
+
+/* --- The household card ---------------------------------------------------
+ * `/h/<code>` is the second public boundary and it is newer, which makes it
+ * the one more likely to grow a field nobody thought about. Same rule, aimed
+ * at a door: everything on it is something SOMEBODY ELSE said was coming.
+ *
+ * The inboxKey is the dangerous one. It is the write half of the card — the
+ * address a sender forwards to — and the read code is deliberately a separate
+ * secret so that a forwarded card link can never be turned into a way to put
+ * rows on a stranger's card. Putting it in the page would collapse the two.
+ */
+const CARD_MUST_NOT_LEAK = ['inboxKey', 'id', 'placeId', 'dedupeKey', 'isActive']
+
+const place = {
+  id: 'clx-place-id',
+  code: 'HOME24XK',
+  inboxKey: 'q7rmt4ndkw82lp',
+  label: '14 Church Lane',
+  isActive: true,
+  arrivals: [{
+    id: 'clx-arrival-id',
+    placeId: 'clx-place-id',
+    dedupeKey: 'evri:h00ap1234567890',
+    kind: 'PARCEL', source: 'EMAIL', stage: 'OUT_FOR_DELIVERY',
+    carrier: 'Evri', title: 'Parcel from Screwfix', reference: 'H00AP1234567890',
+    trackUrl: 'https://www.evri.com/track/parcel/H00AP1234567890',
+    note: null, expectedFor: new Date(), expectedSaid: 'today',
+    windowStart: null, windowEnd: null, windowSaid: null,
+    tradeStatusCode: null, createdAt: new Date(), updatedAt: new Date(),
+  }],
+}
+
+const card = cardShape(place)
+const cardLeaks = CARD_MUST_NOT_LEAK.filter((k) => k in card || k in (card.arrivals[0] || {}))
+if (cardLeaks.length) {
+  console.error('\nThe household card is handing out fields a forwarded link must never carry:\n')
+  for (const k of cardLeaks) console.error(`  ${k}`)
+  console.error('\nSee cardShape() in src/lib/arrival-card.js. The inboxKey especially:')
+  console.error('it is the write half of the card and must never travel with the read half.\n')
+  process.exit(1)
+}
+
+// Old news falls off rather than piling up.
+const stale = { ...place, arrivals: [{ ...place.arrivals[0], stage: 'DONE', updatedAt: new Date(Date.now() - 9 * 86400000) }] }
+if (cardShape(stale).arrivals.length !== 0) {
+  console.error('\nA delivery that arrived nine days ago is still on the card.\n')
+  process.exit(1)
+}
+
+console.log(`cardShape() is clean — ${Object.keys(card.arrivals[0]).length} fields per arrival, no inboxKey.`)

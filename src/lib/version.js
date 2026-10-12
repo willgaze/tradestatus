@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.39.0'
+export const VERSION = '1.40.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 24
+export const THEME_INDEX = 25
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,13 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.40.0', date: '2026-10-12', notes: [
+    'The household card. One link per door, with everything coming to it on one list: your visit, the sofa, four parcels, whoever is booked to call round. A job link answers where is my plumber; this answers what is happening at my house this week, which is how the person living there already thinks about it.',
+    'It fills itself from forwarded email. A delivery email forwarded to the card\u2019s own address is read for who it is from, what stage it is at and what day they said \u2014 thirteen UK carriers matched on the sending domain, because a subject line can claim to be Royal Mail and a domain has to pass SPF. Anything that is not an arrival is dropped.',
+    'The row Shop drops: a sofa with two men and a Tuesday window and no tracking number anywhere. Those emails say we will deliver and a date, so that is what is read, and the card carries them alongside the parcels.',
+    'Every date is attributed \u2014 Evri said today, Loaf said tomorrow, 12:00\u201316:00. The product still never works out an arrival time; it repeats what the sender said and names them.',
+    'Two separate secrets per card, on purpose: the link is the read half and goes to the customer, the forwarding address is the write half and goes in a mail rule. Neither is ever on the card, so a link passed round a family group chat cannot be used to post onto somebody\u2019s door. scripts/check-public-shape.mjs now proves it.',
+  ] },
   { version: '1.39.0', date: '2026-10-12', notes: [
     'A tap with no signal still counts. Every stage tap and every No one home record from the dashboard is saved on the phone when the network is not there — with the time of the tap and the fix the phone had — and sent in order the moment signal comes back. The strip says No signal and how many taps are waiting; the card says Saved on this phone. Nothing is ever dropped.',
     'The customer reads the true time: Set off at 07:42, sent 07:58 when back in signal. The event keeps both clocks, and the job diary line says the same.',
