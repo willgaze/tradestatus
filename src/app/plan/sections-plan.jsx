@@ -1,7 +1,8 @@
 'use client'
 import { ChevronIcon, TickIcon } from '@/components/icons'
 
-import { DECISIONS, FACTS_TABLE, GTM_PHASES, MILESTONES, PLAN_META, RISKS, TEAM, THE_ASK } from '@/lib/plan'
+import { useState } from 'react'
+import { DECISIONS, FACTS_TABLE, GTM_PHASES, MILESTONES, PLAN_META, REVIEWER, RISKS, TEAM, THE_ASK } from '@/lib/plan'
 import { Check, Chips, Eyebrow, Light, Section, Sub, Table, Tag } from './ui'
 
 /* The road ahead, the road so far, what could stop it, who is on it, what is
@@ -71,7 +72,7 @@ export function Risks({ answers, set, readOnly }) {
   )
 }
 
-export function Team() {
+export function Team({ answers, set, readOnly, shareUrl }) {
   return (
     <Section kicker="Who, and what is being asked" title="The ask">
       <div className="grid gap-3 sm:grid-cols-3">
@@ -98,7 +99,83 @@ export function Team() {
           ))}
         </div>
       </div>
+      {!readOnly && <Reviewer answers={answers} set={set} shareUrl={shareUrl} />}
     </Section>
+  )
+}
+
+/** Owner-only: who is reading, what to ask, and the ducks in a row before sending. Never on the guest page. */
+function Reviewer({ answers, set, shareUrl }) {
+  const [copied, setCopied] = useState(false)
+  const ready = REVIEWER.sendWhen.filter((g) => answers[`check:${g.id}`] === 'right').length
+  const message = REVIEWER.message.replace('SHARE_LINK', shareUrl || '(the share link)')
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(message); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* clipboard blocked */ }
+  }
+  return (
+    <div className="mt-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <Sub>Before it goes to {REVIEWER.name}</Sub>
+        <span className="text-[13px] font-semibold tabular-nums muted">{ready} of {REVIEWER.sendWhen.length} ducks in a row</span>
+      </div>
+      <p className="mt-1 text-[13px] muted">Owner only. The guest page never shows this section.</p>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <div className="glass r-inner p-4">
+          <Eyebrow>Who he is, publicly</Eyebrow>
+          <div className="mt-1 text-[14px]">{REVIEWER.relationship}</div>
+          <div className="mt-2 rounded-xl px-3 py-2 text-[13px]" style={{ background: 'color-mix(in srgb, var(--stage-onway) 14%, transparent)' }}>{REVIEWER.unconfirmed}</div>
+          <div className="mt-3">
+            <Table head={['', 'What', 'Source']}
+                   rows={REVIEWER.facts.map((f) => [
+                     <b key="f" className="whitespace-nowrap">{f.figure}</b>,
+                     <span key="w">{f.what}</span>,
+                     <a key="s" href={f.href} target="_blank" rel="noreferrer" className="underline muted">{f.source}</a>,
+                   ])} />
+          </div>
+        </div>
+        <div className="grid gap-3">
+          <div className="glass r-inner p-4">
+            <Eyebrow>Why him</Eyebrow>
+            <ul className="mt-1 grid gap-1 text-[14px]">{REVIEWER.why.map((w) => <li key={w} className="flex gap-2"><ChevronIcon size={14} style={{ color: 'var(--label-3)', marginTop: 4 }} />{w}</li>)}</ul>
+          </div>
+          <div className="glass r-inner p-4 tone-paused">
+            <Eyebrow tint>Watch out</Eyebrow>
+            <ul className="mt-1 grid gap-1 text-[14px]">{REVIEWER.watchOut.map((w) => <li key={w} className="flex gap-2"><ChevronIcon size={14} style={{ color: 'var(--label-3)', marginTop: 4 }} />{w}</li>)}</ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass r-inner mt-3 p-4">
+        <Eyebrow>Six questions only he can answer</Eyebrow>
+        <ol className="mt-2 grid gap-2 text-[14px]">
+          {REVIEWER.ask.map((q, i) => (
+            <li key={q} className="flex gap-3"><span className="w-5 shrink-0 text-right font-bold tabular-nums" style={{ color: 'var(--tint)' }}>{i + 1}</span><span>{q}</span></li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="glass r-inner mt-3 p-4">
+        <Eyebrow>Send when every one of these is true</Eyebrow>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          {REVIEWER.sendWhen.map((g) => (
+            <div key={g.id} className="flex items-start justify-between gap-3 rounded-xl px-3 py-2" style={{ background: 'rgb(var(--glass-line) / 0.08)' }}>
+              <span className="text-[14px]">{g.label}</span>
+              <Check id={g.id} answers={answers} set={set} />
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[13px] muted">{REVIEWER.notGatedOn}</p>
+      </div>
+
+      <div className="glass r-inner mt-3 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Eyebrow>The message, in your words</Eyebrow>
+          <button type="button" onClick={copy} className="btn btn-grey text-[13px]">{copied ? 'Copied' : 'Copy the message'}</button>
+        </div>
+        <pre className="mt-2 whitespace-pre-wrap font-sans text-[14px] leading-relaxed">{message}</pre>
+      </div>
+    </div>
   )
 }
 

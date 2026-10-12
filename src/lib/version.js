@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.32.0'
+export const VERSION = '1.33.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 23
+export const THEME_INDEX = 24
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.33.0', date: '2026-10-12', notes: [
+    'The ask has a reader. The plan’s last section now carries, for the owner only, who is being sent it and why, the six questions only he can answer, three things to watch, six ducks to tick before it goes, and the message in the owner’s own words with a copy button. The guest page never shows it.',
+    'The ask itself grew from one thing to two: use the demo once as a customer, then read the plan and say what is wrong. Still not money, not a build, not a cofounder, and no introductions until the pilot has numbers.',
+  ] },
   { version: '1.32.0', date: '2026-10-12', notes: [
     'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
     'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',

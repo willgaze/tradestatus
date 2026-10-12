@@ -141,7 +141,7 @@ export default function Plan({ mode = 'owner', shareUrl = null }) {
           )}
 
           <div className="min-w-0">
-            <Current answers={answers} set={set} readOnly={readOnly} />
+            <Current answers={answers} set={set} readOnly={readOnly} shareUrl={shareUrl} />
             <div className="mt-10 flex items-center justify-between">
               <button type="button" onClick={() => setI((n) => Math.max(0, n - 1))} disabled={i === 0} className="btn btn-grey">Back</button>
               <div className="text-[13px] font-semibold tabular-nums muted">{i + 1} / {SECTIONS.length}</div>
