@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { sm8Configured, webhookToken, callbackUrl, listSubscriptions, subscribe, unsubscribe, syncTracker, fetchJob, EVENTS } from '@/lib/servicem8'
+import { oauthState, disconnect, redirectUri } from '@/lib/sm8-oauth'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,6 +26,9 @@ export async function GET(request) {
         .map((s) => ({ event: s.event, callback_url: s.callback_url, active: s.active ?? 1 }))
     } catch (e) { state.subscriptionsError = e.message }
   }
+  // The add-on half: configured means SM8_APP_ID and SM8_APP_SECRET are set;
+  // connected means the operator has authorised it and tokens are held.
+  state.oauth = { ...(await oauthState()), redirectUri: redirectUri(origin(request)) }
   try {
     state.recent = await prisma.sm8Event.findMany({ orderBy: { receivedAt: 'desc' }, take: 12 })
     state.linked = await prisma.sm8Link.count()
@@ -46,6 +50,7 @@ export async function POST(request) {
       return NextResponse.json({ results, activating }, { status: activating ? 202 : 200 })
     }
     if (body.action === 'unsubscribe') return NextResponse.json({ removed: await unsubscribe() })
+    if (body.action === 'oauth_disconnect') { await disconnect(); return NextResponse.json({ ok: true }) }
     if (body.action === 'sync') {
       const linked = await prisma.tradeStatus.findMany({ where: { isActive: true, externalId: { not: null } } })
       const results = []

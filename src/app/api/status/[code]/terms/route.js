@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { termsFrom, termsSnapshot } from '@/lib/terms'
 import { firstName } from '@/lib/profile'
+import { diaryFor } from '@/lib/sm8-oauth'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,7 @@ export async function POST(request, { params }) {
       termsAgreedAt: now, termsAgreed: snapshot,
       events: { create: { stage: row.stage, note: 'Booking terms read and agreed from the customer’s phone.' } },
     } })
+    diaryFor(updated, `Booking terms read and agreed from the customer's phone${snapshot.fee ? ` (${snapshot.noticeHours}h notice, GBP ${snapshot.fee} at short notice)` : ''}`).catch(() => {})
     return NextResponse.json({ ok: true, termsAgreedAt: updated.termsAgreedAt.toISOString(), termsAgreed: pick(snapshot) })
   } catch (error) {
     console.error('terms failed:', error)

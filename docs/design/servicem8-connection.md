@@ -19,8 +19,8 @@ The connector authenticates with an account API key (`SM8_API_KEY`). Tested on
 | Being told when a job moves | webhook subscriptions | yes, five subscriptions live |
 | Email and SMS templates | `emailtemplate.json`, `smstemplate.json` | yes, read and write |
 | The job diary as a whole | — | **no**: "not an authorised object type". The diary is readable only through ServiceM8's own apps and its MCP connector |
-| Sending an SMS through ServiceM8 | Messaging API `send_sms` | **no with a key**: needs an add-on and incurs the account's SMS charges |
-| Writing a diary item | add-on Job Diary endpoint | **no with a key**: add-ons only, create-only, attributed to the add-on |
+| Sending an SMS through ServiceM8 | `POST /platform_service_sms` with `to` (E.164), `message`, `regardingJobUUID` | **yes** — tested 12 Oct 2026, 200 OK, and the text appeared in the job's `sms.json` history and diary within a second. Charged to the account's SMS allowance. The docs say "Public Applications"; the key works regardless |
+| Writing a diary item | `POST /api_1.0/diary.json` | **no with a key** (403, tested 12 Oct 2026): add-ons only, create-only, attributed to the add-on. Needs OAuth scope `publish_diary_items` |
 | A button on the job card | add-on Job Action | add-ons only |
 
 So the thing Will asked for on 12 Oct ("check what's on ServiceM8 and whether
@@ -32,7 +32,22 @@ being off, or the booking not having been made from the job card with Send
 Booking Confirmation ticked. ServiceM8 does not send a confirmation for a job
 dragged onto the calendar.
 
-## What shipped now (v1.33.0)
+## What shipped next (v1.34.0)
+
+- **Send the link via ServiceM8** on This week in ServiceM8: `sendSms()` on the
+  key, `regardingJobUUID` set, so the text sits in the job's SMS history and
+  diary and the verdict flips to *texted* on the next refresh. The words are
+  built once in `src/lib/sm8-words.js` and kept to plain ASCII.
+- **The add-on, built and waiting on an App ID.** `src/lib/sm8-oauth.js` holds
+  the OAuth flow (authorise, exchange, refresh; tokens AES-256-GCM in `Sm8OAuth`,
+  key derived from `JWT_SECRET`), `publishDiary()` and `diaryFor()`. Hooked in:
+  trade-made stage changes, running late, terms agreed, no one home and the
+  customer's reply, the window missed and the customer's choice, the day-before
+  ask and its reply. Scopes requested: `publish_diary_items create_notifications
+  vendor`. Routes: `/api/servicem8/oauth/start` and `/callback`, operator only
+  with a signed state. Steps for the owner: `docs/servicem8-add-on.md`.
+
+## What shipped first (v1.33.0)
 
 - `fetchMessages(jobUuid)` and `confirmationState()` in `src/lib/servicem8.js`:
   the verdicts *texted and emailed · texted · emailed, opened · emailed, not
@@ -53,13 +68,13 @@ and is Phase 1.
 
 ## The plan for the full connection
 
-**Phase 1 — a private add-on (the one that matters).** ServiceM8's Addon Kit
-lets a single account install an add-on without Store review. It gets OAuth
-scopes the key does not have:
+**Phase 1 — the add-on (code done, sign-up pending).** A Public Application
+that is never listed: ServiceM8's own docs say you "can create a Public
+Application and choose not to list it". It gets OAuth scopes the key does not
+have:
 
-- `publish_sms`: TurnUp sends the booking text and the day-before text through
-  ServiceM8, so they appear in the job diary and the customer's existing thread.
-  Charged against the account's SMS allowance, like any ServiceM8 text.
+- Sending the text turned out not to need it: the key sends through
+  `platform_service_sms` and the text lands in the diary. Done in 1.34.0.
 - Add-on Job Diary items: every TurnUp event (set off 07:42, on site 08:10,
   terms agreed, no one home, customer replied *someone else will be in*) written
   into the job diary, attributed to TurnUp. The trade's system of record then

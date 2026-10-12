@@ -448,3 +448,21 @@ export async function fetchUpcoming({ days = 7, fresh = false } = {}) {
   weekCache = { at: Date.now(), days, value }
   return value
 }
+
+/**
+ * A text through ServiceM8, with the account API key. Checked 12 Oct 2026:
+ * the Messaging API accepts the key, charges the account's SMS allowance
+ * like any other text, and with regardingJobUUID the message lands in the
+ * job's SMS history and diary. Plain ASCII only (src/lib/sm8-words.js).
+ */
+export async function sendSms({ to, message, jobUuid }) {
+  if (!sm8Configured()) throw new Error('sm8_not_configured')
+  if (!/^\+[1-9]\d{6,14}$/.test(String(to || ''))) throw new Error('bad_number')
+  const body = { to, message: String(message).slice(0, 1600) }
+  if (jobUuid && UUID.test(jobUuid)) body.regardingJobUUID = jobUuid
+  const r = await api(`${BASE}/platform_service_sms`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  await log({ event: 'sms.send', jobUuid: jobUuid || null, outcome: r?.errorCode === 0 ? `sent:${r.messageID || ''}` : `error:${r?.message || 'unknown'}` })
+  if (r?.errorCode !== 0) throw new Error(`sm8_sms: ${r?.message || 'failed'}`)
+  weekCache.at = 0 // the week's verdicts just changed
+  return { sent: true, messageID: r.messageID || null, to }
+}

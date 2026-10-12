@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { pushTrade, notifyCustomer } from '@/lib/push'
 import { TRADE_NAME } from '@/lib/trade'
 import { dayBeforeAskDue } from '@/lib/day-before'
+import { diaryFor } from '@/lib/sm8-oauth'
 import { dayWord } from '@/lib/nudge-words'
 export { dayWord }
 
@@ -93,6 +94,7 @@ export async function askPresenceIfDue(tracker, now = new Date()) {
     })
     if (claimed.count !== 1) return null
     await prisma.tradeStatusEvent.create({ data: { tradeStatusId: tracker.id, stage: 'BOOKED', note: 'Asked: will someone be in tomorrow?' } })
+    diaryFor(tracker, 'Day-before ask sent: still fine, and will someone be in?').catch(() => {})
     const c = await notifyCustomer(tracker, { title: 'Booked for tomorrow', body: 'Still fine, and will someone be in? Open the page: one tap answers.' })
     let t = { sent: 0 }
     if (!c.sent) {
@@ -145,6 +147,7 @@ export async function ask(tracker) {
     askedAt: now, askAnsweredAt: null, nudgedAt: now,
     events: { create: { stage: tracker.stage, note: 'Asked: are you still coming?' } },
   } })
+  diaryFor(tracker, 'Customer asked: are you still coming?').catch(() => {})
   const r = await pushTrade({ title: `${first(tracker)} is asking`, body: `"Are you still coming?" Reply from the card: On my way, or how late.`, tag: `nudge-${tracker.code}` })
   return { ok: true, devices: r.devices, sent: r.sent }
 }
@@ -162,6 +165,7 @@ export async function runningLate(tracker, minutes) {
     ...(note ? { stageNote: note, events: { create: { stage: tracker.stage, note } } } : {}),
   } })
   if (m) notifyCustomer(updated, { title: 'Running late', body: `${TRADE_NAME} says about ${m} minutes late, and is sorry.` }).catch(() => {})
+  if (m) diaryFor(updated, `Running about ${m} minutes late, customer told.`).catch(() => {})
   return updated
 }
 
@@ -180,6 +184,7 @@ async function tellMissed(tracker, due) {
     events: { create: { stage: tracker.stage, note: 'The window was missed — the customer has been told and asked what they would like.' } },
   } })
   notifyCustomer(tracker, { title: 'Sorry — the window has passed', body: `${TRADE_NAME} has not arrived in the window. Open the page to choose: wait, later today, or another day.` }).catch(() => {})
+  diaryFor(tracker, `Window missed (ended ${hhmm(tracker.windowEnd || tracker.windowStart || tracker.scheduledFor)}). Customer told and offered wait / later today / another day.`).catch(() => {})
   const r = await pushTrade({ title: due.title, body: due.body, tag: `nudge-${tracker.code}` })
   return { ...due, sent: r.sent }
 }
@@ -193,6 +198,7 @@ export async function chooseAfterMissed(tracker, choice) {
     missedChoice: choice, missedChoiceAt: now,
     events: { create: { stage: tracker.stage, note: `After the missed window: ${line}.` } },
   } })
+  diaryFor(tracker, `After the missed window: ${line}.`).catch(() => {})
   const next = choice === 'WAIT' ? 'Set off, or say how late.' : 'Propose a new window on the card.'
   const r = await pushTrade({ title: line, body: next, tag: `nudge-${tracker.code}` })
   return { ok: true, sent: r.sent }
@@ -211,6 +217,7 @@ export async function replyReminder(tracker, choice) {
     ...(choice === 'OK' ? { presence: 'IN', presenceAt: now } : choice === 'SOMEONE_ELSE' ? { presence: 'SOMEONE_ELSE', presenceAt: now } : {}),
     events: { create: { stage: tracker.stage, note: `Reply to the reminder: ${line}.` } },
   } })
+  diaryFor(tracker, `Reply to the day-before ask: ${line}.`).catch(() => {})
   const next = choice === 'MOVE' ? 'Offer new hours on the card; they can counter from theirs.' : choice === 'SOMEONE_ELSE' ? 'Read the door notes before you knock.' : 'Nothing to do.'
   const r = await pushTrade({ title: line, body: next, tag: `nudge-${tracker.code}` })
   return { ok: true, sent: r.sent, reminderReply: choice, reminderReplyAt: now.toISOString() }

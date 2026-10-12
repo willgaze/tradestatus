@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { runningLate, answeredByStage } from '@/lib/nudge'
+import { diaryFor } from '@/lib/sm8-oauth'
+import { STAGES } from '@/lib/trade-status'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
@@ -119,6 +121,12 @@ export async function PATCH(request, { params }) {
     }
 
     const tracker = await prisma.tradeStatus.update({ where: { id }, data })
+
+    // A line in the ServiceM8 job diary for what the trade just did, when the
+    // add-on is connected. Not awaited: the diary is a record, not a gate.
+    if (data.stage && data.stage !== current.stage) {
+      diaryFor(tracker, `${STAGES[data.stage]?.label || data.stage}${data.stageNote ? ` - ${data.stageNote}` : ''}`).catch(() => {})
+    }
 
     // Tell any device watching this job that it moved.
     //

@@ -47,7 +47,7 @@ capability we do not have) · No.
 | Logged send and logged open of every customer message | Improve | Partly (viewCount, lastViewedAt); per-message log: Later |
 | Per-visit status audit, back-dating allowed but labelled | Copy | Partly (events); labelled back-dating: Later |
 | Private attachments that never reach the customer page | Copy | Later |
-| Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Later — needs a private add-on with OAuth scopes; plan in docs/design/servicem8-connection.md |
+| Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Built 1.34.0, waiting on the add-on App ID (docs/servicem8-add-on.md); badge: Later |
 | "Certificate issued" optional final stage for notifiable work | Improve | Later — part of process templates |
 | Pre-agreed goodwill gesture, configured once, fired on a missed window | Copy | Later |
 | Review request after Job done, routed to Google | Copy | Next |

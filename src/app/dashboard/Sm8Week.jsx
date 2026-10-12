@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { CalendarIcon, MessageIcon } from '@/components/icons'
 import { dayAndTime, timeOnly } from '@/lib/when'
 import { CANONICAL_HOST, TRADE_NAME } from '@/lib/trade'
+import { linkText } from '@/lib/sm8-words'
 
 /**
  * This week in ServiceM8. The question the trade actually asks on a Sunday
@@ -33,15 +34,25 @@ export default function Sm8Week() {
   if (data && !data.configured) return null
   if (data && data.bookings.length === 0 && !error) return null
 
+  const [sent, setSent] = useState({})
+  const sendLink = async (b) => {
+    setBusy(`send-${b.jobUuid}`)
+    try {
+      const r = await fetch('/api/dashboard/servicem8/week', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send_link', jobUuid: b.jobUuid }) })
+      const j = await r.json().catch(() => ({}))
+      setSent((m) => ({ ...m, [b.jobUuid]: r.ok ? `Sent to ${j.to} through ServiceM8. It is in the job diary.` : j.error === 'no_mobile' ? 'No mobile on the job contact.' : `Did not send: ${j.error || r.status}` }))
+      if (r.ok) await load(true)
+    } finally { setBusy(null) }
+  }
   const makeCard = async (b) => {
     setBusy(b.jobUuid)
     try { await fetch('/api/dashboard/servicem8/week', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jobUuid: b.jobUuid }) }); await load(true) }
     finally { setBusy(null) }
   }
+  // The same words the server sends, for the trade's own Messages app.
   const smsHref = (b) => {
     const to = String(b.mobile || b.phone || '').replace(/\s+/g, '')
-    const when = b.start ? `${dayAndTime(b.start)}${b.end ? ` to ${timeOnly(b.end)}` : ''}` : 'as booked'
-    const body = `Hi ${(b.customerName || '').split(' ')[0] || 'there'}, ${first} here from ${TRADE_NAME}. Your booking is ${when}. Follow the job here — it says when I set off, when I arrive and when I am done, and has the booking terms: https://${CANONICAL_HOST}/j/${b.jobNumber}`
+    const body = linkText({ tradeName: TRADE_NAME, first, customerName: b.customerName, start: b.start, end: b.end, host: CANONICAL_HOST, jobNumber: b.jobNumber })
     return `sms:${to}${to ? '?&' : '?'}body=${encodeURIComponent(body)}`
   }
   const tone = (v) => v.startsWith('texted') ? 'var(--stage-done)' : v.startsWith('emailed, opened') ? 'var(--stage-done)' : v === 'nothing sent' || v.includes('bounced') ? '#ff3b30' : '#ff9500'
@@ -75,9 +86,15 @@ export default function Sm8Week() {
                   {!c.linkTexted && !c.linkEmailed && (c.smsCount || c.emailCount ? 'ServiceM8 sent something, but not the link. ' : 'ServiceM8 sent no confirmation. Only a booking made from the job card with Send Booking Confirmation ticked sends one, and it only texts if the automation’s text method is ticked. ')}
                   {b.card ? `Card ready (${b.card.stage.toLowerCase().replace('_', ' ')}), opened ${b.card.opened} time${b.card.opened === 1 ? '' : 's'}${b.card.termsAgreed ? ', terms agreed' : ''}${b.card.reply ? `, replied ${b.card.reply.toLowerCase().replace('_', ' ')}` : ''}.` : 'No card yet: it appears when they open the link, or make it now.'}
                 </p>
+                {sent[b.jobUuid] && <p className="mt-1.5 text-[13px] font-semibold" style={{ color: 'var(--tint)' }}>{sent[b.jobUuid]}</p>}
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(b.mobile || b.phone) && b.jobNumber && (
-                    <a href={smsHref(b)} className="btn accent-fill !min-h-[38px] !px-3.5 !text-[13px]"><MessageIcon size={15} /> {c.linkTexted ? 'Text the link again' : 'Text the link'}</a>
+                    <>
+                      <button type="button" onClick={() => sendLink(b)} disabled={busy === `send-${b.jobUuid}`} className="btn accent-fill !min-h-[38px] !px-3.5 !text-[13px]">
+                        <MessageIcon size={15} /> {busy === `send-${b.jobUuid}` ? 'Sending…' : c.linkTexted ? 'Send the link again via ServiceM8' : 'Send the link via ServiceM8'}
+                      </button>
+                      <a href={smsHref(b)} className="btn btn-grey !min-h-[38px] !px-3.5 !text-[13px]">Text it from my phone</a>
+                    </>
                   )}
                   {!b.card && <button type="button" onClick={() => makeCard(b)} disabled={busy === b.jobUuid} className="btn btn-grey !min-h-[38px] !px-3.5 !text-[13px]">{busy === b.jobUuid ? '…' : 'Make the card now'}</button>}
                   {b.card && <a href={`/t/${b.card.code}`} target="_blank" rel="noreferrer" className="btn btn-grey !min-h-[38px] !px-3.5 !text-[13px]">Open their page</a>}

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.33.0'
+export const VERSION = '1.34.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.34.0', date: '2026-10-12', notes: [
+    'Send the link via ServiceM8. The booking text now goes out through ServiceM8 itself from This week in ServiceM8: one of the account\'s SMS credits, and it lands in the job\'s own SMS history and diary exactly as if ServiceM8 had sent it. Checked against the live account on 12 Oct: the API key may send. Text it from my phone stays as the free way.',
+    'TurnUp as a ServiceM8 add-on, built and waiting on an App ID: Connect ServiceM8 as an add-on under Setup and settings, and from then on set off, on site, paused, done, terms agreed, no one home, running late and every customer reply are written into the job diary as a line from TurnUp. The diary is the one thing the key cannot write; the add-on can. docs/servicem8-add-on.md has the sign-up steps.',
+    'Texts are plain ASCII: ServiceM8\'s SMS endpoint turns a curly quote into question marks or a second credit.',
+  ] },
   { version: '1.33.0', date: '2026-10-12', notes: [
     'This week in ServiceM8, on the dashboard: every booking in the next seven days, whether ServiceM8 sent the link by text or email, whether the email was opened, and whether the TurnUp card exists yet. Read from ServiceM8\'s own email and SMS history, which the API key turns out to be allowed to see. Nothing is guessed.',
     'Where ServiceM8 sent nothing, one tap: Text the link opens Messages with the number and the words in. Make the card now builds the card before the customer opens the link.',

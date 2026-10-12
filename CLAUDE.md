@@ -591,11 +591,15 @@ and the full text of each. That is how `fetchMessages()` and
 read, and how **This week in ServiceM8** (`Sm8Week.jsx`, `fetchUpcoming()`,
 `/api/dashboard/servicem8/week`) answers "did the text go?" from ServiceM8's own
 record rather than guessing. Before this the box said it could not look inside
-ServiceM8; it can, for reading. What it **cannot** do with a key: send an SMS
-through ServiceM8, write to the job diary, put a button on the job card. Those
-need an add-on with OAuth scopes (`docs/design/servicem8-connection.md`). Never
-claim the connector sent a text; it opens Messages on the trade's phone with the
-words in, and the trade sends it.
+ServiceM8; it can, for reading. The key also **sends SMS** through
+`POST /platform_service_sms` (`sendSms()`; tested 12 Oct 2026, the text lands
+in the job's SMS history with `regardingJobUUID`), which is what **Send the link
+via ServiceM8** does. What it **cannot** do: write to the job diary (403) or
+notify staff. Those are the add-on's: `src/lib/sm8-oauth.js` (OAuth, encrypted
+tokens in `Sm8OAuth`, `publishDiary()`, `diaryFor()`), steps for the owner in
+`docs/servicem8-add-on.md`. `diaryFor()` is fire-and-forget wherever it is
+called and a no-op until the add-on is authorised. Texts go through
+`src/lib/sm8-words.js` and stay plain ASCII.
 
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 

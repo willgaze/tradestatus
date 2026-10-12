@@ -268,6 +268,17 @@ model Sm8Link {
   updatedAt     DateTime  @updatedAt
 }
 
+/// TurnUp as a ServiceM8 add-on: the OAuth tokens, encrypted, one row. Only
+/// the diary and staff notifications need this; everything else is the key.
+model Sm8OAuth {
+  id          String   @id @default("singleton")
+  cipher      String // AES-256-GCM of { access, refresh, expiresAt }, key from JWT_SECRET
+  scope       String?
+  vendorName  String?
+  connectedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // Every delivery and every sync, so "did it fire?" has an answer.
 model Sm8Event {
   id            String   @id @default(cuid())

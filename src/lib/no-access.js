@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notifyCustomer, pushTrade } from '@/lib/push'
 import { TRADE_NAME } from '@/lib/trade'
+import { diaryFor } from '@/lib/sm8-oauth'
 
 /**
  * Customer not home.
@@ -62,6 +63,7 @@ export async function recordNoAccess(tracker, body) {
     events: { create: { stage: 'PAUSED', note } },
   } })
   notifyCustomer(updated, { title: 'Sorry we missed you', body: `${TRADE_NAME} was at the door and could not get in. Open the page to say when suits.` }).catch(() => {})
+  diaryFor(updated, `No one home. At the door ${hhmm(startedAt)}, ${tried(attempts)}, waited ${waited} min${photo ? ', door photo taken' : ''}${fee ? `, GBP ${fee} as agreed` : ', nothing charged'}. Customer told and asked when suits.`).catch(() => {})
   return { row: { id: row.id, startedAt, leftAt, attempts, photoTaken: Boolean(photo), fee }, tracker: updated }
 }
 
@@ -72,6 +74,7 @@ export async function replyNoAccess(tracker, noAccessId, choice) {
   const who = tracker.customerName ? tracker.customerName.split(' ')[0] : 'The customer'
   await prisma.tradeStatus.update({ where: { id: tracker.id }, data: { events: { create: { stage: tracker.stage, note: `After no access: ${who} ${REPLIES[choice]}.` } } } })
   const next = choice === 'HERE' ? 'Go back if you still can, or say how long.' : 'Set new hours on the card.'
+  diaryFor(tracker, `After no access: ${who} ${REPLIES[choice]}.`).catch(() => {})
   const r = await pushTrade({ title: `${who} ${REPLIES[choice]}`, body: next, tag: `nudge-${tracker.code}` })
   return { ok: true, sent: r.sent }
 }
