@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { fileEmail } from '@/lib/arrivals'
 import { inboxKeyFrom } from '@/lib/inbox-address'
+import { readRawEmail } from '@/lib/mime'
 
 /**
  * Where forwarded emails land.
@@ -33,6 +34,13 @@ async function readEnvelope(request) {
 
   if (type.includes('application/json')) {
     const b = await request.json()
+    // Cloudflare's Email Worker has only the raw message to give, so it posts
+    // that and the MIME reading happens here, in the repository, under test.
+    // See src/lib/mime.js for why that is the right way round.
+    if (b.raw) {
+      const read = readRawEmail(b.raw)
+      if (read) return { ...read, to: b.to || read.to, from: b.from || read.from }
+    }
     return {
       to: b.to || b.To || b.recipient || b.OriginalRecipient || b.envelope?.to,
       from: b.from || b.From || b.sender,
