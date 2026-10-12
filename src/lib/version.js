@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.32.0'
+export const VERSION = '1.33.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.33.0', date: '2026-10-12', notes: [
+    'This week in ServiceM8, on the dashboard: every booking in the next seven days, whether ServiceM8 sent the link by text or email, whether the email was opened, and whether the TurnUp card exists yet. Read from ServiceM8\'s own email and SMS history, which the API key turns out to be allowed to see. Nothing is guessed.',
+    'Where ServiceM8 sent nothing, one tap: Text the link opens Messages with the number and the words in. Make the card now builds the card before the customer opens the link.',
+    'The box can answer "did the link go?" now. It is given the same ServiceM8 lines, and says why a confirmation usually fails to send: a booking not made from the job card with the tick, or the automation\'s text method off.',
+    'docs/design/servicem8-connection.md: what the key can and cannot do, and the plan for the full connection — a private add-on so TurnUp can send the text through ServiceM8 and write to the job diary.',
+  ] },
   { version: '1.32.0', date: '2026-10-12', notes: [
     'The day-before ask now carries the answers. The card on the customer\'s page — tomorrow, these hours, still fine? — has three replies: still fine, someone else will be in, need to move it. Each one lands on your card and your phone. Still fine and someone else also answer will someone be in?, so one tap does both. Two-way reminders are the best-evidenced cut in no-shows there is; the reply is what makes it two-way.',
     'Need to move it asks; the new hours are still yours to offer and theirs to agree under When suits you?.',

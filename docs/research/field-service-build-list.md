@@ -43,11 +43,11 @@ capability we do not have) · No.
 | Ordered day with running expected start; next customer told only if the shift leaves their window | Improve | Later |
 | "You are next" / stop count on the customer page | Improve | Done (position: "You are 2nd today") |
 | Confirmation re-sent on every reschedule, however the booking moved | Copy | Later — window follows the ServiceM8 booking already; the message does not |
-| Red "Not sent" badge on the dashboard until the customer has been told | Copy | Next |
+| Red "Not sent" badge on the dashboard until the customer has been told | Copy | Done 1.33.0 — This week in ServiceM8 reads ServiceM8's own email/SMS history: Link texted / emailed, opened / not sent, with Text the link in one tap |
 | Logged send and logged open of every customer message | Improve | Partly (viewCount, lastViewedAt); per-message log: Later |
 | Per-visit status audit, back-dating allowed but labelled | Copy | Partly (events); labelled back-dating: Later |
 | Private attachments that never reach the customer page | Copy | Later |
-| Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Later — `publish_diary_items` needs an OAuth app, not the API key |
+| Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Later — needs a private add-on with OAuth scopes; plan in docs/design/servicem8-connection.md |
 | "Certificate issued" optional final stage for notifiable work | Improve | Later — part of process templates |
 | Pre-agreed goodwill gesture, configured once, fired on a missed window | Copy | Later |
 | Review request after Job done, routed to Google | Copy | Next |

@@ -18,6 +18,7 @@ import Nudges from './Nudges'
 import Assistant from './Assistant'
 import Tip from './Tip'
 import NoAccess from './NoAccess'
+import Sm8Week from './Sm8Week'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { dayAndTime } from '@/lib/when'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
@@ -318,6 +319,11 @@ export default function Console({ assistant = false }) {
                 className="btn btn-grey w-full sm:col-span-2">Cancel</button>
       </form>
       )}
+
+      {/* What ServiceM8 has booked this week and whether the link went,
+          read from ServiceM8 itself. Renders nothing unless it is connected
+          and there is something coming. */}
+      <Sm8Week />
 
       {loading ? null
        : trackers.length === 0 ? <p className="mt-8 text-center text-[15px] muted">No jobs yet.</p>

@@ -342,3 +342,109 @@ export async function unsubscribe() {
   }
   return mine.length
 }
+
+// ---------------------------------------------------------------------------
+// What ServiceM8 sent, and what is coming up. Found 12 Oct 2026: the account
+// API key can read the job email and SMS history (email.json, sms.json,
+// filtered by related_object_uuid). Until then this connector believed it
+// could not see whether the booking text went, and said so in the box.
+// ---------------------------------------------------------------------------
+
+const LINK_RE = /\/j\/\d+/
+
+/** Outbound emails and texts ServiceM8 holds against a job, newest first. */
+export async function fetchMessages(jobUuid) {
+  const [emails, sms] = await Promise.all([
+    api(`email.json?${filter('related_object_uuid', jobUuid)}`).catch(() => []),
+    api(`sms.json?${filter('related_object_uuid', jobUuid)}`).catch(() => []),
+  ])
+  const out = (rows) => (Array.isArray(rows) ? rows : []).filter((m) => m.direction === 'outbound')
+  const by = (a, b) => String(b.timestamp).localeCompare(String(a.timestamp))
+  return {
+    emails: out(emails).sort(by).map((m) => ({
+      at: londonDate(m.timestamp), to: (m.to_email || [])[0] || null, subject: m.subject || null,
+      opened: Boolean(m.opened), firstOpenedAt: isNull(m.first_opened_at) ? null : londonDate(m.first_opened_at),
+      bounced: Boolean(m.bounced), hasLink: LINK_RE.test(String(m.message_text || '')),
+    })),
+    sms: out(sms).sort(by).map((m) => ({
+      at: londonDate(m.timestamp), to: m.to_phone || null, hasLink: LINK_RE.test(String(m.message || '')),
+      preview: String(m.message || '').slice(0, 90),
+    })),
+  }
+}
+
+/**
+ * One line of truth about the booking message: did the link reach them, and
+ * how. "nothing" is the case the trade needs to see, because ServiceM8 only
+ * sends a confirmation from the New Booking window with the tick on, and
+ * only texts if the automation's SMS method is ticked.
+ */
+export function confirmationState(messages) {
+  const texted = (messages?.sms || []).find((m) => m.hasLink)
+  const emailed = (messages?.emails || []).find((m) => m.hasLink)
+  const anySms = (messages?.sms || [])[0] || null
+  const anyEmail = (messages?.emails || [])[0] || null
+  const verdict = texted && emailed ? 'texted and emailed'
+    : texted ? 'texted'
+    : emailed ? (emailed.opened ? 'emailed, opened' : emailed.bounced ? 'emailed, bounced' : 'emailed, not opened yet')
+    : anySms || anyEmail ? 'sent, but without the link'
+    : 'nothing sent'
+  return {
+    verdict,
+    linkTexted: Boolean(texted), linkEmailed: Boolean(emailed),
+    emailOpened: Boolean(emailed?.opened), emailBounced: Boolean(emailed?.bounced),
+    textedAt: texted?.at || null, emailedAt: emailed?.at || null, openedAt: emailed?.firstOpenedAt || null,
+    smsCount: (messages?.sms || []).length, emailCount: (messages?.emails || []).length,
+  }
+}
+
+const dayStamp = (d) => {
+  const z = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d)
+  const g = Object.fromEntries(z.filter((p) => p.type !== 'literal').map((p) => [p.type, p.value]))
+  return `${g.year}-${g.month}-${g.day}`
+}
+
+let weekCache = { at: 0, days: 0, value: null }
+const WEEK_CACHE_MS = 90_000
+const WEEK_MAX = 25
+
+/**
+ * The bookings ServiceM8 has for the next few days, each with the job, the
+ * contact, whether a TurnUp card follows it yet, and whether ServiceM8 sent
+ * the link. Cached briefly per instance: a dashboard open on a phone polls,
+ * and ServiceM8 allows 180 calls a minute across everything.
+ */
+export async function fetchUpcoming({ days = 7, fresh = false } = {}) {
+  if (!fresh && weekCache.value && weekCache.days === days && Date.now() - weekCache.at < WEEK_CACHE_MS) return weekCache.value
+  const today = dayStamp(new Date())
+  const until = new Date(Date.now() + days * 86_400_000)
+  const rows = await api(`jobactivity.json?$filter=${encodeURIComponent(`start_date gt '${today} 00:00:00'`)}`)
+  const seen = new Set()
+  const bookings = (Array.isArray(rows) ? rows : [])
+    .filter((a) => Number(a.active ?? 1) === 1 && Number(a.activity_was_scheduled ?? 0) === 1 && !isNull(a.start_date))
+    .map((a) => ({ jobUuid: a.job_uuid, start: londonDate(a.start_date), end: isNull(a.end_date) ? null : londonDate(a.end_date) }))
+    .filter((b) => b.start && b.start <= until)
+    .filter((b) => { const k = `${b.jobUuid}|${b.start.toISOString()}`; if (seen.has(k)) return false; seen.add(k); return true })
+    .sort((a, b) => a.start - b.start)
+    .slice(0, WEEK_MAX)
+  const out = await Promise.all(bookings.map(async (b) => {
+    const [job, contact, messages, tracker] = await Promise.all([
+      fetchJob({ uuid: b.jobUuid }).catch(() => null),
+      fetchJobContact(b.jobUuid).catch(() => null),
+      fetchMessages(b.jobUuid),
+      prisma.tradeStatus.findFirst({ where: { externalId: b.jobUuid, isActive: true }, select: { id: true, code: true, stage: true, viewCount: true, termsAgreedAt: true, presenceAskedAt: true, reminderReply: true } }).catch(() => null),
+    ])
+    if (!job || Number(job.active ?? 1) !== 1) return null
+    const f = fieldsFromJob(job, contact)
+    return {
+      jobUuid: b.jobUuid, jobNumber: f.jobRef, start: b.start, end: b.end, status: job.status,
+      customerName: f.customerName, mobile: contact?.mobile || null, phone: contact?.phone || null,
+      jobAddress: f.jobAddress, jobSummary: f.jobSummary,
+      confirmation: confirmationState(messages),
+      card: tracker ? { code: tracker.code, stage: tracker.stage, opened: tracker.viewCount || 0, termsAgreed: Boolean(tracker.termsAgreedAt), asked: Boolean(tracker.presenceAskedAt), reply: tracker.reminderReply || null } : null,
+    }
+  }))
+  const value = out.filter(Boolean)
+  weekCache = { at: Date.now(), days, value }
+  return value
+}
