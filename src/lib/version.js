@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.41.0'
+export const VERSION = '1.42.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 26
+export const THEME_INDEX = 27
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.42.0', date: '2026-10-12', notes: [
+    'The card comes first. The owner\'s call: the wallet card is the thing to show, so it is now the hero — largest, before the phone — with the headline "One card in their wallet. Not a pile of emails." The whole card section follows straight after. The Now panel is the inbox a booking turns into, five emails deep, beside the one card that moves.',
+  ] },
   { version: '1.41.0', date: '2026-10-12', notes: [
     'The household card. One link per door, with everything coming to it on one list: your visit, the sofa, four parcels, whoever is booked to call round. A job link answers where is my plumber; this answers what is happening at my house this week, which is how the person living there already thinks about it.',
     'It fills itself from forwarded email. A delivery email forwarded to the card\u2019s own address is read for who it is from, what stage it is at and what day they said \u2014 thirteen UK carriers matched on the sending domain, because a subject line can claim to be Royal Mail and a domain has to pass SPF. Anything that is not an arrival is dropped.',
