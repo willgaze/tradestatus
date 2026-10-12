@@ -20,6 +20,7 @@ import Tip from './Tip'
 import NoAccess from './NoAccess'
 import Pilot from './Pilot'
 import Sm8Week from './Sm8Week'
+import { queueFetch, startQueue, onQueue } from './offline-queue'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { dayAndTime } from '@/lib/when'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
@@ -142,19 +143,33 @@ export default function Console({ assistant = false }) {
     if (await createFields(form)) { setForm(EMPTY); setShowForm(false) }
   }
 
+  // Taps saved on this phone because there was no signal, by job. They go
+  // the moment the page is back online (offline-queue.js); until then the
+  // card says so, and the optimistic state above stands.
+  const [queued, setQueued] = useState([])
+  const [online, setOnline] = useState(true)
+  useEffect(() => {
+    setOnline(navigator.onLine !== false)
+    const up = () => setOnline(true), down = () => setOnline(false)
+    window.addEventListener('online', up); window.addEventListener('offline', down)
+    const offQueue = onQueue(setQueued)
+    const stop = startQueue(() => load())
+    return () => { window.removeEventListener('online', up); window.removeEventListener('offline', down); offQueue(); stop() }
+  }, [load])
+  const queuedFor = (id) => queued.filter((q) => q.url === `/api/dashboard/trackers/${id}` || q.url.startsWith(`/api/dashboard/trackers/${id}/`))
+
   const patch = async (id, body) => {
     // Optimistic: signal is patchy in a van, and a button that does nothing for
     // three seconds gets pressed four times.
     setTrackers((rows) => rows.map((r) => (r.id === id ? { ...r, ...body } : r)))
     let ok = false
     try {
-      const r = await fetch(`/api/dashboard/trackers/${id}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      })
+      const r = await queueFetch(`/api/dashboard/trackers/${id}`, { method: 'PATCH', body })
+      if (r.queued) return true // saved on this phone; the card says so
       ok = r.ok
-      if (!r.ok) setError(await failure(r, 'Update failed'))
+      if (!r.ok) setError({ title: 'Update failed', fix: r.json?.error ? String(r.json.error) : `The server answered ${r.status}.` })
     } catch {
-      setError({ title: 'Update failed', fix: 'Check your connection and try again.' })
+      setError({ title: 'Update failed', fix: 'Try again in a moment.' })
     } finally { await load() }
     return ok
   }
@@ -273,6 +288,12 @@ export default function Console({ assistant = false }) {
         {loading ? 'Loading…' : openJobs === 0 ? 'Nothing open.' : `${openJobs} job${openJobs === 1 ? '' : 's'} open. Tap the stage as the day goes.`}
       </p>
 
+      {(!online || queued.length > 0) && (
+        <div className="r-outer mt-5 px-5 py-4" style={{ background: 'color-mix(in srgb, #ff9500 13%, transparent)' }}>
+          <p className="font-semibold">{!online ? 'No signal' : 'Back in signal'}{queued.length ? ` · ${queued.length} tap${queued.length === 1 ? '' : 's'} saved on this phone` : ''}</p>
+          <p className="mt-1 text-sm muted">{!online ? 'Keep tapping. Each tap is saved with its time and goes the moment signal comes back.' : 'Sending the saved taps now, in order, with the times they were made.'}</p>
+        </div>
+      )}
       {error && (
         <div className="r-outer mt-5 p-5"
              style={{ background: 'color-mix(in srgb, #ff3b30 12%, transparent)', color: '#ff3b30' }}>
@@ -378,6 +399,11 @@ export default function Console({ assistant = false }) {
                   {/* Whether they have read the terms and tapped Go ahead. Until
                       Job done it is worth a glance: a short-notice charge only
                       holds if this happened before the day. */}
+                  {queuedFor(t.id).length > 0 && (
+                    <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold" style={{ color: '#ff9500' }}>
+                      {queuedFor(t.id).length === 1 ? 'Saved on this phone — sends when back in signal' : `${queuedFor(t.id).length} taps saved — send when back in signal`}
+                    </p>
+                  )}
                   {/* What came back from the day-before ask. Amber when they
                       want it moved, because that one needs you to do something.
                       "No answer yet" is the banner above, not a chip. */}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { runningLate, answeredByStage } from '@/lib/nudge'
 import { diaryFor } from '@/lib/sm8-oauth'
 import { STAGES } from '@/lib/trade-status'
+import { readTap, hhmmLondon } from '@/lib/tap'
 import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { isValidStage } from '@/lib/trade-status'
@@ -116,8 +117,20 @@ export async function PATCH(request, { params }) {
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'nothing_to_update' }, { status: 400 })
     }
+    // A tap that was queued on the phone and sent later carries its own time.
+    // The event keeps both clocks; "set off at" becomes the tap's time, which
+    // is the true one, and the customer is told it arrived late.
+    const tap = readTap(body)
+    if (tap.tapId) {
+      const seen = await prisma.tradeStatusEvent.findFirst({ where: { tapId: tap.tapId } }).catch(() => null)
+      if (seen) return NextResponse.json({ tracker: current, duplicate: true })
+    }
     if (data.stage) {
-      data.events = { create: { stage: data.stage, note: data.stageNote ?? cleanText(body.stageNote) } }
+      data.events = { create: {
+        stage: data.stage, note: data.stageNote ?? cleanText(body.stageNote),
+        deviceAt: tap.deviceAt, offline: tap.offline, lat: tap.lat, lng: tap.lng, accuracy: tap.accuracy, fixValidated: tap.fixValidated, tapId: tap.tapId,
+      } }
+      if (data.stage === 'ON_MY_WAY' && tap.deviceAt) data.arrivingAt = tap.deviceAt
     }
 
     const tracker = await prisma.tradeStatus.update({ where: { id }, data })
@@ -125,7 +138,7 @@ export async function PATCH(request, { params }) {
     // A line in the ServiceM8 job diary for what the trade just did, when the
     // add-on is connected. Not awaited: the diary is a record, not a gate.
     if (data.stage && data.stage !== current.stage) {
-      diaryFor(tracker, `${STAGES[data.stage]?.label || data.stage}${data.stageNote ? ` - ${data.stageNote}` : ''}`).catch(() => {})
+      diaryFor(tracker, `${STAGES[data.stage]?.label || data.stage}${data.stageNote ? ` - ${data.stageNote}` : ''}${tap.offline && tap.deviceAt ? ` (tapped ${hhmmLondon(tap.deviceAt)} with no signal, sent ${hhmmLondon(new Date())})` : ''}`).catch(() => {})
     }
 
     // Tell any device watching this job that it moved.

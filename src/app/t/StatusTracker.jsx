@@ -410,7 +410,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
 
         {status.events?.length > 0 && (
           <Disclosure icon={<ClockIcon size={19} />} title="What has happened" delay="240ms"
-                      summary={`${status.events.length} update${status.events.length === 1 ? '' : 's'} · last ${timeOnly(status.events[status.events.length - 1].at)}`}
+                      summary={`${status.events.length} update${status.events.length === 1 ? '' : 's'} · last ${timeOnly(status.events[status.events.length - 1].deviceAt || status.events[status.events.length - 1].at)}`}
                       open={openRow === 'log'} onToggle={() => toggle('log')}>
             <ol className="space-y-4">
               {[...status.events].reverse().map((e, i, all) => {
@@ -427,7 +427,10 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
                     </span>
                     <span className="min-w-0 flex-1 pt-1">
                       <span className="block text-[16px] font-semibold leading-tight">{s2.label}</span>
-                      <span className="mt-0.5 block text-[13px]" style={{ color: 'var(--label-3)' }}>{dayAndTime(e.at)}</span>
+                      <span className="mt-0.5 block text-[13px]" style={{ color: 'var(--label-3)' }}>
+                        {dayAndTime(e.deviceAt || e.at)}
+                        {e.offline && e.deviceAt && ` · sent ${timeOnly(e.at)}, when back in signal`}
+                      </span>
                       {e.note && <span className="mt-1.5 block text-[15px] leading-snug muted">{e.note}</span>}
                     </span>
                   </li>

@@ -140,10 +140,25 @@ model TradeStatusEvent {
   stage         String
   note          String?
   createdAt     DateTime @default(now())
+  // A tap made with no signal and sent later: when the phone says it was
+  // tapped, and the fix it had. createdAt stays the server's time, so the two
+  // are never confused. fixValidated: the fix was fresh and tight enough to
+  // stand as "where the phone was when it was tapped".
+  deviceAt     DateTime?
+  offline      Boolean   @default(false)
+  lat          Float?
+  lng          Float?
+  accuracy     Float?
+  fixValidated Boolean?
+  // The queue's own id for the tap. A flush interrupted by a page change after
+  // the request went but before the item was deleted replays it; the same id
+  // twice is one event, not two.
+  tapId        String?
 
   tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
 
   @@index([tradeStatusId, createdAt])
+  @@index([tapId])
 }
 
 /// A device Will has enrolled — his phone's Face ID, his laptop's Touch ID.
@@ -341,9 +356,11 @@ model NoAccess {
   reply           String? // HERE | LATER | REBOOK
   replyAt         DateTime?
   fee             Int? // pounds stated in the note; null when nothing was charged
+  tapId           String? // the queue's id when recorded with no signal; a replay is one record
   createdAt       DateTime  @default(now())
 
   tradeStatus TradeStatus @relation(fields: [tradeStatusId], references: [id], onDelete: Cascade)
 
   @@index([tradeStatusId])
+  @@index([tapId])
 }

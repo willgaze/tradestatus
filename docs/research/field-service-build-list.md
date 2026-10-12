@@ -25,7 +25,7 @@ capability we do not have) · No.
 | Booking confirmation carrying cancellation info, express-start request, no-access terms (CCR 2013 regs 28/36) | Improve | Done 1.29.0 — Before the visit on the customer page (notice, charge if any, 14-day right), one-tap Got it, go ahead recorded with the words; Booking terms panel on the dashboard; confirmation line points at it |
 | Day-before reminder with reply: confirm / reschedule / someone else will be in | Copy | Done 1.31.0 + 1.32.0 — asked at 16:00 the day before (push + page); replies still fine / someone else / move it reach the trade; SMS via ServiceM8's Booking Reminder automation |
 | Non-push fallback for every customer-critical event | Copy | Next — email first; SMS is the capability to buy |
-| Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Next — dashboard service worker + IndexedDB |
+| Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Done 1.39.0 — IndexedDB queue in the dashboard page (no background sync on iOS); event keeps deviceAt, server time, fix and fixValidated; customer sees both times |
 | Customer page shows "last updated hh:mm" and the last honest stage | Improve | Next |
 | "Customer not home" in one tap: fix, door photo, attempts, wait clock, message with three replies | Copy | Done 1.26.0 (fee deliberately absent; the next step is offered first) |
 | Automatic concrete message at window end: wait / later today / rebook | Improve | Done 1.24.0 (the new window is proposed by the trade, never generated) |

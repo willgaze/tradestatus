@@ -20,7 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
-| [v1.39.0](./v1.39.0/) | 2026-10-12 | Moss — the pilot in four numbers; the six moves reordered; the ask has a reader |
+| [v1.40.0](./v1.40.0/) | 2026-10-12 | Moss — the pilot in four numbers; the six moves reordered; the ask has a reader |
 | [v1.31.0](./v1.31.0/) | 2026-10-11 | Plum — asked the day before: will someone be in? |
 | [v1.30.0](./v1.30.0/) | 2026-10-11 | Teal — the attendance record: one row per visit, from the taps |
 | [v1.26.0](./v1.26.0/) | 2026-10-10 | Clay — A window passing is noticed even when nobody has the page open — a scheduled check every five minutes |

@@ -191,10 +191,15 @@ export function publicShape(row) {
     // Customer not home: the facts of the visit, never the location or the
     // photo. "Was at the door at 10:04, knocked and called, waited until 10:14."
     noAccess: publicNoAccess(row.noAccess?.[0]),
+    // `at` is when the server heard it; `deviceAt` is when the trade tapped,
+    // kept separately when the tap was queued with no signal. The place the
+    // phone was is never here.
     events: (row.events || []).map((event) => ({
       stage: event.stage,
       note: event.note || null,
       at: event.createdAt.toISOString(),
+      deviceAt: event.deviceAt ? event.deviceAt.toISOString() : null,
+      offline: Boolean(event.offline),
     })),
   }
 }

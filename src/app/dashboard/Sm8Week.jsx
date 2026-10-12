@@ -19,6 +19,9 @@ export default function Sm8Week() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(null)
+  // Every hook above the early returns below: a panel that renders nothing
+  // must still call the same hooks, or React tears the dashboard down.
+  const [sent, setSent] = useState({})
 
   const load = useCallback(async (fresh = false) => {
     setError(null)
@@ -34,7 +37,6 @@ export default function Sm8Week() {
   if (data && !data.configured) return null
   if (data && data.bookings.length === 0 && !error) return null
 
-  const [sent, setSent] = useState({})
   const sendLink = async (b) => {
     setBusy(`send-${b.jobUuid}`)
     try {
