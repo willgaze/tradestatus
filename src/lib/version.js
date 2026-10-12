@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.35.0'
+export const VERSION = '1.36.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 23
+export const THEME_INDEX = 24
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.36.0', date: '2026-10-12', notes: [
+    '/with-servicem8 gets the homepage treatment: fewer words, and a picture of the part for every step. The customer\'s status card at each stage, the claim screen, the linked card and the ServiceM8 panel are cut from the existing captures (scripts/capture-home-crops.mjs, ONLY=sm8); the ServiceM8 app\'s four buttons and the booking text are drawn at a readable size instead of inside a 150px phone.',
+    'What moves the card is now a row per stage: what you press, an arrow, what they see. The setup is the same four steps with the two messages to paste and a line each.',
+    'The wallet section on the homepage, second pass at the owner\'s request: it opens with three phones — the lock screen, double-click, the wallet open with the card in the stack, the card tapped — so a visitor sees it is a card before anything is explained. The pulled-apart card, the four stage cards and the back now stand in three dimensions on the same dark floor as the hero, instead of lying flat.',
+  ] },
   { version: '1.35.0', date: '2026-10-12', notes: [
     'The homepage says less and shows more. Every row the customer can open and every part of the dashboard the trade taps is now a picture of that part — cut from the real screen at 2x by scripts/capture-home-crops.mjs, never a whole phone — under a label of a few words. The paragraphs are gone; the two walkthrough strips went with them.',
     'The wallet card gets the section it always needed: the card pulled apart with each band named (the same bands buildPassJson signs), the same card at all four stages, its back, and the lock screen the notification lands on. Drawn from PassCard, so it cannot drift from the real pass. The badge still says it: built, waiting on Apple. The buzz on the lock screen is live today; the card updating itself in Wallet is not.',

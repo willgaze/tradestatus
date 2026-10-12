@@ -74,5 +74,45 @@
   "trade-plate": {
     "w": 712,
     "h": 420
+  },
+  "sm8-customer-booked": {
+    "w": 712,
+    "h": 442
+  },
+  "sm8-customer-onway": {
+    "w": 712,
+    "h": 500
+  },
+  "sm8-customer-onsite": {
+    "w": 712,
+    "h": 672
+  },
+  "sm8-customer-paused": {
+    "w": 712,
+    "h": 672
+  },
+  "sm8-customer-done": {
+    "w": 712,
+    "h": 512
+  },
+  "sm8-claim": {
+    "w": 712,
+    "h": 810
+  },
+  "sm8-dashboard-card": {
+    "w": 712,
+    "h": 790
+  },
+  "sm8-dashboard-stage": {
+    "w": 712,
+    "h": 190
+  },
+  "sm8-panel-head": {
+    "w": 716,
+    "h": 150
+  },
+  "sm8-lately": {
+    "w": 716,
+    "h": 504
   }
 }

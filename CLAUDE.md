@@ -728,7 +728,11 @@ the full captures already in `public/home/` — those need a database, so the
 boxes in the script are in those files' pixels. It writes
 `src/lib/home-crops.json` with each file's size, which `Shot.jsx` needs.
 **When a screen changes, re-run it**: a crop of last month's row is a lie
-about this month's app. Recapture; never retouch.
+about this month's app. Recapture; never retouch. `/with-servicem8` uses the
+same component and the same folder (`sm8-*`), cut from the captures in
+`public/with-servicem8/` with `ONLY=sm8 node scripts/capture-home-crops.mjs`,
+which needs no browser; ServiceM8's own screens stay drawn (`Sm8Mocks.jsx`), at
+a readable size rather than inside a 150px phone.
 
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
