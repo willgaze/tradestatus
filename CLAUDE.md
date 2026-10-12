@@ -896,6 +896,13 @@ attendance record are drawn in `src/app/dashboard/Pictures.jsx`. The banner word
 are the ones `src/lib/nudge.js` sends; change them there and the drawing follows by
 hand. A panel that needs a paragraph to explain itself wants a picture instead.
 
+The `/j/<job number>` claim page follows it too (v1.47.0): drawn as the customer's
+page is (glass, wash, `tone-booked`), one line, the box, and under it `Shot`'s
+`stage-booked` card so the digits have a visible reason. Its capture on
+`/with-servicem8` is `public/with-servicem8/claim.webp` from
+`scripts/capture-with-servicem8.mjs`, which needs a stand-in ServiceM8 on
+`SM8_API_BASE`; re-shoot it when that page changes.
+
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
 drift. It carries the same badges the posters do, and the lock screen shows

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.46.0'
+export const VERSION = '1.47.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 28
+export const THEME_INDEX = 29
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.47.0', date: '2026-10-12', notes: [
+    'The /j/ page, the one a customer lands on from the ServiceM8 text, drawn like the page it leads to: the glass, the wash, Booked in\'s blue, and under the four-digit box a picture of the card the digits unlock, so the person who just tapped a link can see what they are typing for. The words are shorter. The dead ends (no such job, still a quote, cancelled) say one line and show the number to ring.',
+  ] },
   { version: '1.46.0', date: '2026-10-12', notes: [
     'Switch link back on. A link switched off by mistake used to be dead and meant a new job; now Switch link back on sits where Switch link off was, under More, same size. A switched-off card says so in words — Link is off, the customer sees expired — rather than just going pale.',
   ] },
