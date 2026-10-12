@@ -889,6 +889,13 @@ same component and the same folder (`sm8-*`), cut from the captures in
 which needs no browser; ServiceM8's own screens stay drawn (`Sm8Mocks.jsx`), at
 a readable size rather than inside a 150px phone.
 
+The dashboard's setup panels follow the same rule (v1.43.0): Who to expect, Booking
+terms and Turn on notifications each show the customer's row they change (`Shot`, the
+same crops), ServiceM8 shows its Check In button beside On site, and Nudge me and the
+attendance record are drawn in `src/app/dashboard/Pictures.jsx`. The banner words there
+are the ones `src/lib/nudge.js` sends; change them there and the drawing follows by
+hand. A panel that needs a paragraph to explain itself wants a picture instead.
+
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
 drift. It carries the same badges the posters do, and the lock screen shows

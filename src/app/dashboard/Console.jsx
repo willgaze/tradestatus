@@ -21,6 +21,7 @@ import Tip from './Tip'
 import NoAccess from './NoAccess'
 import Pilot from './Pilot'
 import Sm8Week from './Sm8Week'
+import { AttendanceSheet } from './Pictures'
 import { queueFetch, startQueue, onQueue } from './offline-queue'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { dayAndTime } from '@/lib/when'
@@ -752,12 +753,13 @@ export default function Console({ assistant = false }) {
             above, for whoever pays per visit and is marked per missed one. */}
         <section id="panel-attendance" className="glass r-outer mt-4 scroll-mt-4 p-5">
           <h2 className="text-[20px] font-bold tracking-[-0.02em]">Attendance record</h2>
-          <p className="mt-1 text-[14px] muted">Every set-off, arrival and finish, one row per visit, as a spreadsheet. A repeat visit is a second row. A job nobody went to says so.</p>
+          <p className="mt-1 text-[14px] muted">One row per visit, timestamped from your taps. A job nobody went to says so.</p>
+          <div className="mt-3 max-w-[460px]"><AttendanceSheet /></div>
           <div className="mt-3 flex flex-wrap gap-2">
             <a href="/api/dashboard/attendance?days=30" download className="btn btn-grey text-[14px]">Last 30 days</a>
             <a href="/api/dashboard/attendance?days=90" download className="btn btn-grey text-[14px]">Last 90 days</a>
           </div>
-          <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, and nor does the link.</p>
+          <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, nor the link.</p>
         </section>
         <div id="panel-pilot" className="scroll-mt-4"><Pilot /></div>
         <div id="panel-waitlist" className="scroll-mt-4"><WaitlistPanel /></div>

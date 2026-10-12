@@ -2,9 +2,53 @@
 
 **2026-10-12** · background `#f5f5fc` · accent `#463a94`
 
-- The pilot in four numbers, under Setup and settings. Three counted from the rows, the fourth by hand, and it says so
-- The six moves reordered: prove it on the owner's own jobs first, housing and carriers parked at move 6
-- Every build updates the words: Standing Rule 24, and `scripts/check-current.mjs` before every push
-- The ask has a reader: who, why, six questions, three watch-outs, six ducks in a row, the message with a copy button. Owner only
+- The dashboard's setup panels get the homepage treatment: a picture of the part instead of a paragraph about it. Who to expect shows the row the customer opens; Booking terms shows what they read and tap; Nudge me shows the two buzzes as they land on your lock screen, in the words actually sent; Turn on notifications shows the row it switches on; ServiceM8 shows Check In beside On site; the attendance record shows three rows of itself. Every one of them is shorter.
 
-Built as 1.32.0 and 1.33.0 on the plan branch while main went from 1.32.0 to 1.43.0 in other sessions, so it carries the next number main had free. Not captured: the customer, wallet, dashboard and plan shots. No database on this machine; the next capture fills them in. The counting is checked by `scripts/check-pilot.mjs` (8 cases); the reviewer block is gated on `readOnly`, read from the code.
+
+### wallet-in-stack
+
+![wallet-in-stack](./wallet-in-stack.webp)
+
+### wallet-opened
+
+![wallet-opened](./wallet-opened.webp)
+
+### wallet-alone
+
+![wallet-alone](./wallet-alone.webp)
+
+### customer-light
+
+![customer-light](./customer-light.webp)
+
+### customer-dark
+
+![customer-dark](./customer-dark.webp)
+
+### dashboard
+
+![dashboard](./dashboard.webp)
+
+### dashboard-setup
+
+![dashboard-setup](./dashboard-setup.webp)
+
+### login
+
+![login](./login.webp)
+
+### homepage
+
+![homepage](./homepage.webp)
+
+### homepage-dark
+
+![homepage-dark](./homepage-dark.webp)
+
+### household
+
+![household](./household.webp)
+
+### household-dark
+
+![household-dark](./household-dark.webp)

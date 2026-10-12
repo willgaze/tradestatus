@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { PUSH_CONFIGURED } from '../t/Notify'
 import { BellIcon, CopyIcon, TickIcon } from '@/components/icons'
+import Shot from '@/components/Shot'
 
 /**
  * Turning push notifications on, without a terminal.
@@ -98,12 +99,10 @@ export default function PushSetup() {
       </span>
       <h2 className="mt-3 text-[19px] font-semibold">Turn on notifications</h2>
       <p className="mt-1.5 text-[16px] leading-snug muted">
-        Right now your customers have to open the link to see where you are. With this on, their phone
-        tells them when you set off, when you arrive and when you are done.
+        Their phone buzzes when you set off, arrive and finish. Three values into Vercel, one redeploy. Five minutes, on this phone.
       </p>
-      <p className="mt-2 text-[15px] leading-snug muted">
-        Three things to copy into Vercel, then one button. Five minutes, all on your phone.
-      </p>
+      {/* The row this switches on, on the CUSTOMER's page. Off until the keys are in. */}
+      <Shot name="row-notify" label="The row it switches on, on their page" fade className="mt-4 max-w-[360px]" />
 
       {!pair ? (
         <>
@@ -130,9 +129,7 @@ export default function PushSetup() {
             Environment Variables ›
           </a>
           <p className="mt-2 text-[14px] leading-snug muted">
-            Sign in if it asks. For each of the three below: tap <strong>Add Another</strong> (or
-            <strong> Add New</strong> the first time), put the name in <strong>Key</strong>, paste into{' '}
-            <strong>Value</strong>, leave all three environment tickboxes on, and <strong>Save</strong>.
+            For each of the three: <strong>Add New</strong>, name in <strong>Key</strong>, paste into <strong>Value</strong>, all three environments ticked, <strong>Save</strong>.
           </p>
 
           <h3 className="mt-5 text-[17px] font-semibold">Step 3 — The three values</h3>
@@ -145,9 +142,7 @@ export default function PushSetup() {
 
           <h3 className="mt-5 text-[17px] font-semibold">Step 4 — Redeploy</h3>
           <p className="mt-1.5 text-[14px] leading-snug muted">
-            The public key is baked in when the site builds, so nothing changes until it rebuilds.
-            Open Deployments, tap the <strong>…</strong> on the top one, choose <strong>Redeploy</strong>,
-            and leave the build cache box ticked. It takes about two minutes.
+            Nothing changes until the site rebuilds. Deployments, <strong>…</strong> on the top one, <strong>Redeploy</strong>. About two minutes.
           </p>
           <a href={DEPLOY_URL} target="_blank" rel="noreferrer" className="btn btn-tinted mt-2.5 w-full">
             Deployments ›
@@ -168,8 +163,7 @@ export default function PushSetup() {
               <li>5. Move that job on from this dashboard — the notification should land</li>
             </ol>
             <p className="mt-2.5 text-[13px]" style={{ color: 'var(--label-3)' }}>
-              Steps 2 and 3 are not optional on an iPhone. Apple does not allow notifications from a
-              Safari tab, only from a page added to the home screen. Android works from a normal tab.
+              On an iPhone, 2 and 3 are not optional: no notifications from a Safari tab, only from the home screen.
             </p>
           </div>
         </>
