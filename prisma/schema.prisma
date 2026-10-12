@@ -77,6 +77,13 @@ model TradeStatus {
   // go to the trade and stay on the device that said them.
   customerLateMinutes Int?
   customerLateAt      DateTime?
+  // After Job done: when the review ask was pushed, when the Google button
+  // was tapped, and a note the customer sent to the trade instead or as well.
+  // The note is theirs to the trade: never public.
+  reviewAskedAt   DateTime?
+  reviewClickedAt DateTime?
+  feedbackText    String?
+  feedbackAt      DateTime?
   // The customer's one-tap reply to the day-before ask (presenceAskedAt,
   // below): OK, SOMEONE_ELSE (will let you in) or MOVE (wants different
   // hours). A reply is a message to the trade; MOVE moves nothing by itself.
@@ -217,6 +224,11 @@ model TradeProfile {
   // phone last reached us at 08:12" when it has been quiet, rather than
   // implying a live feed from a phone that is under a floor.
   lastSeenAt DateTime?
+
+  // Where a happy customer leaves a review: the trade's own Google link.
+  // Shown on the page after Job done, to everyone, and pushed once two hours
+  // on. Nothing here decides who gets asked; everyone does.
+  reviewUrl String?
 
   updatedAt DateTime @updatedAt
 }

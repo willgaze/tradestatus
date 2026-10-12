@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { nudgeAll } from '@/lib/nudge'
 import { autoFollow } from '@/lib/sm8-auto'
+import { reviewAsks } from '@/lib/review'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,7 +48,9 @@ export async function GET(request) {
     // bookings, the link texted after the automation's head start. Its own
     // failures are its own; the nudges above have already gone.
     const follow = await autoFollow().catch((e) => ({ on: true, error: e.message }))
-    return NextResponse.json({ ok: true, at: new Date().toISOString(), ...r, follow })
+    // Two hours after Job done: how did it go? Once per job.
+    const reviews = await reviewAsks().catch((e) => ({ on: true, error: e.message }))
+    return NextResponse.json({ ok: true, at: new Date().toISOString(), ...r, follow, reviews })
   } catch (error) {
     console.error('cron nudge failed:', error)
     return NextResponse.json({ error: 'unavailable' }, { status: 503 })

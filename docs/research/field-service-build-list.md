@@ -50,7 +50,7 @@ capability we do not have) · No.
 | Write every TurnUp event into the trade's system of record (ServiceM8 diary item, badge) | Improve | Built 1.34.0, waiting on the add-on App ID (docs/servicem8-add-on.md); badge: Later |
 | "Certificate issued" optional final stage for notifiable work | Improve | Later — part of process templates |
 | Pre-agreed goodwill gesture, configured once, fired on a missed window | Copy | Later |
-| Review request after Job done, routed to Google | Copy | Next |
+| Review request after Job done, routed to Google | Copy | Done 1.43.0 — How did it go? on the page at Job done (Google link + a private note to the trade, both always), one push two hours on |
 
 ## Tier 3 — gated on a capability we do not have yet
 

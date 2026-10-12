@@ -62,7 +62,7 @@ export async function POST(request) {
         stage: true, stageNote: true, scheduledFor: true, arrivingAt: true,
         windowStart: true, windowEnd: true, windowState: true, windowBy: true, windowNote: true,
         position: true, askedAt: true, askAnsweredAt: true, lateMinutes: true, lateAt: true,
-        missedAt: true, missedChoice: true, customerLateMinutes: true, customerLateAt: true, doorToUse: true, petsOnSite: true, accessNotes: true,
+        missedAt: true, missedChoice: true, customerLateMinutes: true, customerLateAt: true, reviewClickedAt: true, feedbackText: true, doorToUse: true, petsOnSite: true, accessNotes: true,
         presence: true, presenceNote: true, presenceAt: true, viewCount: true, lastViewedAt: true,
         isActive: true,
         events: { orderBy: { createdAt: 'desc' }, take: 5, select: { stage: true, createdAt: true } },

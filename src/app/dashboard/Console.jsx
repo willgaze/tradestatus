@@ -382,6 +382,15 @@ export default function Console({ assistant = false }) {
                 </div>
               )}
 
+              {/* After the job: a note the customer sent to you, and whether they
+                  went to leave a review. The note is yours alone. */}
+              {t.stage === 'DONE' && (t.feedbackText || t.reviewClickedAt) && (
+                <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: t.feedbackText ? 'color-mix(in srgb, #ff9500 13%, transparent)' : 'color-mix(in srgb, var(--stage-done) 12%, transparent)' }}>
+                  {t.feedbackText && <span className="block font-semibold">{greetingName(t.customerName) || 'The customer'} left you a note{t.feedbackAt ? ` at ${new Date(t.feedbackAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}</span>}
+                  {t.feedbackText && <span className="block whitespace-pre-wrap">{t.feedbackText}</span>}
+                  {t.reviewClickedAt && <span className="block text-[13px] opacity-75">Went to leave a Google review at {new Date(t.reviewClickedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}.</span>}
+                </div>
+              )}
               {/* The customer is the late one. Their minutes, their time, and when
                   to expect them from — worked out from what THEY said. */}
               {t.customerLateMinutes && ['BOOKED', 'ON_MY_WAY'].includes(t.stage) && t.customerLateAt && (Date.now() - new Date(t.customerLateAt) < 6 * 3600_000) && (

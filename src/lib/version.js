@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.43.0'
+export const VERSION = '1.44.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,11 +48,15 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.43.0', date: '2026-10-12', notes: [
+  { version: '1.44.0', date: '2026-10-12', notes: [
     'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
     'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',
     'The ask has a reader, confirmed. The plan’s last section carries, for the owner only, who is being sent it and why, six questions only he can answer, three things to watch, six ducks to tick before it goes, and the message in the owner’s own words with a copy button. The guest page never shows it.',
     'Every build updates the words. Standing Rule 24: the plan, the homepage, the guides and the instructions are part of every build and every nightly. scripts/check-current.mjs checks what a script can and must pass before a push; the nightly reads the rest.',
+  ] },
+  { version: '1.43.0', date: '2026-10-12', notes: [
+    'After Job done: how did it go? The customer\'s page offers a Google review and a note to you, both always, to everyone. Nobody is sorted into happy and unhappy first; a one-person firm\'s reviews are worth having only if they are real. Two hours on, one notification, once per job.',
+    'Your Google review link goes under Who to expect. The note comes to your phone and onto the card, and nowhere else; the page says only that one was sent.',
   ] },
   { version: '1.42.0', date: '2026-10-12', notes: [
     'The card comes first. The owner\'s call: the wallet card is the thing to show, so it is now the hero — largest, before the phone — with the headline "One card in their wallet. Not a pile of emails." The whole card section follows straight after. The Now panel is the inbox a booking turns into, five emails deep, beside the one card that moves.',
