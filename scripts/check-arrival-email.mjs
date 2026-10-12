@@ -88,5 +88,19 @@ const noDate = readArrivalEmail({ from: 'x@dpd.co.uk', subject: 'On its way', te
 if (noDate?.expectedFor == null) { pass++; console.log('  ok    no date in the email means no date on the card') }
 else bad('no invented dates', 'a date appeared from nowhere', noDate)
 
+// The title names the thing, not the stage. The card already says the stage,
+// in colour, directly above the title — a title that repeats it spends the one
+// line that could have said WHAT is coming.
+const TITLES = [
+  ['a subject that is only a stage', { from: 'noreply@evri.com', subject: 'Your parcel is out for delivery', text: 'Your parcel H00AP1234567890 is out for delivery today.' }, 'Evri parcel'],
+  ['a sender with no carrier', { from: 'deliveries@loaf.com', subject: 'Your delivery is booked', text: 'We will deliver your sofa on Friday.' }, 'Delivery from Loaf'],
+  ['a subject that names something', { from: 'noreply@dpd.co.uk', subject: 'Your Screwfix order has been dispatched', text: 'Order 15502938475610 has been dispatched.' }, 'Your Screwfix order has been dispatched'],
+]
+for (const [name, email, want] of TITLES) {
+  const got = readArrivalEmail(email, NOW)
+  if (got?.title === want) { pass++; console.log(`  ok    ${name} -> "${got.title}"`) }
+  else bad(name, `title "${got?.title}" != "${want}"`, got)
+}
+
 console.log(`\n${fail ? 'FAILED' : 'PASSED'} — ${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

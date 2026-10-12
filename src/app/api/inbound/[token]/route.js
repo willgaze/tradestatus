@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { fileEmail } from '@/lib/arrivals'
+import { inboxKeyFrom } from '@/lib/inbox-address'
 
 /**
  * Where forwarded emails land.
@@ -55,17 +56,6 @@ async function readEnvelope(request) {
     subject: get('subject', 'Subject'),
     text: get('text', 'body-plain', 'stripped-text', 'html', 'body-html'),
   }
-}
-
-/** The local part of whichever of our addresses this was sent to. */
-function inboxKeyFrom(to) {
-  const s = String(to || '')
-  // "Name <abc123@in.getturnup.com>", "abc123@in.getturnup.com", or a list.
-  for (const m of s.matchAll(/([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-]+)/g)) {
-    const [, local, domain] = m
-    if (/(^|\.)getturnup\.com$/i.test(domain)) return local.toLowerCase()
-  }
-  return null
 }
 
 export async function POST(request, { params }) {
