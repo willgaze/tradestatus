@@ -72,6 +72,11 @@ model TradeStatus {
   missedAt       DateTime?
   missedChoice   String?
   missedChoiceAt DateTime?
+  // The customer saying THEY are running late: minutes they chose, and when
+  // they said it. Their own answer, so only the time is public; the minutes
+  // go to the trade and stay on the device that said them.
+  customerLateMinutes Int?
+  customerLateAt      DateTime?
   // The customer's one-tap reply to the day-before ask (presenceAskedAt,
   // below): OK, SOMEONE_ELSE (will let you in) or MOVE (wants different
   // hours). A reply is a message to the trade; MOVE moves nothing by itself.
@@ -206,6 +211,12 @@ model TradeProfile {
   // and text the link through ServiceM8 ten minutes later unless ServiceM8's
   // own automation already has. Off by default: it spends SMS credits.
   autoFollow Boolean @default(false)
+
+  // The last time the trade's dashboard reached the server (a heartbeat
+  // while it is open, and every load). Lets the customer's page say "Will's
+  // phone last reached us at 08:12" when it has been quiet, rather than
+  // implying a live feed from a phone that is under a floor.
+  lastSeenAt DateTime?
 
   updatedAt DateTime @updatedAt
 }
@@ -363,4 +374,79 @@ model NoAccess {
 
   @@index([tradeStatusId])
   @@index([tapId])
+}
+
+/// A household. One address, one card, everything coming to it.
+///
+/// THE SECOND PRODUCT, sharing the first one's spine. TradeStatus is one job
+/// one trade is doing. A Place is a door, and the things arriving at it come
+/// from everywhere: a plumber, a sofa, four parcels. The customer forwards the
+/// emails; nobody else has to sign up.
+///
+/// `code` is the credential, same rules as a job's: long, unguessable,
+/// revocable. `inboxKey` is the local part of their forwarding address, kept
+/// separate so a leaked card link cannot be turned into a way to post
+/// arrivals onto someone's card — reading and writing are different secrets.
+model Place {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  inboxKey  String    @unique
+  label     String?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  arrivals  Arrival[]
+
+  @@index([code])
+  @@index([inboxKey])
+}
+
+/// One thing coming to the door.
+///
+/// A parcel, a delivery with two people and a van, or a trade visit. Deliberately
+/// one table for all three: the customer does not think of them as different
+/// kinds of thing, they think of them as what is happening at their house this
+/// week, and a card that splits them into two lists is a card that makes them
+/// do the merging.
+///
+/// `expectedSaid` holds the carrier's own words — "Tuesday", "today" — so the
+/// card can show the claim and who made it rather than a bare date this code
+/// produced. The product never works out an arrival time; see the rule in
+/// src/lib/arrival-email.js.
+///
+/// `dedupeKey` is what stops the same email forwarded twice, or a carrier
+/// sending three updates, becoming three rows. Carrier plus reference where
+/// there is one; sender plus subject where there is not.
+model Arrival {
+  id        String  @id @default(cuid())
+  placeId   String
+  dedupeKey String
+
+  kind   String // PARCEL | DELIVERY | SERVICE
+  source String // EMAIL | TRADE | MANUAL
+  stage  String @default("ON_THE_WAY")
+
+  carrier   String?
+  title     String
+  reference String?
+  trackUrl  String?
+  note      String?
+
+  expectedFor  DateTime?
+  expectedSaid String?
+  windowStart  DateTime?
+  windowEnd    DateTime?
+  windowSaid   String?
+
+  /// Set when this arrival IS one of our own tracked jobs, so the card can
+  /// send the customer to the live page instead of a flat row.
+  tradeStatusCode String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([placeId, dedupeKey])
+  @@index([placeId, expectedFor])
 }

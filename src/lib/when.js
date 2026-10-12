@@ -131,3 +131,24 @@ export function isoDay(value) {
   const t = zoned(value)
   return t ? `${t.year}-${pad(t.month)}-${pad(t.day)}` : ''
 }
+
+/**
+ * "today", "tomorrow", or "Tuesday 29 September".
+ *
+ * The household card answers "what is coming" and the honest answer to that is
+ * usually one word. A date is correct and makes the reader count days; "today"
+ * is the thing they came for. Compared in the trade's zone through isoDay(),
+ * never by subtracting milliseconds — 23:30 and 00:30 are a day apart and
+ * eleven hours is not.
+ */
+export function nearDay(value, now = new Date()) {
+  const t = isoDay(value)
+  if (!t) return ''
+  const today = isoDay(now)
+  if (t === today) return 'today'
+  const next = new Date(new Date(now).getTime() + 86400000)
+  const back = new Date(new Date(now).getTime() - 86400000)
+  if (t === isoDay(next)) return 'tomorrow'
+  if (t === isoDay(back)) return 'yesterday'
+  return dayOnly(value)
+}

@@ -1,7 +1,7 @@
 import { NextResponse, after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { publicShape } from '@/lib/trade-status'
-import { publicProfile, publicBrand } from '@/lib/profile'
+import { publicProfile, publicBrand, tradeSeenAt } from '@/lib/profile'
 import { syncIfStale } from '@/lib/servicem8'
 import { nudgeIfDue } from '@/lib/nudge'
 
@@ -36,9 +36,9 @@ export async function GET(request, { params }) {
 
     const status = publicShape(row)
     const arriving = status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE'
-    const [profile, brand] = await Promise.all([arriving ? publicProfile() : null, publicBrand()])
+    const [profile, brand, seenAt] = await Promise.all([arriving ? publicProfile() : null, publicBrand(), status.stage === 'DONE' ? null : tradeSeenAt()])
 
-    return NextResponse.json({ status, profile, brand }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ status, profile, brand, tradeSeenAt: seenAt }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('status lookup failed:', error)
     return NextResponse.json({ error: 'unavailable' }, { status: 503 })

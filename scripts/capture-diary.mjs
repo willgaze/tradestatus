@@ -22,6 +22,9 @@ import { VERSION, BUILD_DATE, theme, CHANGELOG } from '../src/lib/version.js'
 const BASE = process.env.BASE || 'http://localhost:3000'
 const PASSWORD = process.env.OPERATOR_PASSWORD || 'smoketest'
 const CODE = process.env.DEMO_CODE
+// The household card needs a real Place, so it is shot only when one is
+// named — seed-local.mjs prints the code it makes.
+const PLACE = process.env.DEMO_PLACE
 const OUT = new URL(`../docs/diary/v${VERSION}/`, import.meta.url).pathname
 const EXEC = process.env.CHROME_PATH || undefined
 
@@ -38,11 +41,19 @@ const SHOTS = [
   // it on demand, so it is skipped when shooting a real job.
   ...(CODE ? [] : [{ name: 'customer-booked', path: () => '/preview?stage=BOOKED', scheme: 'light', full: true, auth: false }]),
   { name: 'dashboard',      path: () => '/dashboard', scheme: 'light', full: true, auth: true, db: true },
+  { name: 'dashboard-setup', path: () => '/dashboard', scheme: 'light', full: true, auth: true, db: true, open: /Setup and settings/ },
   { name: 'login',          path: () => '/login',     scheme: 'light', full: false, auth: false },
   // The homepage is a page in its own right now rather than a "you have
   // mistyped your link" card, so it is captured whole.
   { name: 'homepage',       path: () => '/',          scheme: 'light', full: true,  auth: false },
   { name: 'homepage-dark',  path: () => '/',          scheme: 'dark',  full: true,  auth: false },
+  // The household card: the other half of the product, and the one that has
+  // to be looked at as often as the job page, or it will drift the way the
+  // dashboard did while nobody could run it.
+  ...(PLACE ? [
+    { name: 'household',      path: () => `/h/${PLACE}`, scheme: 'light', full: true, auth: false },
+    { name: 'household-dark', path: () => `/h/${PLACE}`, scheme: 'dark',  full: true, auth: false },
+  ] : []),
 ]
 
 // Playwright only writes PNG or JPEG; sharp (already here as a Next.js dependency)
@@ -86,6 +97,7 @@ const run = async () => {
 
   const done = []
   const skipped = []
+  if (!PLACE) skipped.push('the household card (set DEMO_PLACE to a seeded place code)')
 
   // The wallet views are the marketing shots — the ones that show what this
   // is, without a paragraph of explanation. Captured separately because each
@@ -93,27 +105,48 @@ const run = async () => {
   if (!cookie) {
     skipped.push('the wallet views and the dashboard (they need an operator session)')
   } else {
+    // WRAPPED, AND THE WRAPPING IS THE POINT. This block threw for three
+    // builds — v1.38, v1.39 and v1.40 have no diary folder at all — because
+    // the dashboard's panels moved inside a collapsed "Setup and settings"
+    // and the wallet section stopped being in the page. One locator that
+    // cannot find its element took down every other shot in the run, which is
+    // the exact failure the WebP guard above was written for, happening again
+    // somewhere else. Nothing in this script may throw past its own shot.
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
-    if (cookie) await ctx.addCookies([{ name: 'mts-session', value: cookie, url: BASE }])
-    const page = await ctx.newPage()
-    await page.goto(BASE + '/dashboard', { waitUntil: 'networkidle' })
-    await page.waitForTimeout(1000)
-    const card = page.locator('section', { hasText: 'The wallet card' }).first()
-    await card.scrollIntoViewIfNeeded()
-    // The showcase is shut by default now — 911px of a feature that does not
-    // exist yet does not belong open on a screen opened every morning.
-    const opener = card.getByRole('button', { name: /The wallet card/ })
-    if (await opener.count()) { await opener.first().click(); await page.waitForTimeout(400) }
-    for (const [tab, name] of [['In the wallet', 'wallet-in-stack'],
-                               ['Opened', 'wallet-opened'],
-                               ['On its own', 'wallet-alone']]) {
-      await page.getByRole('button', { name: tab, exact: true }).click()
-      await page.waitForTimeout(500)
-      await toWebp(await card.screenshot({ type: 'png' }), `${OUT}${name}.webp`)
-      done.push(name)
-      console.log('  captured', name)
+    try {
+      await ctx.addCookies([{ name: 'mts-session', value: cookie, url: BASE }])
+      const page = await ctx.newPage()
+      await page.goto(BASE + '/dashboard', { waitUntil: 'networkidle' })
+      await page.waitForTimeout(1000)
+      // The setup panels are shut by default — seven panels used once each
+      // were the second half of every visit to a screen meant for a driveway.
+      const setup = page.getByRole('button', { name: /Setup and settings/ })
+      if (await setup.count()) { await setup.first().click(); await page.waitForTimeout(700) }
+      const card = page.locator('section', { hasText: 'The wallet card' }).first()
+      await card.scrollIntoViewIfNeeded({ timeout: 8000 })
+      // The showcase is shut by default too.
+      const opener = card.getByRole('button', { name: /The wallet card/ })
+      if (await opener.count()) { await opener.first().click(); await page.waitForTimeout(400) }
+      for (const [tab, name] of [['In the wallet', 'wallet-in-stack'],
+                                 ['Opened', 'wallet-opened'],
+                                 ['On its own', 'wallet-alone']]) {
+        try {
+          await page.getByRole('button', { name: tab, exact: true }).click({ timeout: 8000 })
+          await page.waitForTimeout(500)
+          await toWebp(await card.screenshot({ type: 'png' }), `${OUT}${name}.webp`)
+          done.push(name)
+          console.log('  captured', name)
+        } catch (e) {
+          skipped.push(`${name} (${e.message.slice(0, 60)})`)
+          console.log('  SKIPPED', name, '-', e.message.slice(0, 60))
+        }
+      }
+    } catch (e) {
+      skipped.push(`the wallet views (${e.message.slice(0, 60)})`)
+      console.log('  SKIPPED the wallet views -', e.message.slice(0, 60))
+    } finally {
+      await ctx.close()
     }
-    await ctx.close()
   }
 
   for (const shot of SHOTS) {
@@ -127,6 +160,12 @@ const run = async () => {
     const page = await ctx.newPage()
     await page.goto(BASE + shot.path(), { waitUntil: 'networkidle' })
     await page.waitForTimeout(900)
+    // Open the setup panels on the dashboard, or the diary records a screen
+    // with its whole second half folded away.
+    if (shot.open) {
+      const opener = page.getByRole('button', { name: shot.open })
+      if (await opener.count()) { await opener.first().click(); await page.waitForTimeout(900) }
+    }
     // The dev server draws its own badge over the page. v1.4.0's diary was
     // captured with it in every shot. Refuse rather than record it.
     if (await page.locator('nextjs-portal').count()) {
