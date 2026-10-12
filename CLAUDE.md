@@ -690,6 +690,32 @@ under When suits you? like any other window. `dayWord()` lives in
 `src/lib/nudge-words.js` because the page needs it without Prisma. The hours on
 the card are stated only when the window is AGREED.
 
+## A tap with no signal still counts (`src/app/dashboard/offline-queue.js`)
+
+Every write from the dashboard that is safe to replay — a stage tap, a note, a
+No one home record — goes through `queueFetch()`. If the network is not there
+it is written to IndexedDB with the time of the tap (`deviceAt`) and, a moment
+later, whatever fix the phone will give, and `flush()` sends the queue in order
+on `online`, on the page becoming visible, every twenty seconds, and on load. A
+replayed body carries `offline: true`, `deviceAt`, and the fix; `readTap()` in
+`src/lib/tap.js` believes `deviceAt` only within the last two days and not in
+the future, and marks the fix validated only if it was taken within three
+minutes of the tap and within 200 m. `TradeStatusEvent` keeps **both clocks**:
+`createdAt` is the server's, `deviceAt` the phone's. `arrivingAt` becomes the
+tap's time for On my way, so "Set off at" is true. The customer's timeline shows
+the tap's time and "sent HH:MM, when back in signal"; the place is never public.
+
+Why the page and not the service worker: Safari on iOS has no Background Sync,
+and that is the phone this runs on. A home-screen app flushes when opened, which
+is the moment that matters. Rules that must not drift: a 4xx from the server
+settles a queued tap (it was read and refused); a network failure or 5xx keeps
+it; order is kept, so On site never overtakes On my way; nothing is dropped;
+and nothing is doubled: every replay carries `tapId`, indexed (not unique: a
+unique constraint makes `prisma db push` refuse without `--accept-data-loss`,
+which the build never passes, and the deploy would then run new code on an old
+schema) on the event and on `NoAccess`, so a flush cut off by a page change after the request went but
+before the item was deleted replays as the same tap, not a second one.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for

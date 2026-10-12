@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.38.0'
+export const VERSION = '1.39.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,6 +48,11 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.39.0', date: '2026-10-12', notes: [
+    'A tap with no signal still counts. Every stage tap and every No one home record from the dashboard is saved on the phone when the network is not there — with the time of the tap and the fix the phone had — and sent in order the moment signal comes back. The strip says No signal and how many taps are waiting; the card says Saved on this phone. Nothing is ever dropped.',
+    'The customer reads the true time: Set off at 07:42, sent 07:58 when back in signal. The event keeps both clocks, and the job diary line says the same.',
+    'Done in the page, not the service worker, because Safari on iPhone has no background sync; a home-screen app flushes every time it is opened.',
+  ] },
   { version: '1.38.0', date: '2026-10-12', notes: [
     'A booking that moves in ServiceM8 after the customer was texted earns them one more text: the new hours, the old ones in brackets, the same link. Sent through ServiceM8 once the move has settled for ten minutes, so a job dragged three times in two minutes is one text, not three. Only while the job is still Booked in, and never for a booking taken off the diary — that is yours to say.',
     'What the customer was last told is kept on the card. The window follows a move at once, as before; the message now follows it once.',

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notifyCustomer, pushTrade } from '@/lib/push'
 import { TRADE_NAME } from '@/lib/trade'
 import { diaryFor } from '@/lib/sm8-oauth'
+import { readTap } from '@/lib/tap'
 
 /**
  * Customer not home.
@@ -34,7 +35,14 @@ function tried(attempts) {
 
 export async function recordNoAccess(tracker, body) {
   const startedAt = body.startedAt ? new Date(body.startedAt) : new Date()
-  const leftAt = new Date()
+  // Queued on the phone with no signal and sent later: the time they left is
+  // the time they tapped Leave, not the time the signal came back.
+  const tap = readTap(body)
+  if (tap.tapId) {
+    const seen = await prisma.noAccess.findFirst({ where: { tapId: tap.tapId } }).catch(() => null)
+    if (seen) return { row: { id: seen.id, startedAt: seen.startedAt, leftAt: seen.leftAt, attempts: seen.attempts, photoTaken: Boolean(seen.photoAt), fee: seen.fee }, tracker, duplicate: true }
+  }
+  const leftAt = tap.deviceAt || new Date()
   if (Number.isNaN(startedAt.getTime())) throw new Error('bad_started')
   const attempts = (Array.isArray(body.attempts) ? body.attempts : [])
     .filter((a) => KINDS.includes(a?.kind) && a?.at && !Number.isNaN(new Date(a.at).getTime()))
@@ -56,11 +64,11 @@ export async function recordNoAccess(tracker, body) {
     tradeStatusId: tracker.id, startedAt, leftAt,
     deviceStartedAt: body.deviceStartedAt ? new Date(body.deviceStartedAt) : null,
     lat: num(body.lat), lng: num(body.lng), accuracy: num(body.accuracy),
-    attempts, photo, photoAt: photo ? new Date() : null, fee,
+    attempts, photo, photoAt: photo ? new Date() : null, fee, tapId: tap.tapId,
   } })
   const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
     stage: 'PAUSED', stageNote: note, askAnsweredAt: tracker.askedAt && !tracker.askAnsweredAt ? new Date() : undefined,
-    events: { create: { stage: 'PAUSED', note } },
+    events: { create: { stage: 'PAUSED', note, deviceAt: tap.deviceAt, offline: tap.offline } },
   } })
   notifyCustomer(updated, { title: 'Sorry we missed you', body: `${TRADE_NAME} was at the door and could not get in. Open the page to say when suits.` }).catch(() => {})
   diaryFor(updated, `No one home. At the door ${hhmm(startedAt)}, ${tried(attempts)}, waited ${waited} min${photo ? ', door photo taken' : ''}${fee ? `, GBP ${fee} as agreed` : ', nothing charged'}. Customer told and asked when suits.`).catch(() => {})

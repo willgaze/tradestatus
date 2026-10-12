@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { queueFetch } from './offline-queue'
 import { HouseIcon } from '@/components/icons'
 
 /**
@@ -52,9 +53,12 @@ export default function NoAccess({ tracker, onDone }) {
   const leave = async () => {
     setBusy(true); setErr('')
     try {
-      const r = await fetch(`/api/dashboard/trackers/${tracker.id}/no-access`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startedAt, deviceStartedAt: startedAt, attempts, photo, lat: fix?.lat, lng: fix?.lng, accuracy: fix?.accuracy }) })
-      if (!r.ok) throw new Error(r.status === 413 ? 'That photo is too large. Try again without it.' : 'That did not save. Try again.')
+      const r = await queueFetch(`/api/dashboard/trackers/${tracker.id}/no-access`, { method: 'POST',
+        body: { startedAt, deviceStartedAt: startedAt, attempts, photo, lat: fix?.lat, lng: fix?.lng, accuracy: fix?.accuracy } })
+      // No signal at the door is the normal case for this button. The record
+      // is saved on the phone with the time you left and goes when signal
+      // comes back; the card says so until it has.
+      if (!r.queued && !r.ok) throw new Error(r.status === 413 ? 'That photo is too large. Try again without it.' : 'That did not save. Try again.')
       setOpen(false); setStartedAt(null); setAttempts([]); setPhoto(null); setFix(null)
       onDone?.()
     } catch (e) { setErr(e.message) } finally { setBusy(false) }
