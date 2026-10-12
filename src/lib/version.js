@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.31.0'
-export const BUILD_DATE = '2026-10-11'
+export const VERSION = '1.32.0'
+export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 22
+export const THEME_INDEX = 23
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.32.0', date: '2026-10-12', notes: [
+    'The pilot, in four numbers, under Setup and settings: links opened, “will someone be in?” answered, wasted trips, and “when are you coming?” calls. Three are counted from the rows for the last 30 or 90 days. The fourth is counted by a person, and the panel says so instead of guessing.',
+    'The plan’s six moves reordered: move 1 is now proving it on the owner’s own jobs beside ServiceM8, with the four numbers as the gate. Housing and carriers share move 6, parked until move 1 has its numbers. The product page says what TurnUp is not: no job management, no invoice, no money held.',
+  ] },
   { version: '1.31.0', date: '2026-10-11', notes: [
     'The day before the job, the customer is asked whether anyone will be in. Once, at four in the afternoon in the trade\u2019s own time, never again for that job. A notification if they switched one on, the page asks either way, and the timeline records that it was asked.',
     'If none of the customer\u2019s phones can be reached, the trade is nudged to text the link instead, because an ask that reaches nobody is not an ask. The dashboard card says asked, no answer yet. The answer itself stays between the two of them, as before.',

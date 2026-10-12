@@ -643,6 +643,15 @@ The decision is pure and tested without a database
   `presence` is not. The same line as `presenceAt`.
 - The hour is `ASK_HOUR` via `zoned()`, never a UTC comparison.
 
+**The pilot is four numbers** (`src/lib/pilot.js`, panel under Setup and
+settings, `node scripts/check-pilot.mjs`): links opened, "will someone be in?"
+answered, wasted trips (No one home records), and "when are you coming?" calls
+to the booking line. The product cannot see a phone ring, so the fourth is
+counted by a person and the panel says so; "Are you still coming?" taps are
+shown beside it as the nearest thing the product sees, never as calls. Decided
+11 Oct 2026: nothing moves on housing or pricing until thirty days of these
+are in.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for

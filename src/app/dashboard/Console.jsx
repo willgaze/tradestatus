@@ -18,6 +18,7 @@ import Nudges from './Nudges'
 import Assistant from './Assistant'
 import Tip from './Tip'
 import NoAccess from './NoAccess'
+import Pilot from './Pilot'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import { dayAndTime } from '@/lib/when'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
@@ -653,7 +654,7 @@ export default function Console({ assistant = false }) {
         <span className="min-w-0">
           <span className="block text-[16px] font-semibold leading-tight">Setup and settings</span>
           <span className="mt-px block truncate text-[13px]" style={{ color: 'var(--label-2)' }}>
-            Who to expect, Booking terms, Nudge me, notifications, ServiceM8, Face ID, the wallet card, the attendance record, what is next
+            Who to expect, Booking terms, Nudge me, notifications, ServiceM8, Face ID, the wallet card, the attendance record, the pilot numbers, what is next
           </span>
         </span>
         <ChevronIcon size={18} style={{ color: 'var(--label-3)' }}
@@ -679,6 +680,7 @@ export default function Console({ assistant = false }) {
           </div>
           <p className="mt-2 text-[12px] muted">Names, addresses and the job go in it. Nothing the customer told you does, and nor does the link.</p>
         </section>
+        <div id="panel-pilot" className="scroll-mt-4"><Pilot /></div>
         <div id="panel-waitlist" className="scroll-mt-4"><WaitlistPanel /></div>
         <div id="panel-roadmap" className="scroll-mt-4"><Roadmap /></div>
         <div id="panel-changelog" className="scroll-mt-4"><Changelog /></div>

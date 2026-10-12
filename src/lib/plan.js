@@ -31,7 +31,7 @@ export const PLAN_META = {
   walletDocUrl: 'https://github.com/willgaze/tradestatus/blob/main/docs/apple-wallet.md',
   diaryUrl: 'https://github.com/willgaze/tradestatus/tree/main/docs/diary',
   liveSince: '8 Oct 2026',
-  updated: '10 Oct 2026',
+  updated: '12 Oct 2026',
 }
 
 export const STAGES = [
@@ -114,6 +114,7 @@ export const PRODUCT = {
     { label: 'Four stages, plain English' },
     { label: 'Agree a window, never announce one', note: 'either end proposes, the other agrees' },
     { label: 'Will someone be in?', note: 'answers stay on the device that gave them' },
+    { label: 'Asked the day before, once', note: 'at four, trade’s own time; built 11 Oct 2026' },
     { label: 'Van make, model, colour', note: 'DVSA lookup, pending key' },
     { label: 'Apple Wallet card', note: 'signing built, pending Apple' },
     { label: 'ServiceM8 moves it for you', note: 'webhooks: check-in, check-out' },
@@ -125,6 +126,8 @@ export const PRODUCT = {
     { label: 'No customer app to install' },
     { label: 'No customer account, ever' },
     { label: 'No logos of bodies we follow' },
+    { label: 'No job management, no invoice', note: 'ServiceM8 keeps the job' },
+    { label: 'No money held, ever', note: 'pay to book later; escrow only through a partner' },
   ],
 }
 
@@ -229,12 +232,12 @@ export const CALC_DEFAULTS = { freeSenders: 50, newFree: 20, enterprises: 0, new
 
 /** Six moves, in order. Each opens when the gate before it is passed. */
 export const GTM_PHASES = [
-  { phase: '1', label: 'Sign the pass', gate: 'One card in one wallet', moves: ['Apple Developer, as an individual', 'First real pass, on the owner’s phone', 'The update loop so it moves'], when: 'Now', state: 'amber' },
-  { phase: '2', label: 'Be ServiceM8’s card', gate: 'Ten ServiceM8 trades sending', moves: ['Connector live on customer zero', 'Add-on listing', 'Stage vocabulary published'], when: 'Q4 2026', state: 'gray' },
-  { phase: '3', label: 'Android, on a pass platform if faster', gate: 'Both wallets live', moves: ['Decide: PassKit or our own', 'Google Wallet pass class', 'Same update loop'], when: 'Q4 2026', state: 'gray' },
-  { phase: '4', label: 'The household asks for it', gate: 'Household-requested cards outnumber trade-sent', moves: ['Customer-invite: one screen', 'An account per address', 'Remembered for the next trade'], when: '2027 H1', state: 'gray' },
-  { phase: '5', label: 'One housing association', gate: 'One paid pilot, one tender', moves: ['Resident card beside their repairs system', 'Attendance record as a CSV: built 10 Oct 2026', 'Ombudsman cases as the deck', 'The Ltd before any contract'], when: '2027 H1', state: 'amber' },
-  { phase: '6', label: 'Carriers, as a tick-box', gate: 'One carrier pass live', moves: ['A button in their email, AfterShip-style', 'Then energy, broadband, water', 'Then four firms on one card'], when: '2027 H2', state: 'gray' },
+  { phase: '1', label: 'Prove it on my own jobs', gate: 'Thirty days, four numbers', moves: ['ServiceM8 connected, the link in every booking text', 'Asked the day before: will someone be in? Built 11 Oct 2026', 'Links opened, “in?” answered, wasted trips, “when are you coming?” calls', 'If the first two stay low, the product is wrong, not the pitch'], when: 'Now', state: 'amber' },
+  { phase: '2', label: 'Sign the pass', gate: 'One card in one wallet', moves: ['Apple Developer, as an individual', 'First real pass, on the owner’s phone', 'The update loop so it moves'], when: 'Now', state: 'amber' },
+  { phase: '3', label: 'Be ServiceM8’s card', gate: 'Ten ServiceM8 trades sending', moves: ['Connector live on customer zero', 'Add-on listing', 'Stage vocabulary published'], when: 'Q4 2026', state: 'gray' },
+  { phase: '4', label: 'Android, on a pass platform if faster', gate: 'Both wallets live', moves: ['Decide: PassKit or our own', 'Google Wallet pass class', 'Same update loop'], when: 'Q1 2027', state: 'gray' },
+  { phase: '5', label: 'The household asks for it', gate: 'Household-requested cards outnumber trade-sent', moves: ['Customer-invite: one screen', 'An account per address', 'Remembered for the next trade'], when: '2027 H1', state: 'gray' },
+  { phase: '6', label: 'Enterprise: housing first, then carriers', gate: 'One free pilot, one paid contract', moves: ['Parked 11 Oct 2026 until move 1 has its numbers', 'Resident card beside their repairs system; attendance record built', 'Ombudsman cases as the deck; the Ltd before any contract', 'Then a button in a carrier’s email, then energy, broadband, water'], when: '2027 H2', state: 'gray' },
 ]
 
 /** What has shipped, read from CHANGELOG in src/lib/version.js. A fact by construction. */
@@ -271,6 +274,8 @@ export const THE_ASK = {
 }
 
 export const DECISIONS = [
+  { key: 'firstPilot', question: 'Where is the real pilot?', options: ['My own jobs, beside ServiceM8', 'White Horse Housing', 'A second trade'], decided: 'My own jobs, beside ServiceM8', decidedAt: '11 Oct 2026', note: 'Prove the two-way link on jobs I control before adding a landlord and a contractor to it.' },
+  { key: 'scope', question: 'What is TurnUp, and what is it not?', options: ['The connection, never the job', 'The job too, in time', 'A job system from the start'], decided: 'The connection, never the job', decidedAt: '11 Oct 2026', note: 'Who is coming, when they set off, is anyone in, which door. ServiceM8 keeps the quote, the diary, the invoice.' },
   { key: 'pricing', question: 'Who pays?', options: ['Nobody, for now', 'Free for every sender; enterprise per card', 'Trades: a monthly plan', 'Trades: activation, then features'], decided: 'Free for every sender; enterprise per card', decidedAt: '9 Oct 2026', note: 'Third shape of the day. The card has to spread; only an enterprise is already paying for missed visits.' },
   { key: 'firstMoat', question: 'Which moat first?', options: ['The household end', 'Recognition: customer-invite', 'One integration: the API and spec'], decided: 'The household end', decidedAt: '9 Oct 2026' },
   { key: 'firstWedge', question: 'First enterprise wedge?', options: ['Social housing', 'Energy supplier', 'Broadband provider', 'Water company'], decided: 'Social housing', decidedAt: '10 Oct 2026', note: 'No incumbent tracker, a repairs manager you can meet, and a tenancy is already an account per address: the first wedge and the first moat are one build.' },
