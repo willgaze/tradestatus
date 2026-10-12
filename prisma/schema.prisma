@@ -87,6 +87,13 @@ model TradeStatus {
   // When TurnUp itself texted the link (through ServiceM8), or noticed that
   // ServiceM8 already had. Set once; the auto-follow sweep never sends twice.
   linkSentAt DateTime?
+  // The hours the customer was last TOLD by text, so a booking that moves in
+  // ServiceM8 afterwards gets one more text with the new time. Compared with
+  // the booking, never with the window: the window follows the move at once,
+  // the message only once the move has settled.
+  toldStart DateTime?
+  toldEnd   DateTime?
+  toldAt    DateTime?
 
   // What the CUSTOMER tells the trade, from their own page. The first
   // two-way thing in this product: until now the link only ever reported.

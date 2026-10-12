@@ -57,7 +57,7 @@ export const PHASES = [
       { key: 'installable', name: 'Add to home screen', state: 'live',
         what: 'Opens like an app, no address bar.' },
       { key: 'sm8-follow', name: 'Follow every ServiceM8 booking', state: 'live',
-        what: 'Book it in ServiceM8 and nothing else: the card exists at once, and ten minutes later the link is texted through ServiceM8 unless ServiceM8 already did. One text per job. The booking-confirmation tick stops being the single point of failure.' },
+        what: 'Book it in ServiceM8 and nothing else: the card exists at once, and ten minutes later the link is texted through ServiceM8 unless ServiceM8 already did. One text per job. Move the booking afterwards and they get one more text with the new hours, once the move has settled. The booking-confirmation tick stops being the single point of failure.' },
       { key: 'sm8-week', name: 'This week in ServiceM8: did the link go?', state: 'live',
         what: 'Every booking in the next seven days, with what ServiceM8 itself recorded sending — the text, the email, whether it was opened — and whether the card exists yet. Where nothing went, send the link through ServiceM8 in one tap, so it lands in the job diary like any other text. Read from ServiceM8, never guessed.' },
       { key: 'day-before-ask', name: 'The day before: still fine, someone else, or move it', state: 'live',

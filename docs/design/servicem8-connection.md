@@ -102,8 +102,13 @@ the job's SMS history already holds a link text from ServiceM8's own automation.
 `linkSentAt` on the tracker makes it once per job, ever. The webhook makes the
 card immediately when it hears a job change; the text still waits for the sweep.
 Switched on by the trade under ServiceM8 → Follow every booking, because it
-spends their SMS credits. Not done: re-sending when a booking is moved; the
-window follows the move already, the text does not.
+spends their SMS credits. **Re-send on a move (1.38.0):** the card keeps the
+hours the customer was last told (`toldStart`/`toldEnd`/`toldAt`); when the
+sweep sees the next booking differ by five minutes or more at either end and the
+edit is ten minutes old, `resendIfMoved()` texts the new hours with the old in
+brackets and the same link, once per move. Only while Booked in; a booking taken
+off the diary is not announced, because whether that is a cancellation or a
+re-plan is the trade's to say.
 
 **Phase 3 — the Store listing.** Only once two or three other trades have
 asked. Review, a public listing, and the same add-on for anyone on ServiceM8.

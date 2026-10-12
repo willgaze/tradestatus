@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { sm8Configured, fetchJob, fetchJobContact, fetchMessages, confirmationState, findOrCreateForJob, sendSms, londonDate, fetchNextBooking, fetchActivitiesEditedSince } from '@/lib/servicem8'
-import { linkText, toE164 } from '@/lib/sm8-words'
+import { linkText, moveText, bookingMoved, toE164 } from '@/lib/sm8-words'
 import { CANONICAL_HOST, TRADE_NAME } from '@/lib/trade'
 import { diaryFor } from '@/lib/sm8-oauth'
 
@@ -19,6 +19,12 @@ import { diaryFor } from '@/lib/sm8-oauth'
  * automation already texted it, which the SMS history shows. Ten minutes is
  * the head start that automation gets, so the two never race to the same
  * phone. One text per job, ever, recorded in linkSentAt.
+ *
+ * And when a booking the customer has been told about MOVES in ServiceM8,
+ * one more text with the new hours, once the move has settled for the same
+ * ten minutes (a job dragged three times in two minutes is one text, not
+ * three). What they were told is kept on the card (toldStart/toldEnd); the
+ * window follows the move at once, the message follows it once.
  *
  * Off unless the trade switches it on (TradeProfile.autoFollow): it spends
  * their SMS credits, and that is their call.
@@ -58,14 +64,19 @@ export async function followJob(jobUuid, { now = new Date(), edited = null, send
   if (!job || Number(job.active ?? 1) !== 1 || !FOLLOW_STATUSES.has(job.status)) return { outcome: 'skipped:status' }
   const contact = await fetchJobContact(jobUuid).catch(() => null)
   const { tracker, created } = await findOrCreateForJob(job, contact)
-  if (tracker.linkSentAt) return { outcome: 'already', created }
+  if (tracker.linkSentAt) {
+    if (!send) return { outcome: 'already', created }
+    return resendIfMoved(tracker, job, contact, { now, edited })
+  }
   if (!send) return { outcome: created ? 'card' : 'unchanged', created }
 
   const messages = await fetchMessages(jobUuid)
   const c = confirmationState(messages)
   if (c.linkTexted) {
-    // ServiceM8's own automation got there. Note it and never text twice.
-    await prisma.tradeStatus.update({ where: { id: tracker.id }, data: { linkSentAt: c.textedAt || now } })
+    // ServiceM8's own automation got there. Note it, with the hours as they
+    // stand, and never text twice.
+    const b = await fetchNextBooking(jobUuid).catch(() => null)
+    await prisma.tradeStatus.update({ where: { id: tracker.id }, data: { linkSentAt: c.textedAt || now, toldStart: b?.start || null, toldEnd: b?.end || null, toldAt: c.textedAt || now } })
     return { outcome: 'already:servicem8', created }
   }
   const age = edited ? now - edited : AUTO_DELAY_MS
@@ -77,9 +88,31 @@ export async function followJob(jobUuid, { now = new Date(), edited = null, send
   const first = (await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }).catch(() => null))?.engineerName?.split(' ')[0] || TRADE_NAME.split(' ')[0]
   const message = linkText({ tradeName: TRADE_NAME, first, customerName: tracker.customerName, start: booking?.start, end: booking?.end, host: CANONICAL_HOST, jobNumber: job.generated_job_id })
   await sendSms({ to, message, jobUuid })
-  const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data: { linkSentAt: now, events: { create: { stage: tracker.stage, note: 'Booking text with the link sent through ServiceM8.' } } } })
+  const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data: { linkSentAt: now, toldStart: booking?.start || null, toldEnd: booking?.end || null, toldAt: now, events: { create: { stage: tracker.stage, note: 'Booking text with the link sent through ServiceM8.' } } } })
   diaryFor(updated, `Booking link texted via ServiceM8 to ${to}`).catch(() => {})
   return { outcome: 'sent', created, to }
+}
+
+/**
+ * The customer was told one time and the booking now says another: one text
+ * with the new hours, once the move is ten minutes old. Only for jobs still
+ * Booked in: once the trade has set off, a moved diary entry is bookkeeping.
+ */
+async function resendIfMoved(tracker, job, contact, { now, edited }) {
+  if (!tracker.toldStart || tracker.stage !== 'BOOKED') return { outcome: 'already' }
+  const booking = await fetchNextBooking(job.uuid).catch(() => null)
+  if (!booking) return { outcome: 'already' } // taken off the diary: not ours to announce
+  if (!bookingMoved({ start: tracker.toldStart, end: tracker.toldEnd }, booking)) return { outcome: 'already' }
+  const age = edited ? now - edited : AUTO_DELAY_MS
+  if (age < AUTO_DELAY_MS) return { outcome: 'moved:waiting' }
+  const to = toE164(contact?.mobile || contact?.phone)
+  if (!to) return { outcome: 'moved:no_mobile' }
+  const first = (await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }).catch(() => null))?.engineerName?.split(' ')[0] || TRADE_NAME.split(' ')[0]
+  const message = moveText({ tradeName: TRADE_NAME, first, customerName: tracker.customerName, start: booking.start, end: booking.end, oldStart: tracker.toldStart, oldEnd: tracker.toldEnd, host: CANONICAL_HOST, jobNumber: job.generated_job_id })
+  await sendSms({ to, message, jobUuid: job.uuid })
+  const updated = await prisma.tradeStatus.update({ where: { id: tracker.id }, data: { toldStart: booking.start, toldEnd: booking.end, toldAt: now, events: { create: { stage: tracker.stage, note: 'The booking moved in ServiceM8. The customer was texted the new time.' } } } })
+  diaryFor(updated, `Booking moved; customer texted the new time via ServiceM8 to ${to}`).catch(() => {})
+  return { outcome: 'moved:sent', to }
 }
 
 /** The sweep. Never throws; one line per job in the result for the log. */
@@ -93,7 +126,7 @@ export async function autoFollow({ now = new Date() } = {}) {
     try {
       const r = await followJob(b.jobUuid, { now, edited: b.edited })
       out.push({ jobUuid: b.jobUuid, ...r })
-      if (r.outcome !== 'waiting' && r.outcome !== 'unchanged') {
+      if (!['waiting', 'unchanged', 'already', 'moved:waiting'].includes(r.outcome)) {
         await prisma.sm8Event.create({ data: { event: 'auto.follow', jobUuid: b.jobUuid, outcome: r.outcome } }).catch(() => {})
       }
     } catch (e) {

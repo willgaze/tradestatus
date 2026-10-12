@@ -438,7 +438,7 @@ export async function fetchUpcoming({ days = 7, fresh = false } = {}) {
       fetchJob({ uuid: b.jobUuid }).catch(() => null),
       fetchJobContact(b.jobUuid).catch(() => null),
       fetchMessages(b.jobUuid),
-      prisma.tradeStatus.findFirst({ where: { externalId: b.jobUuid, isActive: true }, select: { id: true, code: true, stage: true, viewCount: true, termsAgreedAt: true, presenceAskedAt: true, reminderReply: true, linkSentAt: true } }).catch(() => null),
+      prisma.tradeStatus.findFirst({ where: { externalId: b.jobUuid, isActive: true }, select: { id: true, code: true, stage: true, viewCount: true, termsAgreedAt: true, presenceAskedAt: true, reminderReply: true, linkSentAt: true, toldAt: true } }).catch(() => null),
     ])
     if (!job || Number(job.active ?? 1) !== 1) return null
     const f = fieldsFromJob(job, contact)
@@ -447,7 +447,7 @@ export async function fetchUpcoming({ days = 7, fresh = false } = {}) {
       customerName: f.customerName, mobile: contact?.mobile || null, phone: contact?.phone || null,
       jobAddress: f.jobAddress, jobSummary: f.jobSummary,
       confirmation: confirmationState(messages),
-      card: tracker ? { code: tracker.code, stage: tracker.stage, opened: tracker.viewCount || 0, termsAgreed: Boolean(tracker.termsAgreedAt), asked: Boolean(tracker.presenceAskedAt), reply: tracker.reminderReply || null, linkSentAt: tracker.linkSentAt || null } : null,
+      card: tracker ? { code: tracker.code, stage: tracker.stage, opened: tracker.viewCount || 0, termsAgreed: Boolean(tracker.termsAgreedAt), asked: Boolean(tracker.presenceAskedAt), reply: tracker.reminderReply || null, linkSentAt: tracker.linkSentAt || null, toldAt: tracker.toldAt || null } : null,
     }
   }))
   const value = out.filter(Boolean)

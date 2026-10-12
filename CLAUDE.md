@@ -609,9 +609,14 @@ texted through ServiceM8 — unless `confirmationState().linkTexted` says
 ServiceM8's own automation already did, in which case `linkSentAt` is set to
 that time and nothing is sent. The ten minutes is the automation's head start,
 so the two never race to one phone. `linkSentAt` makes it once per job, ever.
+**Re-send on a move (v1.38.0):** `toldStart`/`toldEnd`/`toldAt` on the card are
+what the customer was last texted. `resendIfMoved()` compares them with the
+job's next booking (`bookingMoved()`, five minutes either end) and, once the
+edit is ten minutes old, texts `moveText()` once and moves `told*` on. Only
+while the card is BOOKED; a job with no booking left is never announced.
 Rules that must not drift: never send without the trade's switch on; never send
-twice; never send to a job that is Completed or Unsuccessful; the text is
-`linkText()` and nothing else.
+the link twice; never send to a job that is Completed or Unsuccessful; the texts
+are `linkText()` and `moveText()` and nothing else.
 
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 

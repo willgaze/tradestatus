@@ -50,6 +50,9 @@ export async function POST(request) {
       const first = (await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }).catch(() => null))?.engineerName?.split(' ')[0] || TRADE_NAME.split(' ')[0]
       const message = linkText({ tradeName: TRADE_NAME, first, customerName: contact ? [contact.first, contact.last].filter(Boolean).join(' ') : null, start: booking?.start, end: booking?.end, host: CANONICAL_HOST, jobNumber: job.generated_job_id })
       const r = await sendSms({ to, message, jobUuid: job.uuid })
+      // If a card follows the job, remember what they were told, so a later
+      // move in ServiceM8 earns them one more text.
+      await prisma.tradeStatus.updateMany({ where: { externalId: job.uuid, isActive: true }, data: { linkSentAt: new Date(), toldStart: booking?.start || null, toldEnd: booking?.end || null, toldAt: new Date() } }).catch(() => {})
       return NextResponse.json({ ok: true, sent: true, to: r.to, message })
     }
     const { tracker, created } = await findOrCreateForJob(job, contact)

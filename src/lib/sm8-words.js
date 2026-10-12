@@ -28,3 +28,17 @@ export function toE164(raw, country = '44') {
   if (d.startsWith(country)) return `+${d}`
   return null
 }
+
+/** The booking moved: the new hours, the old ones in brackets, the same link. */
+export function moveText({ tradeName, first, customerName, start, end, oldStart, oldEnd, host, jobNumber }) {
+  const who = (customerName || '').trim().split(/\s+/)[0] || 'there'
+  const span = (a, b) => (a ? `${dayAndTime(a)}${b ? ` to ${timeOnly(b)}` : ''}` : 'as booked')
+  return ascii(`Hi ${who}, ${first} here from ${tradeName}. Your booking has moved to ${span(start, end)} (was ${span(oldStart, oldEnd)}). Same link as before: https://${host}/j/${jobNumber}`)
+}
+
+/** Has the booking moved enough to be worth a text? Five minutes either end. */
+export function bookingMoved(told, booking, minutes = 5) {
+  if (!told?.start || !booking?.start) return false
+  const d = (a, b) => Math.abs(new Date(a).getTime() - (b ? new Date(b).getTime() : new Date(a).getTime()))
+  return d(booking.start, told.start) >= minutes * 60_000 || (booking.end || told.end ? d(booking.end || booking.start, told.end || told.start) >= minutes * 60_000 : false)
+}
