@@ -146,7 +146,7 @@ const CARD_MUST_NOT_LEAK = ['inboxKey', 'id', 'placeId', 'dedupeKey', 'isActive'
 const place = {
   id: 'clx-place-id',
   code: 'HOME24XK',
-  inboxKey: 'q7rmt4ndkw82lp',
+  inboxKey: 'q7rmt4ndkw82jp',
   label: '14 Church Lane',
   isActive: true,
   arrivals: [{

@@ -198,6 +198,27 @@ function senderName(from, domain) {
 }
 
 /**
+ * What to call the thing, which is not always what the subject line says.
+ *
+ * Most delivery subjects are a restatement of the stage: "Your parcel is out
+ * for delivery", "Your delivery is booked". The card already says the stage,
+ * in colour, above the title — repeating it there wastes the one line that
+ * could have said WHAT is coming. So a subject that carries nothing but
+ * delivery words is swapped for the sender's name, and a subject that names
+ * something ("Your Screwfix order has been dispatched", "Two-seater sofa:
+ * delivery confirmed") is kept exactly as they wrote it, because what they
+ * wrote is the honest answer and guessing a product name from prose is not.
+ */
+const PLUMBING = /\b(your|our|the|a|an|is|are|was|were|has|have|had|will|be|been|being|out|for|on|in|its|it|way|to|you|today|tomorrow|now|soon|update|re|fw|fwd|delivery|deliveries|delivered|deliver|delivering|parcel|parcels|package|order|items?|shipment|consignment|dispatch|dispatched|despatched|shipped|booked|confirmed|confirmation|scheduled|arriving|arrived|arrival|coming|missed|attempted|sorry|we|us|track|tracking|number|notification|notice)\b/gi
+
+function titleFrom(subject, who, isCarrier) {
+  const subj = (subject || '').trim()
+  const left = subj.replace(PLUMBING, ' ').replace(/[^A-Za-z]+/g, '')
+  if (subj && left.length > 2) return subj
+  return isCarrier ? `${who} parcel` : `Delivery from ${who}`
+}
+
+/**
  * Read one forwarded email.
  *
  * Returns null when nothing about it says something is coming — a receipt, a
@@ -247,7 +268,7 @@ export function readArrivalEmail({ from, subject, text, receivedAt } = {}) {
     source: 'EMAIL',
     carrier: who,
     carrierId: carrier?.id || null,
-    title: subj || `Something from ${who}`,
+    title: titleFrom(subj, who, Boolean(carrier)),
     reference: reference || null,
     stage,
     // Attributed, always. The card says "Evri said Tuesday", never "Tuesday".

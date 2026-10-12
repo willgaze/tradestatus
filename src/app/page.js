@@ -5,6 +5,7 @@ import { STAGE_ORDER, stageOf } from '@/lib/trade-status'
 import { TickIcon, ChevronIcon } from '@/components/icons'
 import Device from '@/components/Device'
 import WalletHero from '@/components/WalletHero'
+import PassCard from '@/components/PassCard'
 import WalletStory from '@/components/WalletStory'
 import Shot, { ShotStrip } from '@/components/Shot'
 import { byGroup } from '@/lib/posters'
@@ -36,14 +37,14 @@ import { PHASES } from '@/lib/roadmap'
  * guess at other people's.
  */
 export const metadata = {
-  title: 'TurnUp — your customer always knows where you are',
+  title: 'TurnUp — one card in their wallet, not a pile of emails',
   description:
-    'One link per job, sent by text. Your customer sees booked in, on my way, on site, done — as it happens, '
-    + 'without ringing to ask. Nothing to download, nothing to log in to.',
+    'Booked in, on my way, on site, done — on one card in your customer\'s wallet, or the same page from a text. '
+    + 'Nothing to download, nothing to log in to. Works alongside ServiceM8.',
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'TurnUp — your customer always knows where you are',
-    description: 'The status bar the trades never got. One link per job, sent by text.',
+    title: 'TurnUp — one card in their wallet, not a pile of emails',
+    description: 'The status bar the trades never got. One card per job, in the wallet they already carry.',
     type: 'website',
   },
 }
@@ -101,10 +102,10 @@ export default function Home() {
         {/* --- the promise, in the customer's words ------------------------ */}
         <section className="mt-12">
           <h1 className="text-[40px] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[52px]">
-            Your customer always knows where you are.
+            One card in their wallet. Not a pile of emails.
           </h1>
           <p className="mt-5 text-[19px] leading-snug muted">
-            One link per job, by text. No app. No login.
+            Booked in, on my way, on site, done. On the card they already carry. Sits alongside ServiceM8 and the tools you already use.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#list" className="btn btn-filled !px-6">Get on the list</a>
@@ -115,20 +116,34 @@ export default function Home() {
         </section>
 
         {/* --- what it looks like ------------------------------------------ */}
-        <section className="mt-12 grid items-start gap-8 sm:grid-cols-2">
+        {/* The card first and largest: it is the premise, and the owner's call
+            (12 Oct 2026) was that it is the thing to show. The phone is the
+            same job from a text, which is what is live today. */}
+        <section className="mt-12 grid items-start gap-8 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <figure className="mx-auto w-full max-w-[400px]" style={{ '--tint': '#5856d6' }}>
+            <WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" />
+            <figcaption className="mt-2.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[14px] leading-snug muted">
+              <span>The job, as a card in their wallet.</span>
+              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[12px] font-semibold"
+                    style={{ color: 'var(--tint)', borderColor: 'color-mix(in srgb, var(--tint) 35%, transparent)', background: 'color-mix(in srgb, var(--tint) 10%, transparent)' }}>
+                Built · awaiting Apple
+              </span>
+            </figcaption>
+          </figure>
           <figure className="mx-auto">
-            <Device screen="/home/customer-on-my-way.webp" width={250} tilt priority className="mx-auto"
+            <Device screen="/home/customer-on-my-way.webp" width={220} tilt={12} priority className="mx-auto"
                     alt="The page your customer opens from the text: Hello Sarah, On my way, set off at 08:00, between 09:00 and 11:00" />
             <figcaption className="mt-4 text-center text-[14px] leading-snug muted">
-              What they open from the text.
+              The same job from a text. Live today.
             </figcaption>
           </figure>
-          <figure className="mx-auto w-full max-w-[340px]" style={{ '--tint': '#5856d6' }}>
-            <WalletHero tracker={DEMO} tradeName="Sam Hale Plumbing" />
-            <figcaption className="mt-2.5 text-center text-[14px] leading-snug muted">
-              The same job, as a card in their wallet.
-            </figcaption>
-          </figure>
+        </section>
+
+        {/* --- the card ---------------------------------------------------- */}
+        <section className="mt-14">
+          <H2>The card in their wallet</H2>
+          <Lede>A boarding pass, for the plumber.</Lede>
+          <div className="mt-6"><WalletStory /></div>
         </section>
 
         {/* --- the thing it is actually for --------------------------------
@@ -137,15 +152,30 @@ export default function Home() {
         <section className="mt-14 grid gap-4 sm:grid-cols-2 sm:items-stretch">
           <div className="glass r-outer flex flex-col p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide muted">Now</p>
-            <div className="mt-4 max-w-[90%] rounded-[20px] rounded-bl-[6px] bg-black/[.07] px-4 py-3 text-[16px] leading-snug dark:bg-white/[.1]">
-              Someone will be with you between eight and six.
-            </div>
-            <p className="mt-auto pt-5 text-[15px] font-semibold">A day written off. Two phone calls.</p>
+            {/* the inbox a booking turns into: drawn, nobody's brand */}
+            <ul className="mt-4 divide-y divide-black/[.06] rounded-[16px] bg-black/[.04] text-[13px] dark:divide-white/10 dark:bg-white/[.06]">
+              {[['Your booking is confirmed', 'Mon'], ['Reminder: your appointment tomorrow', 'Wed'], ['Someone will be with you between 8 and 6', 'Thu'], ['Your engineer is on the way', 'Thu'], ['How did we do? Rate your visit', 'Thu']].map(([subj, day]) => (
+                <li key={subj} className="flex items-baseline gap-2 px-3 py-2">
+                  <span className="h-2 w-2 shrink-0 translate-y-[-1px] rounded-full" style={{ background: 'var(--mts-accent)' }} />
+                  <span className="min-w-0 flex-1 truncate font-medium">{subj}</span>
+                  <span className="shrink-0 text-[12px] muted">{day}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-auto pt-5 text-[15px] font-semibold">Five emails. Still a day written off.</p>
           </div>
           <div className="glass r-outer flex flex-col p-5" style={{ '--tint': '#5856d6' }}>
             <p className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: 'var(--tint)' }}>With TurnUp</p>
-            <div className="mt-4"><Shot name="stage-on-my-way" label="" alt="The status card: On my way, set off at 08:00, between 09:00 and 11:00, you are 2nd today" /></div>
-            <p className="mt-auto pt-5 text-[15px] font-semibold">Nothing to ask.</p>
+            <div className="relative mt-4 overflow-hidden rounded-[22px] bg-[#0b0c10] px-6 py-6">
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0"
+                   style={{ background: 'radial-gradient(60% 50% at 50% 45%, color-mix(in srgb, var(--tint) 36%, transparent), transparent 72%)' }} />
+              <div className="relative mx-auto max-w-[260px]" style={{ perspective: '1000px' }}>
+                <div style={{ transform: 'rotateX(8deg) rotateY(-14deg) rotateZ(2deg)', filter: 'drop-shadow(0 26px 26px rgba(0,0,0,.65)) drop-shadow(0 6px 8px rgba(0,0,0,.45))' }}>
+                  <PassCard tracker={DEMO} tradeName="Sam Hale Plumbing" />
+                </div>
+              </div>
+            </div>
+            <p className="mt-auto pt-5 text-[15px] font-semibold">One card. It moves. Nothing to ask.</p>
           </div>
         </section>
 
@@ -192,13 +222,6 @@ export default function Home() {
               <Shot key={name} name={name} label={label} note={note} />
             ))}
           </div>
-        </section>
-
-        {/* --- the card ---------------------------------------------------- */}
-        <section className="mt-14">
-          <H2>The card in their wallet</H2>
-          <Lede>A boarding pass, for the plumber.</Lede>
-          <div className="mt-6"><WalletStory /></div>
         </section>
 
         {/* --- everything it does today ------------------------------------------

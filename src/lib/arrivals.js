@@ -4,6 +4,7 @@ import { readArrivalEmail } from './arrival-email'
 import { cleanText } from './clean-text'
 import { atLocalTime } from './when'
 import { cardShape } from './arrival-card'
+import { INBOUND_HOST, inboxAddress } from './inbox-address'
 
 /**
  * The household card: everything coming to one door, from wherever it came.
@@ -40,19 +41,11 @@ function nextStage(current, incoming) {
 }
 
 /**
- * Where forwarded email lands.
- *
- * The host is configuration, like everything else a person reads: a second
- * trade on a second domain changes a variable, not this file. INBOUND_CONFIGURED
- * is the gate — with no token set, nothing can post and the dashboard says so
- * rather than handing out an address that silently swallows mail. The push row
- * that opened onto an empty drawer is the mistake being avoided here.
+ * The gate. With no token set nothing can post, so the dashboard says
+ * forwarding is off rather than handing out an address that silently swallows
+ * mail — the push row that opened onto an empty drawer is the mistake here.
  */
-export const INBOUND_HOST = process.env.INBOUND_EMAIL_HOST || 'in.getturnup.com'
 export const INBOUND_CONFIGURED = Boolean(process.env.INBOUND_EMAIL_TOKEN)
-
-/** The forwarding address for a place: the half that may be given out. */
-export const inboxAddress = (inboxKey, host = INBOUND_HOST) => `${inboxKey}@${host}`
 
 /** Make a household card. Two secrets: one to read it, one to post to it. */
 export async function createPlace(label) {
@@ -147,6 +140,12 @@ export async function fileEmail({ inboxKey, from, subject, text, receivedAt }) {
           // did not repeat it.
           reference: data.reference || existing.reference,
           trackUrl: data.trackUrl || existing.trackUrl,
+          // The title is what the thing IS, and that does not change because
+          // a later email about it had a different subject line. A parcel
+          // first filed as "Your Screwfix order" must not become "Your parcel
+          // is on its way" an hour later — the stage already moved, and the
+          // one line naming the thing is the line worth keeping.
+          title: existing.title || data.title,
           expectedFor: data.expectedFor || existing.expectedFor,
           expectedSaid: data.expectedFor ? data.expectedSaid : existing.expectedSaid,
         },
@@ -164,3 +163,4 @@ export async function fileEmail({ inboxKey, from, subject, text, receivedAt }) {
 // The card's shape lives on its own, with no database import, so it can be
 // checked by a script. Re-exported so callers have one place to import from.
 export { cardShape }
+export { INBOUND_HOST, inboxAddress }

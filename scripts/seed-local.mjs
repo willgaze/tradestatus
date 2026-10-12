@@ -92,7 +92,7 @@ const JOBS = [
  * plumber and the parcels in one list, because that is how the person living
  * there already thinks about their Thursday.
  */
-const PLACE = { code: 'HOME24XK', inboxKey: 'q7rmt4ndkw82lp', label: '14 Church Lane' }
+const PLACE = { code: 'HOME24XK', inboxKey: 'q7rmt4ndkw82jp', label: '14 Church Lane' }
 
 const ARRIVALS = [
   {
