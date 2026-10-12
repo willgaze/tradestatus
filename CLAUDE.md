@@ -814,6 +814,30 @@ repository does not have:
 Until those exist, the honest position is that this is a link, not a card. Do
 not describe it as a wallet pass anywhere customer-facing.
 
+## Every build updates the words (Standing Rule 24, Will, 12 Oct 2026)
+
+Several sessions build this app in a day, and the words that describe it fall
+behind within a night. Will: "all plans, homepages, guides and instructions
+need to be part of the routine updates done every night to make sure
+everything is up to date by morning." So **a build is not done until the words
+are**, and a push that leaves them stale is a defect:
+
+| What | Where | Must say |
+|---|---|---|
+| The business plan | `src/lib/plan.js` (STATUS, GTM_PHASES, PRODUCT, MOATS, WALLET, DECISIONS, FACTS_TABLE, `PLAN_META.updated`) | what the app is tonight. `/plan/<code>` is what gets sent to people |
+| The homepage and the guide | `src/app/page.js`, `src/app/with-servicem8/page.js`, `public/home/crops/` | every claim true, every picture of the current screen |
+| The roadmap | `src/lib/roadmap.js` | shipped is `live`, unshipped is not |
+| The instructions | this file, `docs/*.md`, the Claude project description | the section for what changed |
+| The record | `src/lib/version.js`, `docs/diary/` | the entry, the folder, the table row |
+
+`node scripts/check-current.mjs` (also `npm run check:current`) checks what a
+script can: the changelog's top entry is this version and date, the diary has
+its folder and row, the plan's date is within three days of the build, the
+roadmap and changelog agree on what is live, and every file the guides name
+exists. **It must pass before every push**, nightly or daytime. What it cannot
+check, a person reads: the nightly build's step 4 is that reading, against
+everything that landed on main since the last night, not only its own change.
+
 ## The nightly build
 
 A Routine fires overnight and builds the next version. The rules it works to —
