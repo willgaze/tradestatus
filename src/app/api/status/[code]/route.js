@@ -4,6 +4,7 @@ import { publicShape } from '@/lib/trade-status'
 import { publicProfile, publicBrand, tradeSeenAt } from '@/lib/profile'
 import { syncIfStale } from '@/lib/servicem8'
 import { nudgeIfDue } from '@/lib/nudge'
+import { reviewUrl } from '@/lib/review'
 
 // Public on purpose — the customer has no account and never will. The code is
 // the credential, so it is unguessable and revocable, and this hands back only
@@ -36,9 +37,9 @@ export async function GET(request, { params }) {
 
     const status = publicShape(row)
     const arriving = status.stage === 'ON_MY_WAY' || status.stage === 'ON_SITE'
-    const [profile, brand, seenAt] = await Promise.all([arriving ? publicProfile() : null, publicBrand(), status.stage === 'DONE' ? null : tradeSeenAt()])
+    const [profile, brand, seenAt, review] = await Promise.all([arriving ? publicProfile() : null, publicBrand(), status.stage === 'DONE' ? null : tradeSeenAt(), status.stage === 'DONE' ? reviewUrl() : null])
 
-    return NextResponse.json({ status, profile, brand, tradeSeenAt: seenAt }, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ status, profile, brand, tradeSeenAt: seenAt, reviewUrl: review }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('status lookup failed:', error)
     return NextResponse.json({ error: 'unavailable' }, { status: 503 })

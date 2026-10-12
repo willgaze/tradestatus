@@ -172,6 +172,10 @@ export function publicShape(row) {
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,
     missedChoice: row.missedChoice || null,
     missedChoiceAt: row.missedChoiceAt ? row.missedChoiceAt.toISOString() : null,
+    // After Job done: when they went to leave a review, and when they left a
+    // note. The note itself goes to the trade and nowhere else.
+    reviewClickedAt: row.reviewClickedAt ? row.reviewClickedAt.toISOString() : null,
+    feedbackAt: row.feedbackAt ? row.feedbackAt.toISOString() : null,
     // The customer said they are running late: the TIME they said it. The
     // minutes stay with the trade and on the device that chose them.
     customerLateAt: row.customerLateAt ? row.customerLateAt.toISOString() : null,

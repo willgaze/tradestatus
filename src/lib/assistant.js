@@ -163,6 +163,7 @@ export function jobView(t) {
     asked: t.askedAt ? { at: localStamp(t.askedAt), answeredAt: localStamp(t.askAnsweredAt) } : null,
     late: t.lateMinutes ? { minutes: t.lateMinutes, saidAt: localStamp(t.lateAt) } : null,
     customerLate: t.customerLateMinutes ? { minutes: t.customerLateMinutes, saidAt: localStamp(t.customerLateAt) } : null,
+    afterJob: (t.reviewClickedAt || t.feedbackText) ? { wentToReview: localStamp(t.reviewClickedAt), note: t.feedbackText || null } : null,
     missed: t.missedAt ? { at: localStamp(t.missedAt), customerChose: t.missedChoice || null } : null,
     access: (t.doorToUse || t.petsOnSite || t.accessNotes)
       ? { door: t.doorToUse || null, dog: Boolean(t.petsOnSite), notes: t.accessNotes || null } : null,
