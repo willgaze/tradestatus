@@ -92,7 +92,7 @@ checkable, never what sounds reassuring.
 
 ## How it looks is part of what it says
 
-The customer's page is drawn flat, since v1.49.0: Geist (bundled, via
+The customer's page is drawn flat, since v1.51.0: Geist (bundled, via
 `geist/font/sans` in `src/app/layout.js`), cards that are a surface and a
 hairline with no blur and no shadow, inset grouped lists, dark mode, and a
 stage-tinted wash behind it all. **One corner radius**: `--r` in
@@ -727,6 +727,50 @@ postcode; a landlord and a tenant share a door. A card is a link anyone can
 forward, so a guessed match would put somebody's name and booking in front of
 a stranger. One tap is cheap; that is not.
 
+### The letterbox (`cloudflare/email-worker/`, `src/lib/mime.js`)
+
+Mail reaches a card through Cloudflare Email Routing on the **subdomain**
+`in.getturnup.com`, not the apex. Checked against Cloudflare's own docs rather
+than assumed: Email Routing is zone-level, a subdomain is added from the apex's
+Settings page, and Cloudflare then writes that subdomain's own MX/SPF records —
+which leaves `will@getturnup.com` available for ever. A catch-all on the apex
+would have spent that for nothing.
+
+**The Worker does almost nothing, and that is the design.** Cloudflare hands it
+a raw RFC 822 message in an environment that cannot be run locally and whose
+failures are a line in somebody's log. So it reads the message and posts it;
+everything that could be wrong is decided back here, where
+`node scripts/check-mime.mjs` runs. Keep it at fifteen lines with no
+dependencies. Two rules in it that are not obvious:
+
+- **It never throws.** A thrown Email Worker bounces the message back to the
+  sender, and a carrier getting a bounce from a customer's forwarding rule is
+  worse than one parcel missing off a card.
+- **It posts `message.to` as well as the raw message.** The envelope recipient
+  is the card's inbox; a forwarded email's `To:` header is whoever it was
+  originally sent to. `readRawEmail()` prefers `Delivered-To` for the same
+  reason, and that is tested.
+
+`src/lib/mime.js` is deliberately not a complete MIME implementation — it wants
+a sender, a recipient, a subject and readable text, not attachments or nested
+signatures. Anything it cannot read comes back empty and is dropped, which is
+the right answer for a thing it was never sure about. Two traps already caught
+by its tests: a capturing group in the boundary `split()` puts `undefined` into
+the parts array and throws on an ordinary multipart email, and `=C2=A3` is two
+UTF-8 **bytes**, so resolving each escape straight to a character gives a price
+that reads as `Â£`.
+
+**Turning it on is a panel, not a command** (`src/app/dashboard/InboundSetup.jsx`,
+reference in `docs/cloudflare-email.md`) — the same shape and the same reasons
+as the push one. The token is made in the browser by `crypto.getRandomValues`:
+generated in a Claude session it lands in a transcript, generated on a password
+website it lands on a stranger's server. The same value goes to Vercel's
+`INBOUND_EMAIL_TOKEN` and the Worker's `INBOUND_TOKEN` secret and nowhere else.
+A session cannot do any of the four steps — Vercel's connector is read-only for
+environment variables and the rest are account logins — so the whole job here
+was to write the Worker, write and test the parsing, and reduce the owner's
+part to copy buttons.
+
 Still to do: let a household make a card themselves rather than being given
 one, and a way to connect a source other than forwarding (Gmail's
 `gmail.readonly` is a restricted scope — Google verification plus a CASA
@@ -871,6 +915,27 @@ runs from the cron two hours after the last DONE event, pushes once per job
 `POST /api/status/[code]/review` records the tap (`reviewClickedAt`) or the
 note (`feedbackText`/`feedbackAt`); the note goes to the trade's phone, the
 card and the diary, and `publicShape` carries only the two times.
+
+## Who is coming, with a face (`/api/profile/photo`)
+
+The engineer's photo is **taken on the phone, not pasted as a URL**. `Profile.jsx`
+opens the camera (`capture="user"`), squares the picture off on a canvas at 512px
+and sends a JPEG data URL to `POST /api/dashboard/profile/photo`, which checks the
+JPEG magic bytes, caps it at 450 KB and stores the bytes on
+`TradeProfile.engineerPhotoData` with `engineerPhotoAt`. The public
+`GET /api/profile/photo` serves the bytes (one day cache; the `?v=<time>` in the
+URL from `publicProfile()` busts it on change) and 404s when there is none.
+`DELETE` clears it everywhere at once. The dashboard profile GET and PUT **strip
+`engineerPhotoData`** before replying; a panel that fetches a profile must never
+be sent the bytes.
+
+The face obeys the same gate as the name and the plate: `profile` is `null` on
+the public shape until ON_MY_WAY, and `StatusTracker.jsx` shows the strip only at
+ON_MY_WAY (*is on the way*) and ON_SITE (*is with you*). The push at those two
+stages names the person, the firm, the van and the plate and carries the photo as
+`icon`/`image` (`public/sw.js`, `mts-push-v2`). That is still within the lock
+screen rule above: it is the trade's own name and face, which is what the customer
+is meant to recognise at the door, and never the customer's.
 
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 

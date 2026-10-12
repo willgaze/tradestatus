@@ -38,7 +38,9 @@ export async function publicProfile() {
     const vehicle = [p.vehicleColour, p.vehicleMake, p.vehicleModel].filter(Boolean).join(' ')
     return {
       engineerName: p.engineerName || null,
-      engineerPhoto: p.engineerPhoto || null,
+      // The photo taken on the phone wins over a pasted URL; the cache-buster
+      // is its upload time, so a new photo shows without a hard refresh.
+      engineerPhoto: p.engineerPhotoAt ? `/api/profile/photo?v=${p.engineerPhotoAt.getTime()}` : (p.engineerPhoto || null),
       aboutLine: p.aboutLine || null,
       // The plate is shown so a customer can check the van outside is the one
       // they are expecting. That is the whole point of putting it here.

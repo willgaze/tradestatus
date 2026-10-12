@@ -14,6 +14,8 @@ export async function GET() {
   if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
   try {
     const profile = await prisma.tradeProfile.findUnique({ where: { id: ID } })
+    // The photo's bytes stay on the server; the panel gets its time and builds the URL.
+    if (profile) delete profile.engineerPhotoData
     return NextResponse.json({ profile: profile || null })
   } catch (error) {
     console.error('profile read failed:', error)
@@ -55,6 +57,7 @@ export async function PUT(request) {
     const profile = await prisma.tradeProfile.upsert({
       where: { id: ID }, create: { id: ID, ...data }, update: data,
     })
+    delete profile.engineerPhotoData
     return NextResponse.json({ profile })
   } catch (error) {
     console.error('profile write failed:', error)

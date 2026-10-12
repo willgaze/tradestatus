@@ -1,6 +1,6 @@
 import webpush from 'web-push'
 import { prisma } from '@/lib/prisma'
-import { TRADE_NAME } from '@/lib/trade'
+import { TRADE_NAME, CANONICAL_HOST } from '@/lib/trade'
 
 /**
  * "They have set off" on the lock screen.
@@ -88,12 +88,29 @@ export async function notifyStage(tracker, stage) {
   }
   if (subs.length === 0) return { sent: 0, dropped: 0 }
 
+  // Who is coming, by name, with the van and the face where the phone shows
+  // one. The trade's own details on the customer's lock screen: never the
+  // customer's name or address (see the lock-screen rule in CLAUDE.md).
+  let who = null
+  if (stage === 'ON_MY_WAY' || stage === 'ON_SITE') {
+    try {
+      const p = await prisma.tradeProfile.findUnique({ where: { id: 'singleton' }, select: { engineerName: true, vehicleColour: true, vehicleMake: true, vehicleModel: true, vehicleReg: true, engineerPhotoAt: true, engineerPhoto: true } })
+      if (p) {
+        const vehicle = [p.vehicleColour, p.vehicleMake, p.vehicleModel].filter(Boolean).join(' ')
+        const photo = p.engineerPhotoAt ? `https://${CANONICAL_HOST}/api/profile/photo?v=${p.engineerPhotoAt.getTime()}` : (p.engineerPhoto && /^https:/.test(p.engineerPhoto) ? p.engineerPhoto : null)
+        who = { name: p.engineerName?.split(' ')[0] || null, vehicle: vehicle || null, reg: p.vehicleReg || null, photo }
+      }
+    } catch { who = null }
+  }
+  const title = who?.name && stage === 'ON_MY_WAY' ? `${who.name} is on the way` : who?.name && stage === 'ON_SITE' ? `${who.name} has arrived` : `${TRADE_NAME} — ${line.title}`
+  const body = who?.name && stage === 'ON_MY_WAY'
+    ? `From ${TRADE_NAME}.${who.vehicle ? ` Look out for a ${who.vehicle}${who.reg ? `, ${who.reg}` : ''}.` : ''}`
+    : `${TRADE_NAME} ${line.body}`
   const payload = JSON.stringify({
-    title: `${TRADE_NAME} — ${line.title}`,
-    body: `${TRADE_NAME} ${line.body}`,
-    stage,
+    title, body, stage,
     code: tracker.code,
     tag: `job-${tracker.code}`,
+    ...(who?.photo ? { icon: who.photo, image: who.photo } : {}),
   })
 
   let sent = 0

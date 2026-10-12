@@ -1,0 +1,11 @@
+# The letterbox. See worker.js for why it does so little.
+#
+#   npx wrangler deploy
+#   npx wrangler secret put INBOUND_TOKEN     # the same value as Vercel's
+#                                             # INBOUND_EMAIL_TOKEN
+name = "turnup-inbound"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+TURNUP_URL = "https://www.getturnup.com"

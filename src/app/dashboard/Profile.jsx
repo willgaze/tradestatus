@@ -2,7 +2,7 @@
 import { VanIcon, ChevronIcon } from '@/components/icons'
 import Shot from '@/components/Shot'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * Set up once, shown on every job from then on.
@@ -55,6 +55,33 @@ export default function Profile() {
         setLookupNote('Lookup did not work. Type the make, model and colour below.')
       }
     } finally { setLooking(false) }
+  }
+
+  // The photo: shrunk on the phone to a square-ish 512px JPEG, posted as
+  // bytes, served from /api/profile/photo. No URL to find and paste.
+  const photoRef = useRef(null)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoNote, setPhotoNote] = useState(null)
+  const photoUrl = p.engineerPhotoAt ? `/api/profile/photo?v=${new Date(p.engineerPhotoAt).getTime()}` : (p.engineerPhoto || null)
+  const onPhoto = async (e) => {
+    const f = e.target.files?.[0]; e.target.value = ''
+    if (!f) return
+    setPhotoBusy(true); setPhotoNote(null)
+    try {
+      const bmp = await createImageBitmap(f)
+      const side = Math.min(bmp.width, bmp.height), out = Math.min(512, side)
+      const c = document.createElement('canvas'); c.width = out; c.height = out
+      c.getContext('2d').drawImage(bmp, (bmp.width - side) / 2, (bmp.height - side) / 2, side, side, 0, 0, out, out)
+      let q = 0.82, data = c.toDataURL('image/jpeg', q)
+      while (data.length > 400_000 && q > 0.4) { q -= 0.1; data = c.toDataURL('image/jpeg', q) }
+      const r = await fetch('/api/dashboard/profile/photo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photo: data }) })
+      if (!r.ok) { setPhotoNote('That did not save. Try a different photo.'); return }
+      await load(); setPhotoNote('Saved. Every customer sees it from the moment you set off.')
+    } catch { setPhotoNote('Could not read that photo. Try another.') } finally { setPhotoBusy(false) }
+  }
+  const removePhoto = async () => {
+    setPhotoBusy(true)
+    try { await fetch('/api/dashboard/profile/photo', { method: 'DELETE' }); await load(); setPhotoNote('Removed.') } finally { setPhotoBusy(false) }
   }
 
   const save = async () => {
@@ -146,8 +173,24 @@ export default function Profile() {
           <Field label="Model" hint="Filled by the lookup, or type it" value={p.vehicleModel || ''}
                  onChange={set('vehicleModel')} placeholder="Transit Custom" />
 
-          <Field label="Photo of you" hint="A link to an image — optional"
-                 value={p.engineerPhoto || ''} onChange={set('engineerPhoto')} placeholder="https://…" />
+          <div>
+            <span className="block text-[15px] font-semibold">Photo of you</span>
+            <span className="mt-0.5 block text-[14px] muted">The face at the door. Shown on their page the moment you set off, and in the On my way notification where the phone allows it.</span>
+            <div className="mt-2 flex items-center gap-3">
+              {photoUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={photoUrl} alt="You" className="h-16 w-16 shrink-0 rounded-full object-cover" />
+              ) : (
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-full text-[22px] font-bold" style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 13%, transparent)' }}>{(p.engineerName || '?').trim()[0]?.toUpperCase()}</span>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => photoRef.current?.click()} disabled={photoBusy} className="btn btn-tinted !min-h-[44px] !px-4 !text-[14px]">{photoBusy ? 'Saving…' : photoUrl ? 'Change photo' : 'Take or choose a photo'}</button>
+                {photoUrl && <button type="button" onClick={removePhoto} disabled={photoBusy} className="btn btn-grey !min-h-[44px] !px-4 !text-[14px]">Remove</button>}
+              </div>
+              <input ref={photoRef} type="file" accept="image/*" capture="user" className="hidden" onChange={onPhoto} />
+            </div>
+            {photoNote && <p className="mt-2 text-[14px] muted">{photoNote}</p>}
+          </div>
           <Field label="Photo of the van" hint="Sign-written is best — they spot it from the window"
                  value={p.vehiclePhoto || ''} onChange={set('vehiclePhoto')} placeholder="https://…" />
           <Field label="Your logo" hint="Shown at the top of the customer's page instead of your name in plain text"

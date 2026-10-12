@@ -174,6 +174,29 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           </p>
         )}
 
+        {/* Who is coming, on the card itself from the moment they set off: the
+            face, the name, the van and the plate. The row below carries the
+            same again, opened; this is the glance. */}
+        {profile && (profile.engineerName || profile.engineerPhoto) && ['ON_MY_WAY', 'ON_SITE'].includes(stage.key) && (
+          <div className="r-inner mt-4 flex items-center gap-3 px-3.5 py-3" style={{ background: 'rgb(var(--glass-line) / 0.07)' }}>
+            {profile.engineerPhoto ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={profile.engineerPhoto} alt={profile.engineerName || 'Your engineer'} className="h-14 w-14 shrink-0 rounded-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            ) : (
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full text-[20px] font-bold" style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 14%, transparent)' }}>{(profile.engineerName || '?').trim()[0]?.toUpperCase()}</span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[17px] font-semibold leading-tight">{profile.engineerName || TRADE_NAME}{stage.key === 'ON_MY_WAY' ? ' is on the way' : ' is with you'}</p>
+              {(profile.vehicle || profile.vehicleReg) && (
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] muted">
+                  {profile.vehicle && <span>Look out for a {profile.vehicle}</span>}
+                  {profile.vehicleReg && <span className="inline-block rounded-md bg-[#f5d32a] px-1.5 py-0.5 font-mono text-[13px] font-bold tracking-wide text-black">{profile.vehicleReg}</span>}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* A record of what happened, never a prediction of what will. */}
         {status.arrivingAt && stage.key !== 'BOOKED' && (
           <p className="mt-3 text-[15px] muted">Set off at {timeOnly(status.arrivingAt)}.</p>

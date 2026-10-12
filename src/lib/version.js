@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.49.0'
+export const VERSION = '1.51.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 31
+export const THEME_INDEX = 33
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,8 +48,18 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.49.0', date: '2026-10-12', notes: [
+  { version: '1.51.0', date: '2026-10-12', notes: [
     'A flatter look, the same page. Geist is the typeface everywhere now, bundled with the app so an Android and an iPhone show the same product. Cards are a surface and a hairline, with no blur and nothing cast under them; buttons, fields and the stage control share one corner radius with the cards, instead of capsules sitting on rounded boxes. The stage colours, the wash and the rail are untouched: they mean something, and nothing here changes what they say.',
+  ] },
+  { version: '1.50.0', date: '2026-10-12', notes: [
+    'Who is coming, with a face. Under Who to expect, Take or choose a photo opens the phone camera, squares the picture off on the phone and keeps it at 512 pixels, so nothing is pasted and nothing large is sent. The moment you tap On my way the customer\'s card shows your face, your name, the van and the plate; at On site it reads is with you. Before that, nothing, as before.',
+    'The On-my-way notification now says who: Sam Hale is on the way, from Sam Hale Plumbing, look out for a White Vauxhall Vivaro, AB12 CDE, with the face as the icon where the phone shows one. The photo is served from the app itself, never pasted from a link, and Remove takes it down everywhere at once.',
+  ] },
+  { version: '1.49.0', date: '2026-10-12', notes: [
+    'The letterbox. Turn on forwarding, under Setup and settings, is the four steps that make a forwarded delivery email land on a household card \u2014 the password made on your own phone and sent nowhere, then Vercel, then Cloudflare, then the Worker, each with the link to press and what you will see when it worked. It disappears the moment forwarding is on, like the push one.',
+    'The Cloudflare Email Worker is written and in the repo, and it does almost nothing on purpose: it reads the raw message and posts it. Fifteen lines, no dependencies, and it never throws \u2014 a thrown Email Worker bounces the mail back to the carrier.',
+    'Which means the fiddly half lives here, under test. src/lib/mime.js turns a raw email into four facts: quoted-printable, base64, multipart with the plain part preferred over the HTML one, an HTML-only sender, encoded subject lines, and a pound sign that is a pound sign and not mojibake. The card inbox is read from Delivered-To, never from To, because a forwarded email\u2019s To is whoever it was sent to in the first place.',
+    'Checked on a subdomain rather than guessed: Cloudflare routes in.getturnup.com if the subdomain is added from the main domain\u2019s Settings page, which leaves your own email at getturnup.com untouched, now and later.',
   ] },
   { version: '1.48.0', date: '2026-10-12', notes: [
     'The household card tells a person from a parcel. Who is calling round comes first, under Coming to the door \u2014 your visit, the boiler engineer, the surveyor, the kitchen fitter. Everything that just lands sits under Also arriving. Nobody waits in for a jiffy bag and everybody waits in for an engineer, and one undifferentiated list made the reader do that sorting every time they opened it.',

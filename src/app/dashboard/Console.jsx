@@ -16,6 +16,7 @@ import Roadmap from './Roadmap'
 import ServiceM8 from './ServiceM8'
 import Nudges from './Nudges'
 import Doors from './Doors'
+import InboundSetup from './InboundSetup'
 import Assistant from './Assistant'
 import Tip from './Tip'
 import NoAccess from './NoAccess'
@@ -745,6 +746,7 @@ export default function Console({ assistant = false }) {
         <div id="panel-terms" className="scroll-mt-4"><Terms /></div>
         <div id="panel-nudges" className="scroll-mt-4"><Nudges /></div>
         <Doors />
+        <InboundSetup />
         <div id="panel-push" className="scroll-mt-4"><PushSetup /></div>
         <div id="panel-servicem8" className="scroll-mt-4"><ServiceM8 onChanged={load} /></div>
         <div id="panel-passkeys" className="scroll-mt-4"><Passkeys /></div>
