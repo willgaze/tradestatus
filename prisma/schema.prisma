@@ -195,6 +195,11 @@ model TradeProfile {
   id            String  @id @default("singleton")
   engineerName  String? // "Will" — a first name is enough
   engineerPhoto String? // a URL; the face at the door
+  // Or the photo itself, taken on the phone from the dashboard: a JPEG no
+  // bigger than 450 KB, served at /api/profile/photo. Public once the trade
+  // sets off — it is the face at the door, which is the point of it.
+  engineerPhotoData Bytes?
+  engineerPhotoAt   DateTime?
   aboutLine     String? // "G3 qualified, 22 years"
 
   vehicleReg    String? // looked up, then cached below

@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.50.0](./v1.50.0/) | 2026-10-12 | Harbour — who is coming, with a face: a photo taken on the phone, on the card from On my way and in the notification |
 | [v1.49.0](./v1.49.0/) | 2026-10-12 | Ochre — the letterbox: the four steps to turn forwarding on, the Cloudflare Worker, and a raw email read into four facts |
 | [v1.48.0](./v1.48.0/) | 2026-10-12 | Plum — a parcel lands, a person knocks; your own jobs on a household card, in step with every stage tap |
 | [v1.47.0](./v1.47.0/) | 2026-10-12 | Teal — the /j/ claim page in the app's look, with the card it unlocks |

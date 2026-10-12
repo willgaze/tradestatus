@@ -11,7 +11,7 @@
  * wanting notifications.
  */
 
-const VERSION = 'mts-push-v1'
+const VERSION = 'mts-push-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()))
@@ -32,7 +32,10 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body,
-      icon: '/icon-192.png',
+      // The face of who is coming, when the push carries one. Android and
+      // desktop show it; iOS shows the app icon instead, and that is fine.
+      icon: data.icon || '/icon-192.png',
+      ...(data.image ? { image: data.image } : {}),
       badge: '/icon-192.png',
       // One tag per job, so four stage changes in a morning replace each other
       // rather than stacking four notifications for the same job.

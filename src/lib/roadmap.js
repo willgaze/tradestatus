@@ -51,7 +51,7 @@ export const PHASES = [
       { key: 'brand-logo', name: 'Your logo on the page', state: 'live',
         what: 'Set once in Who to expect. The wallet card carries it too once Apple signs it.' },
       { key: 'who-to-expect', name: 'Who is coming and what they drive', state: 'live',
-        what: 'Name, photo and the plate, shown only once you set off.' },
+        what: 'Name, the plate and a photo you take on the phone, shown only once you set off. The face is in the On-my-way notification too.' },
       { key: 'calendar', name: 'Put it in my calendar', state: 'live',
         what: 'Apple and Google. All day, or the window if you have set one.' },
       { key: 'installable', name: 'Add to home screen', state: 'live',

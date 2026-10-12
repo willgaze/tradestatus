@@ -32,7 +32,7 @@ capability we do not have) · No.
 | Revised promise shown as revised, original kept | Copy | Next |
 | Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Done 1.40.0 — Running late yourself? (15/30/60, I'm there now) joins someone else and move it |
 | Paused visible to the customer with reason and expected return | Improve | Done (Paused + note); expected return: Next |
-| Name and photo of who is coming, on the page and in the On-my-way message | Copy | Done (Who to expect, van, name); photo: Next |
+| Name and photo of who is coming, on the page and in the On-my-way message | Copy | Done (Who to expect, van, name; photo taken on the phone, on the card and in the On-my-way notification, 1.50.0) |
 
 ## Tier 2 — the log becomes a booking and evidence system (web, now)
 

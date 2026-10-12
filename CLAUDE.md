@@ -902,6 +902,27 @@ runs from the cron two hours after the last DONE event, pushes once per job
 note (`feedbackText`/`feedbackAt`); the note goes to the trade's phone, the
 card and the diary, and `publicShape` carries only the two times.
 
+## Who is coming, with a face (`/api/profile/photo`)
+
+The engineer's photo is **taken on the phone, not pasted as a URL**. `Profile.jsx`
+opens the camera (`capture="user"`), squares the picture off on a canvas at 512px
+and sends a JPEG data URL to `POST /api/dashboard/profile/photo`, which checks the
+JPEG magic bytes, caps it at 450 KB and stores the bytes on
+`TradeProfile.engineerPhotoData` with `engineerPhotoAt`. The public
+`GET /api/profile/photo` serves the bytes (one day cache; the `?v=<time>` in the
+URL from `publicProfile()` busts it on change) and 404s when there is none.
+`DELETE` clears it everywhere at once. The dashboard profile GET and PUT **strip
+`engineerPhotoData`** before replying; a panel that fetches a profile must never
+be sent the bytes.
+
+The face obeys the same gate as the name and the plate: `profile` is `null` on
+the public shape until ON_MY_WAY, and `StatusTracker.jsx` shows the strip only at
+ON_MY_WAY (*is on the way*) and ON_SITE (*is with you*). The push at those two
+stages names the person, the firm, the van and the plate and carries the photo as
+`icon`/`image` (`public/sw.js`, `mts-push-v2`). That is still within the lock
+screen rule above: it is the trade's own name and face, which is what the customer
+is meant to recognise at the door, and never the customer's.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for
