@@ -5,3 +5,8 @@ node_modules/
 .env*.local
 .DS_Store
 apple/
+
+# Deep-research working notes. The finished report is committed to docs/research/;
+# the raw per-topic notes behind it are scratch and are not kept in the repo.
+research_notes/
+reports/
