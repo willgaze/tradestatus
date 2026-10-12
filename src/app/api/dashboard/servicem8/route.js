@@ -29,6 +29,7 @@ export async function GET(request) {
   // The add-on half: configured means SM8_APP_ID and SM8_APP_SECRET are set;
   // connected means the operator has authorised it and tokens are held.
   state.oauth = { ...(await oauthState()), redirectUri: redirectUri(origin(request)) }
+  try { state.autoFollow = Boolean((await prisma.tradeProfile.findUnique({ where: { id: 'singleton' } }))?.autoFollow) } catch { state.autoFollow = false }
   try {
     state.recent = await prisma.sm8Event.findMany({ orderBy: { receivedAt: 'desc' }, take: 12 })
     state.linked = await prisma.sm8Link.count()

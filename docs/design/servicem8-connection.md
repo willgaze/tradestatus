@@ -32,6 +32,11 @@ being off, or the booking not having been made from the job card with Send
 Booking Confirmation ticked. ServiceM8 does not send a confirmation for a job
 dragged onto the calendar.
 
+## What shipped after that (v1.35.0)
+
+- **Follow every booking** (see Phase 2 below): card at booking, link texted
+  ten minutes later unless ServiceM8 already did, one text per job.
+
 ## What shipped next (v1.34.0)
 
 - **Send the link via ServiceM8** on This week in ServiceM8: `sendSms()` on the
@@ -88,11 +93,17 @@ serverless function or a route on getturnup.com to hold the OAuth tokens, and
 an afternoon. Will installs it on his own account; nobody else sees it until it
 is listed.
 
-**Phase 2 — the card made and the link sent the moment a booking is made.**
-With Phase 1 in place, an event webhook on job creation or booking creation
-makes the card and sends the link through `publish_sms`, in TurnUp's own words,
-with the terms line. The ServiceM8 Booking Confirmation automation then becomes
-optional rather than the single point of failure it is today.
+**Phase 2 — the card made and the link sent the moment a booking is made.
+Done in 1.35.0.** `src/lib/sm8-auto.js`: the five-minute cron sweep reads
+every scheduled visit edited in the last six hours (`jobactivity` by
+`edit_date`), makes the card for any job it does not follow yet, and ten minutes
+after the booking was made texts the link through ServiceM8 on the key, unless
+the job's SMS history already holds a link text from ServiceM8's own automation.
+`linkSentAt` on the tracker makes it once per job, ever. The webhook makes the
+card immediately when it hears a job change; the text still waits for the sweep.
+Switched on by the trade under ServiceM8 → Follow every booking, because it
+spends their SMS credits. Not done: re-sending when a booking is moved; the
+window follows the move already, the text does not.
 
 **Phase 3 — the Store listing.** Only once two or three other trades have
 asked. Review, a public listing, and the same add-on for anyone on ServiceM8.

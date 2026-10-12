@@ -101,6 +101,12 @@ export async function fetchActivities(jobUuid) {
     .sort((a, b) => String(b.start_date).localeCompare(String(a.start_date)))
 }
 
+/** Scheduled visits edited since a ServiceM8-local stamp ("2026-10-12 09:00:00"), any job. */
+export async function fetchActivitiesEditedSince(sinceStamp) {
+  const rows = await api(`jobactivity.json?$filter=${encodeURIComponent(`edit_date gt '${sinceStamp}'`)}`)
+  return Array.isArray(rows) ? rows : []
+}
+
 /** The person on the job, for pre-filling a new tracker. */
 /**
  * ServiceM8 stamps times in the account's local time, with no offset:
@@ -432,7 +438,7 @@ export async function fetchUpcoming({ days = 7, fresh = false } = {}) {
       fetchJob({ uuid: b.jobUuid }).catch(() => null),
       fetchJobContact(b.jobUuid).catch(() => null),
       fetchMessages(b.jobUuid),
-      prisma.tradeStatus.findFirst({ where: { externalId: b.jobUuid, isActive: true }, select: { id: true, code: true, stage: true, viewCount: true, termsAgreedAt: true, presenceAskedAt: true, reminderReply: true } }).catch(() => null),
+      prisma.tradeStatus.findFirst({ where: { externalId: b.jobUuid, isActive: true }, select: { id: true, code: true, stage: true, viewCount: true, termsAgreedAt: true, presenceAskedAt: true, reminderReply: true, linkSentAt: true } }).catch(() => null),
     ])
     if (!job || Number(job.active ?? 1) !== 1) return null
     const f = fieldsFromJob(job, contact)
@@ -441,7 +447,7 @@ export async function fetchUpcoming({ days = 7, fresh = false } = {}) {
       customerName: f.customerName, mobile: contact?.mobile || null, phone: contact?.phone || null,
       jobAddress: f.jobAddress, jobSummary: f.jobSummary,
       confirmation: confirmationState(messages),
-      card: tracker ? { code: tracker.code, stage: tracker.stage, opened: tracker.viewCount || 0, termsAgreed: Boolean(tracker.termsAgreedAt), asked: Boolean(tracker.presenceAskedAt), reply: tracker.reminderReply || null } : null,
+      card: tracker ? { code: tracker.code, stage: tracker.stage, opened: tracker.viewCount || 0, termsAgreed: Boolean(tracker.termsAgreedAt), asked: Boolean(tracker.presenceAskedAt), reply: tracker.reminderReply || null, linkSentAt: tracker.linkSentAt || null } : null,
     }
   }))
   const value = out.filter(Boolean)

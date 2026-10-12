@@ -601,6 +601,18 @@ tokens in `Sm8OAuth`, `publishDiary()`, `diaryFor()`), steps for the owner in
 called and a no-op until the add-on is authorised. Texts go through
 `src/lib/sm8-words.js` and stay plain ASCII.
 
+**Follow every booking (`src/lib/sm8-auto.js`, v1.35.0).** When
+`TradeProfile.autoFollow` is on, the cron sweep calls `autoFollow()`: every
+scheduled visit edited in the last six hours gets its card at once
+(`findOrCreateForJob`) and, **ten minutes after the booking was made**, the link
+texted through ServiceM8 — unless `confirmationState().linkTexted` says
+ServiceM8's own automation already did, in which case `linkSentAt` is set to
+that time and nothing is sent. The ten minutes is the automation's head start,
+so the two never race to one phone. `linkSentAt` makes it once per job, ever.
+Rules that must not drift: never send without the trade's switch on; never send
+twice; never send to a job that is Completed or Unsuccessful; the text is
+`linkText()` and nothing else.
+
 ## When the window arrives and nothing has moved (`src/lib/nudge.js`)
 
 The one thing the card could not do until v1.18.0 was notice that a time the

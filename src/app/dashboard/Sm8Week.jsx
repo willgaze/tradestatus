@@ -84,6 +84,7 @@ export default function Sm8Week() {
                   {c.linkTexted && `Texted ${timeOnly(c.textedAt)}. `}
                   {c.linkEmailed && `Emailed ${dayAndTime(c.emailedAt)}${c.emailOpened ? `, opened ${dayAndTime(c.openedAt)}` : c.emailBounced ? ', bounced' : ', not opened yet'}. `}
                   {!c.linkTexted && !c.linkEmailed && (c.smsCount || c.emailCount ? 'ServiceM8 sent something, but not the link. ' : 'ServiceM8 sent no confirmation. Only a booking made from the job card with Send Booking Confirmation ticked sends one, and it only texts if the automation’s text method is ticked. ')}
+                  {b.card?.linkSentAt && `TurnUp sent it ${dayAndTime(b.card.linkSentAt)}. `}
                   {b.card ? `Card ready (${b.card.stage.toLowerCase().replace('_', ' ')}), opened ${b.card.opened} time${b.card.opened === 1 ? '' : 's'}${b.card.termsAgreed ? ', terms agreed' : ''}${b.card.reply ? `, replied ${b.card.reply.toLowerCase().replace('_', ' ')}` : ''}.` : 'No card yet: it appears when they open the link, or make it now.'}
                 </p>
                 {sent[b.jobUuid] && <p className="mt-1.5 text-[13px] font-semibold" style={{ color: 'var(--tint)' }}>{sent[b.jobUuid]}</p>}

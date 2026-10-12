@@ -116,6 +116,10 @@ export default function WithServiceM8() {
               <Pre>{`Hi {recipient_first}, a reminder that {vendor.name} is booked for tomorrow, {booking_date}, arriving {booking_time}. Still fine? Tap to say so, to say someone else will be in, or to move it:\nhttps://${host}/j/{job.generated_job_id}`}</Pre>
               <span className="mt-2 block text-[13px]">The page asks them at four the afternoon before either way. Each reply lands on your card and your phone.</span>
             </Step>
+            <Step n="3c" title="Or let TurnUp send it">
+              Dashboard → <b>ServiceM8</b> → switch on <b>Follow every booking</b>. Every booking gets its card at once; ten minutes later TurnUp texts the link through ServiceM8, unless ServiceM8 already did. One text per job.
+              <span className="mt-1.5 block text-[13px]">A job dragged onto the calendar gets told too.</span>
+            </Step>
             <Step n="4" title="That is the setup" visual={<div className="w-full max-w-[340px]"><Shot name="sm8-panel-head" label="" alt="The ServiceM8 panel on the TurnUp dashboard: Listening, 1 job linked" /></div>}>
               Nothing to add per job. The card appears on your dashboard the moment the customer opens the link.
             </Step>

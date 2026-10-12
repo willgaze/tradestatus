@@ -42,7 +42,7 @@ capability we do not have) · No.
 | "On my way" offered automatically at the previous job's Job done | Improve | Next |
 | Ordered day with running expected start; next customer told only if the shift leaves their window | Improve | Later |
 | "You are next" / stop count on the customer page | Improve | Done (position: "You are 2nd today") |
-| Confirmation re-sent on every reschedule, however the booking moved | Copy | Later — window follows the ServiceM8 booking already; the message does not |
+| Confirmation re-sent on every reschedule, however the booking moved | Copy | Partly 1.35.0 — the first text goes automatically for every booking (Follow every booking); a re-send on a move: Next |
 | Red "Not sent" badge on the dashboard until the customer has been told | Copy | Done 1.33.0 — This week in ServiceM8 reads ServiceM8's own email/SMS history: Link texted / emailed, opened / not sent, with Text the link in one tap |
 | Logged send and logged open of every customer message | Improve | Partly (viewCount, lastViewedAt); per-message log: Later |
 | Per-visit status audit, back-dating allowed but labelled | Copy | Partly (events); labelled back-dating: Later |

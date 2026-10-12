@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.36.0'
+export const VERSION = '1.37.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -48,10 +48,14 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
-  { version: '1.36.0', date: '2026-10-12', notes: [
-    '/with-servicem8 gets the homepage treatment: fewer words, and a picture of the part for every step. The customer\'s status card at each stage, the claim screen, the linked card and the ServiceM8 panel are cut from the existing captures (scripts/capture-home-crops.mjs, ONLY=sm8); the ServiceM8 app\'s four buttons and the booking text are drawn at a readable size instead of inside a 150px phone.',
-    'What moves the card is now a row per stage: what you press, an arrow, what they see. The setup is the same four steps with the two messages to paste and a line each.',
+  { version: '1.37.0', date: '2026-10-12', notes: [
+    '/with-servicem8 gets the homepage treatment: fewer words, and a picture of the part for every step. The customer\'s status card at each stage, the claim screen, the linked card and the ServiceM8 panel are cut from the existing captures (scripts/capture-home-crops.mjs, ONLY=sm8); the ServiceM8 app\'s four buttons and the booking text are drawn at a readable size instead of inside a 150px phone. What moves the card is a row per stage: what you press, an arrow, what they see.',
     'The wallet section on the homepage, second pass at the owner\'s request: it opens with three phones — the lock screen, double-click, the wallet open with the card in the stack, the card tapped — so a visitor sees it is a card before anything is explained. The pulled-apart card, the four stage cards and the back now stand in three dimensions on the same dark floor as the hero, instead of lying flat.',
+  ] },
+  { version: '1.36.0', date: '2026-10-12', notes: [
+    'Follow every booking. Switch it on under ServiceM8 and every booking made in ServiceM8 gets its TurnUp card straight away, and ten minutes later the link is texted through ServiceM8 unless ServiceM8\'s own confirmation already texted it. One text per job, ever; a job dragged onto the calendar is no longer a job nobody told. The Booking Confirmation automation becomes optional.',
+    'Because the card now exists from the moment of booking, the day-before ask, the nudges and the terms work for every ServiceM8 job, not just the ones whose customer opened the link first.',
+    'This week in ServiceM8 says TurnUp sent it, with the time, when it did.',
   ] },
   { version: '1.35.0', date: '2026-10-12', notes: [
     'The homepage says less and shows more. Every row the customer can open and every part of the dashboard the trade taps is now a picture of that part — cut from the real screen at 2x by scripts/capture-home-crops.mjs, never a whole phone — under a label of a few words. The paragraphs are gone; the two walkthrough strips went with them.',
