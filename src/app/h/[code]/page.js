@@ -99,7 +99,7 @@ function Row({ a }) {
   return (
     <li className={`${TONE[a.stage] || 'tone-booked'} glass r-outer p-4 ${done ? 'opacity-70' : ''}`}>
       <div className="flex items-start gap-3.5">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px]"
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
               style={{ color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 14%, transparent)' }}>
           {a.kind === 'SERVICE' ? <HouseIcon size={19} /> : <VanIcon size={19} />}
         </span>

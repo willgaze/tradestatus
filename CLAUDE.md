@@ -92,9 +92,16 @@ checkable, never what sounds reassuring.
 
 ## How it looks is part of what it says
 
-The customer's page is drawn to the current iOS look: translucent layered cards
-over a stage-tinted wash, the system font, inset grouped lists, dark mode. That
-is not decoration. This is a page a sole trader sends to someone's mother, and
+The customer's page is drawn flat, since v1.49.0: Geist (bundled, via
+`geist/font/sans` in `src/app/layout.js`), cards that are a surface and a
+hairline with no blur and no shadow, inset grouped lists, dark mode, and a
+stage-tinted wash behind it all. **One corner radius**: `--r` in
+`src/app/globals.css` is the only corner there is. Every `rounded-*` utility
+resolves to it in `tailwind.config.js`, and so does every `shadow-*`, to a
+one-pixel ring. Do not reintroduce a second radius or a cast shadow for one
+component; if the corner is wrong, change the token. `rounded-full` is for
+things that are genuinely round. The class is still called `.glass` because
+every screen reaches for the name. That is not decoration. This is a page a sole trader sends to someone's mother, and
 one that looks like a form from 2011 says the firm behind it is careless before
 a word is read.
 

@@ -97,10 +97,11 @@ body {
   --stage-paused: #ff9500;
   --stage-done:   #34c759;
 
-  /* The material. A veil low enough to let the stage wash through, a blur to
-     bend it, and a hairline. */
+  /* The material. Flat: an almost-opaque surface and a hairline, no blur and
+     no shadow. The stage wash shows at the edges of the page, not through
+     the card. */
   --glass-rgb: 255 255 255;
-  --glass-veil: 0.72;
+  --glass-veil: 0.92;
   --glass-line: 60 60 67;
   --glass-line-alpha: 0.13;
   --glass-top: 255 255 255;
@@ -109,9 +110,13 @@ body {
   --label-2: var(--mts-muted);
   --label-3: rgba(60, 60, 67, 0.32);
 
-  /* Concentric: an inner corner is always tighter than the one it sits in. */
-  --r-outer: 26px;
-  --r-inner: 18px;
+  /* ONE RADIUS. Cards, fields, buttons and the stage control all draw this
+     corner; Tailwind's rounded-* utilities resolve to it too (see
+     tailwind.config.js). The two older names are kept so nothing breaks, but
+     they are the same value and must stay so. */
+  --r: 14px;
+  --r-outer: var(--r);
+  --r-inner: var(--r);
 
   --spring: cubic-bezier(0.32, 0.72, 0, 1);
 
@@ -129,7 +134,7 @@ body {
     --stage-done:   #30d158;
 
     --glass-rgb: 28 28 30;
-    --glass-veil: 0.64;
+    --glass-veil: 0.88;
     --glass-line: 84 84 88;
     --glass-line-alpha: 0.34;
     --glass-top-alpha: 0.07;
@@ -163,16 +168,12 @@ body {
 }
 
 @layer components {
+  /* Still called glass, because every screen reaches for the name. It is a
+     flat card now: surface, hairline, nothing cast. */
   .glass {
     position: relative;
     background: rgb(var(--glass-rgb) / var(--glass-veil));
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    backdrop-filter: blur(28px) saturate(180%);
     border: 1px solid rgb(var(--glass-line) / var(--glass-line-alpha));
-    box-shadow:
-      inset 0 1px 0 0 rgb(var(--glass-top) / var(--glass-top-alpha)),
-      0 1px 2px rgb(0 0 0 / 0.04),
-      0 12px 32px -12px rgb(0 0 0 / 0.16);
   }
 
   .r-outer { border-radius: var(--r-outer); }
@@ -217,7 +218,7 @@ body {
     justify-content: center;
     gap: 0.5rem;
     min-height: 3.25rem;
-    border-radius: 999px;
+    border-radius: var(--r);
     padding: 0.875rem 1.5rem;
     font-size: 1.0625rem;
     font-weight: 600;
@@ -233,11 +234,7 @@ body {
   .btn:active { transform: scale(0.97); }
   .btn:disabled { opacity: 0.45; }
 
-  .btn-filled {
-    background: var(--tint);
-    color: #fff;
-    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--tint) 70%, transparent);
-  }
+  .btn-filled { background: var(--tint); color: #fff; }
 
   .btn-tinted { background: color-mix(in srgb, var(--tint) 14%, transparent); color: var(--tint); }
   .btn-grey   { background: rgb(var(--glass-line) / 0.1); color: var(--mts-text); }
@@ -301,9 +298,7 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 2.875rem;
-    /* Capsule, like every other control. 12px here was the last square corner
-       on the trade's most-used button and read as an older iOS. */
-    border-radius: 999px;
+    border-radius: var(--r);
     padding: 0.5rem 0.25rem;
     font-size: 0.875rem;
     font-weight: 600;
@@ -323,7 +318,7 @@ body {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 2px;
     padding: 3px;
-    border-radius: 999px;
+    border-radius: var(--r);
     background: rgb(var(--glass-line) / 0.09);
   }
   .stage-seg {
@@ -335,7 +330,8 @@ body {
     min-height: 3.5rem;
     min-width: 0;
     padding: 0.4rem 0.1rem;
-    border-radius: 999px;
+    /* Three pixels in from the track, so the corners stay concentric. */
+    border-radius: calc(var(--r) - 3px);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -346,19 +342,10 @@ body {
     transition: transform 220ms var(--spring), background 220ms var(--spring), opacity 220ms var(--spring);
   }
   .stage-seg:active { transform: scale(0.95); }
-  .stage-seg-on {
-    opacity: 1;
-    background: var(--tint);
-    color: #fff;
-    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--tint) 75%, transparent);
-  }
+  .stage-seg-on { opacity: 1; background: var(--tint); color: #fff; }
 
 
-  .segment-on {
-    background: var(--tint);
-    color: #fff;
-    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--tint) 70%, transparent);
-  }
+  .segment-on { background: var(--tint); color: #fff; }
 
   .segment-off { background: rgb(var(--glass-line) / 0.09); color: var(--mts-text); }
 

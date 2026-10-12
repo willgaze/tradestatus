@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.48.0'
+export const VERSION = '1.49.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 30
+export const THEME_INDEX = 31
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.49.0', date: '2026-10-12', notes: [
+    'A flatter look, the same page. Geist is the typeface everywhere now, bundled with the app so an Android and an iPhone show the same product. Cards are a surface and a hairline, with no blur and nothing cast under them; buttons, fields and the stage control share one corner radius with the cards, instead of capsules sitting on rounded boxes. The stage colours, the wash and the rail are untouched: they mean something, and nothing here changes what they say.',
+  ] },
   { version: '1.48.0', date: '2026-10-12', notes: [
     'The household card tells a person from a parcel. Who is calling round comes first, under Coming to the door \u2014 your visit, the boiler engineer, the surveyor, the kitchen fitter. Everything that just lands sits under Also arriving. Nobody waits in for a jiffy bag and everybody waits in for an engineer, and one undifferentiated list made the reader do that sorting every time they opened it.',
     'The parser learned the difference. An email with a carrier or a tracking number is a parcel; one that says an engineer, surveyor, fitter or installer will attend is a person; a sofa with two men is goods with a crew. A boiler service and a window survey were both being dropped entirely before this, because no delivery phrase matched the way those senders write.',

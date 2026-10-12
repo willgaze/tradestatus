@@ -20,6 +20,8 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.49.0](./v1.49.0/) | 2026-10-12 | Ochre — the flat look: Geist, hairline cards, one corner radius |
+| [v1.48.0](./v1.48.0/) | 2026-10-12 | Plum — the household card tells a person from a parcel |
 | [v1.47.0](./v1.47.0/) | 2026-10-12 | Teal — the /j/ claim page in the app's look, with the card it unlocks |
 | [v1.46.0](./v1.46.0/) | 2026-10-12 | Indigo — switch a job's link back on; a switched-off card says so in words |
 | [v1.45.0](./v1.45.0/) | 2026-10-12 | Indigo — the pilot in four numbers; the six moves reordered; the ask has a reader; every build updates the words |
