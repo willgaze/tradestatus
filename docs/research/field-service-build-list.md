@@ -26,11 +26,11 @@ capability we do not have) · No.
 | Day-before reminder with reply: confirm / reschedule / someone else will be in | Copy | Done 1.31.0 + 1.32.0 — asked at 16:00 the day before (push + page); replies still fine / someone else / move it reach the trade; SMS via ServiceM8's Booking Reminder automation |
 | Non-push fallback for every customer-critical event | Copy | Next — email first; SMS is the capability to buy |
 | Offline tap queue: device time + fix time + server time, "location not validated" flag, never dropped | Improve | Done 1.39.0 — IndexedDB queue in the dashboard page (no background sync on iOS); event keeps deviceAt, server time, fix and fixValidated; customer sees both times |
-| Customer page shows "last updated hh:mm" and the last honest stage | Improve | Next |
+| Customer page shows "last updated hh:mm" and the last honest stage | Improve | Done 1.40.0 — footer says Updated / Last checked; mid-visit the card says when the trade's phone last reached the server after 15 quiet minutes (dashboard heartbeat) |
 | "Customer not home" in one tap: fix, door photo, attempts, wait clock, message with three replies | Copy | Done 1.26.0 (fee deliberately absent; the next step is offered first) |
 | Automatic concrete message at window end: wait / later today / rebook | Improve | Done 1.24.0 (the new window is proposed by the trade, never generated) |
 | Revised promise shown as revised, original kept | Copy | Next |
-| Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Partly 1.32.0 — someone else and move it exist from the day before; I'm running late on the day: Next |
+| Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Done 1.40.0 — Running late yourself? (15/30/60, I'm there now) joins someone else and move it |
 | Paused visible to the customer with reason and expected return | Improve | Done (Paused + note); expected return: Next |
 | Name and photo of who is coming, on the page and in the On-my-way message | Copy | Done (Who to expect, van, name); photo: Next |
 

@@ -72,6 +72,11 @@ model TradeStatus {
   missedAt       DateTime?
   missedChoice   String?
   missedChoiceAt DateTime?
+  // The customer saying THEY are running late: minutes they chose, and when
+  // they said it. Their own answer, so only the time is public; the minutes
+  // go to the trade and stay on the device that said them.
+  customerLateMinutes Int?
+  customerLateAt      DateTime?
   // The customer's one-tap reply to the day-before ask (presenceAskedAt,
   // below): OK, SOMEONE_ELSE (will let you in) or MOVE (wants different
   // hours). A reply is a message to the trade; MOVE moves nothing by itself.
@@ -206,6 +211,12 @@ model TradeProfile {
   // and text the link through ServiceM8 ten minutes later unless ServiceM8's
   // own automation already has. Off by default: it spends SMS credits.
   autoFollow Boolean @default(false)
+
+  // The last time the trade's dashboard reached the server (a heartbeat
+  // while it is open, and every load). Lets the customer's page say "Will's
+  // phone last reached us at 08:12" when it has been quiet, rather than
+  // implying a live feed from a phone that is under a floor.
+  lastSeenAt DateTime?
 
   updatedAt DateTime @updatedAt
 }
