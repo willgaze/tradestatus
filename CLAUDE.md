@@ -643,6 +643,17 @@ The decision is pure and tested without a database
   `presence` is not. The same line as `presenceAt`.
 - The hour is `ASK_HOUR` via `zoned()`, never a UTC comparison.
 
+**The three replies (v1.32.0).** Once `presenceAskedAt` is set and until the
+window starts, the customer's page shows `Tomorrow.jsx`: **still fine / someone
+else will be in / need to move it**, posted to `/api/status/[code]/reminder`
+(`replyReminder()` in `nudge.js`), each one pushed to the trade and written to
+`reminderReply`/`reminderReplyAt`. `OK` and `SOMEONE_ELSE` also set `presence`,
+so the ask above is answered by the same tap and the door note and the card
+never disagree. `MOVE` moves nothing: it is a request, and the hours are agreed
+under When suits you? like any other window. `dayWord()` lives in
+`src/lib/nudge-words.js` because the page needs it without Prisma. The hours on
+the card are stated only when the window is AGREED.
+
 ## Terms are agreed, not announced (`src/lib/terms.js`)
 
 The customer's page carries **Before the visit**: the notice the trade asks for

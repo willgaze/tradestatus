@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { pushTrade, notifyCustomer } from '@/lib/push'
 import { TRADE_NAME } from '@/lib/trade'
 import { dayBeforeAskDue } from '@/lib/day-before'
+import { dayWord } from '@/lib/nudge-words'
+export { dayWord }
 
 /**
  * What happens when the window arrives and the card has not moved.
@@ -17,6 +19,15 @@ import { dayBeforeAskDue } from '@/lib/day-before'
  *      the card still says Booked in, one push. When the window ends and the
  *      card is still not On site, a second. An unanswered question is
  *      repeated every ten minutes.
+ *
+ *   3. The afternoon before, the CUSTOMER is asked (askPresenceIfDue, from
+ *      src/lib/day-before.js: 16:00 in the trade's zone, once). Their page
+ *      grows a card — tomorrow, these hours, still fine? — with three
+ *      replies: still fine, someone else will be in, need to move it
+ *      (replyReminder). The first two answer "will someone be in?" as well,
+ *      so one tap does both jobs; each reply buzzes the trade. Two-way
+ *      reminders are the best-evidenced cut in no-shows there is, and the
+ *      reply is what makes it two-way.
  *
  * None of this invents a time. It only notices that a time the trade gave
  * has arrived, and makes sure a human says something.
@@ -57,6 +68,9 @@ export function nudgeDue(t, now = new Date()) {
   return null
 }
 
+export const REMINDER_REPLIES = { OK: 'is still fine for it', SOMEONE_ELSE: 'says someone else will let you in', MOVE: 'would like to move it' }
+
+
 export const MISSED_GRACE_MS = 10 * 60_000
 export const MISSED_CHOICES = { WAIT: 'will wait', LATER: 'would like it later today', REBOOK: 'would like another day' }
 
@@ -79,7 +93,7 @@ export async function askPresenceIfDue(tracker, now = new Date()) {
     })
     if (claimed.count !== 1) return null
     await prisma.tradeStatusEvent.create({ data: { tradeStatusId: tracker.id, stage: 'BOOKED', note: 'Asked: will someone be in tomorrow?' } })
-    const c = await notifyCustomer(tracker, { title: 'Booked for tomorrow', body: 'Will someone be in? Open the page to answer.' })
+    const c = await notifyCustomer(tracker, { title: 'Booked for tomorrow', body: 'Still fine, and will someone be in? Open the page: one tap answers.' })
     let t = { sent: 0 }
     if (!c.sent) {
       t = await pushTrade({ title: `${first(tracker)} is booked tomorrow`, body: 'They cannot be reached by notification. Text them the link so they can say whether anyone will be in.', tag: `nudge-${tracker.code}` })
@@ -182,4 +196,22 @@ export async function chooseAfterMissed(tracker, choice) {
   const next = choice === 'WAIT' ? 'Set off, or say how late.' : 'Propose a new window on the card.'
   const r = await pushTrade({ title: line, body: next, tag: `nudge-${tracker.code}` })
   return { ok: true, sent: r.sent }
+}
+
+/** The customer's reply to the day-before ask. A message to the trade, never a change to the booking. */
+export async function replyReminder(tracker, choice) {
+  if (!REMINDER_REPLIES[choice]) throw new Error('bad_choice')
+  const now = new Date()
+  const line = `${first(tracker)} ${REMINDER_REPLIES[choice]}`
+  await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
+    reminderReply: choice, reminderReplyAt: now,
+    // "Still fine" and "someone else will be in" are presence answers too,
+    // so the card and the door note agree without the customer answering
+    // twice. "Move it" says nothing about who will be in, so it leaves it.
+    ...(choice === 'OK' ? { presence: 'IN', presenceAt: now } : choice === 'SOMEONE_ELSE' ? { presence: 'SOMEONE_ELSE', presenceAt: now } : {}),
+    events: { create: { stage: tracker.stage, note: `Reply to the reminder: ${line}.` } },
+  } })
+  const next = choice === 'MOVE' ? 'Offer new hours on the card; they can counter from theirs.' : choice === 'SOMEONE_ELSE' ? 'Read the door notes before you knock.' : 'Nothing to do.'
+  const r = await pushTrade({ title: line, body: next, tag: `nudge-${tracker.code}` })
+  return { ok: true, sent: r.sent, reminderReply: choice, reminderReplyAt: now.toISOString() }
 }

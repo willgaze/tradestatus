@@ -72,6 +72,11 @@ model TradeStatus {
   missedAt       DateTime?
   missedChoice   String?
   missedChoiceAt DateTime?
+  // The customer's one-tap reply to the day-before ask (presenceAskedAt,
+  // below): OK, SOMEONE_ELSE (will let you in) or MOVE (wants different
+  // hours). A reply is a message to the trade; MOVE moves nothing by itself.
+  reminderReply   String?
+  reminderReplyAt DateTime?
 
   // The booking terms, agreed from the customer's phone: when, and the exact
   // words they read (notice period, short-notice charge, the 14-day right).

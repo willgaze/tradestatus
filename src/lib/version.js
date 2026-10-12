@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.31.0'
-export const BUILD_DATE = '2026-10-11'
+export const VERSION = '1.32.0'
+export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.32.0', date: '2026-10-12', notes: [
+    'The day-before ask now carries the answers. The card on the customer\'s page — tomorrow, these hours, still fine? — has three replies: still fine, someone else will be in, need to move it. Each one lands on your card and your phone. Still fine and someone else also answer will someone be in?, so one tap does both. Two-way reminders are the best-evidenced cut in no-shows there is; the reply is what makes it two-way.',
+    'Need to move it asks; the new hours are still yours to offer and theirs to agree under When suits you?.',
+    'The card says Confirmed 18:02, Someone else will be in, or Wants to move it, beside the terms chip.',
+    'On /with-servicem8: the optional Booking Reminder text that gets them to open the page the day before.',
+  ] },
   { version: '1.31.0', date: '2026-10-11', notes: [
     'The day before the job, the customer is asked whether anyone will be in. Once, at four in the afternoon in the trade\u2019s own time, never again for that job. A notification if they switched one on, the page asks either way, and the timeline records that it was asked.',
     'If none of the customer\u2019s phones can be reached, the trade is nudged to text the link instead, because an ask that reaches nobody is not an ask. The dashboard card says asked, no answer yet. The answer itself stays between the two of them, as before.',

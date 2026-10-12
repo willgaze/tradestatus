@@ -130,6 +130,11 @@ export default function WithServiceM8() {
               When you schedule a job from the job card (Schedule on the desktop, Add Booking on the app), tick <b>Send Booking Confirmation</b>. ServiceM8 remembers the tick.
               <span className="mt-1.5 block text-[13px]">Dragging a job onto the calendar does not send a confirmation — ServiceM8’s rule, not ours. Book from the job card.</span>
             </Step>
+            <Step n="3b" title="Optional: the day-before text">
+              Settings → Automations → <b>Booking Reminder</b> → switch on, set it to the day before, and give it this message. The page already asks the question and carries the three answers; the text just gets them to open it.
+              <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-black/10 bg-white/60 p-3.5 font-mono text-[13px] leading-snug text-slate-800 dark:bg-black/30 dark:text-slate-100">{`Hi {recipient_first}, a reminder that {vendor.name} is booked for tomorrow, {booking_date}, arriving {booking_time}. Still fine? Tap to say so, to say someone else will be in, or to move it:\nhttps://${host}/j/{job.generated_job_id}`}</pre>
+              <span className="mt-1.5 block text-[13px]">With or without the text, the page asks them at four the afternoon before and buzzes their phone if they switched notifications on. Each reply lands on your card and your phone.</span>
+            </Step>
             <Step n="4" title="That is the setup" visual={<Panel name="dashboard-sm8" alt="The ServiceM8 panel on the TurnUp dashboard, listening" caption="Your dashboard, already listening." />}>
               Nothing to add to TurnUp per job. The card appears on your dashboard the moment the customer opens the link, already linked to the job and showing its real state.
             </Step>

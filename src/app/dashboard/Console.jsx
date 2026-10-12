@@ -349,7 +349,7 @@ export default function Console({ assistant = false }) {
                 </div>
               )}
 
-              {!(presenceOf(t.presence) && presenceIsFresh(t.presenceAt)) && t.presenceAskedAt && t.stage === 'BOOKED' && (
+              {!(presenceOf(t.presence) && presenceIsFresh(t.presenceAt)) && !t.reminderReply && t.presenceAskedAt && t.stage === 'BOOKED' && (
                 <div className="r-inner mb-3 px-4 py-3 text-[14px]" style={{ background: 'rgb(var(--glass-line) / 0.08)' }}>
                   <span className="block font-semibold">Asked whether anyone will be in tomorrow. No answer yet.</span>
                   <span className="block text-[13px] opacity-75">Asked {dayAndTime(t.presenceAskedAt)}. If they have no notifications on, text them the link.</span>
@@ -371,6 +371,17 @@ export default function Console({ assistant = false }) {
                   {/* Whether they have read the terms and tapped Go ahead. Until
                       Job done it is worth a glance: a short-notice charge only
                       holds if this happened before the day. */}
+                  {/* What came back from the day-before ask. Amber when they
+                      want it moved, because that one needs you to do something.
+                      "No answer yet" is the banner above, not a chip. */}
+                  {t.stage === 'BOOKED' && t.reminderReply && (
+                    <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold"
+                       style={{ color: t.reminderReply === 'MOVE' ? '#ff9500' : 'var(--tint)' }}>
+                      {t.reminderReply === 'OK' ? `Confirmed ${new Date(t.reminderReplyAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+                        : t.reminderReply === 'SOMEONE_ELSE' ? 'Someone else will be in'
+                        : 'Wants to move it — offer new hours under More'}
+                    </p>
+                  )}
                   {t.stage !== 'DONE' && (
                     <p className="ml-1.5 mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-current/20 px-2 py-0.5 text-[12px] font-semibold"
                        style={{ color: t.termsAgreedAt ? 'var(--tint)' : 'var(--label-2)' }}>

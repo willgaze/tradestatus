@@ -11,6 +11,7 @@ import AddToWallet from './AddToWallet'
 import StillComing from './StillComing'
 import MissedYou from './MissedYou'
 import Terms from './Terms'
+import Tomorrow from './Tomorrow'
 import { readOwn } from './own-answers'
 import Disclosure from '@/components/Disclosure'
 import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
@@ -304,6 +305,8 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
             not just its contents. */}
         {/* When a time the trade gave has passed and nothing has moved: one
             question, and the answer with the time it was given. */}
+        {/* The day before: still fine, someone else will be in, or move it. */}
+        <Tomorrow status={status} onReplied={(patch, mine) => { setStatus((s) => ({ ...s, ...patch })); if (mine) setOwn(mine) }} />
         <StillComing status={status} onAsked={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
         <MissedYou status={status} onReplied={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
 
