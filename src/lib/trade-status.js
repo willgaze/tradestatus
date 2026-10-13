@@ -171,6 +171,11 @@ export function publicShape(row) {
     askedAt: row.askedAt ? row.askedAt.toISOString() : null,
     askAnsweredAt: row.askAnsweredAt ? row.askAnsweredAt.toISOString() : null,
     lateMinutes: row.lateMinutes ?? null,
+    // Paused: when, and when the TRADE said they expect to be back — their
+    // own choice of words and the time they said it. Never a worked-out time.
+    pausedAt: row.pausedAt ? row.pausedAt.toISOString() : null,
+    pauseBack: row.pauseBack || null,
+    pauseBackAt: row.pauseBackAt ? row.pauseBackAt.toISOString() : null,
     lateAt: row.lateAt ? row.lateAt.toISOString() : null,
     // The window was missed and the customer was told; and what they chose.
     missedAt: row.missedAt ? row.missedAt.toISOString() : null,

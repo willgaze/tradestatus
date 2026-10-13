@@ -77,6 +77,13 @@ model TradeStatus {
   // any reply: a stage change, or a late estimate. lateMinutes is the trade
   // saying "about 30 minutes" — an estimate they chose to give, never one the
   // product worked out, and it is shown with the time it was said.
+  // Paused, and when the trade expects to be back: a choice they made
+  // (src/lib/pause.js), never a time the product worked out, shown with the
+  // time it was said. Cleared the moment the job leaves Paused.
+  pausedAt    DateTime?
+  pauseBack   String?   // MIN_30 | HOUR_1 | HOUR_2 | AFTER_LUNCH | LATER_TODAY | TOMORROW | ANOTHER_DAY
+  pauseBackAt DateTime?
+
   askedAt        DateTime?
   askAnsweredAt  DateTime?
   lateMinutes    Int?

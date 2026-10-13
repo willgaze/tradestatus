@@ -21,6 +21,7 @@ import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
 import { windowSummary, windowRevisionLine } from '@/lib/window'
+import { pauseBackLine, pauseBackDue, PAUSE_BACK } from '@/lib/pause-words'
 import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
 import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon, TickIcon } from '@/components/icons'
@@ -201,6 +202,31 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         {status.arrivingAt && stage.key !== 'BOOKED' && (
           <p className="mt-3 text-[15px] muted">Set off at {timeOnly(status.arrivingAt)}.</p>
         )}
+        {/* Paused: when, and when they said they expect to be back. The
+            estimate is theirs, in their words, with the time it was said; once
+            the clock has passed it the page says so rather than keep promising. */}
+        {isPaused && status.pausedAt && (() => {
+          void tick
+          const who = TRADE_NAME.split(' ')[0]
+          const line = pauseBackLine(status.pauseBack, status.pauseBackAt, { who })
+          const due = pauseBackDue(status.pauseBack, status.pauseBackAt)
+          const overdue = due && Date.now() > due.getTime()
+          const dayShaped = PAUSE_BACK[status.pauseBack]?.day
+          return (
+            <div className="mt-3 text-[15px]">
+              <p className="muted">Paused at {timeOnly(status.pausedAt)}.</p>
+              {line && (
+                <p className="mt-1 font-semibold" style={{ color: 'var(--stage-paused)' }}>{line}</p>
+              )}
+              {line && overdue && (
+                <p className="mt-1 muted">That was {timeOnly(due)}. Still paused, so it is taking longer than they thought; the card moves the moment they are back.</p>
+              )}
+              {line && dayShaped && (
+                <p className="mt-1 muted">The hours for that will come under When suits you? once they are known.</p>
+              )}
+            </div>
+          )
+        })()}
         {/* A phone under a floor is not a live feed. When the trade's dashboard
             has not reached the server for a while during the visit, say so,
             with the time, rather than let "updates itself" imply otherwise. */}

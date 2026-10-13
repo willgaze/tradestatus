@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { runningLate, answeredByStage } from '@/lib/nudge'
+import { pausedBack, pauseStampFor } from '@/lib/pause'
 import { diaryFor } from '@/lib/sm8-oauth'
 import { STAGES } from '@/lib/trade-status'
 import { readTap, hhmmLondon } from '@/lib/tap'
@@ -36,10 +37,19 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ tracker: updated })
     }
 
+    // "Back in about an hour": the trade's own estimate of their return while
+    // Paused, written with the time, pushed, on the record. Null clears it.
+    if (body.pauseBack !== undefined) {
+      const r = await pausedBack(current, body.pauseBack === null ? null : String(body.pauseBack))
+      if (r.error) return NextResponse.json({ error: r.error }, { status: r.status })
+      return NextResponse.json({ tracker: r.tracker })
+    }
+
     if (body.stage !== undefined) {
       if (!isValidStage(body.stage)) return NextResponse.json({ error: 'bad_stage' }, { status: 400 })
       data.stage = body.stage
       Object.assign(data, answeredByStage(current))
+      Object.assign(data, pauseStampFor(current, body.stage))
       // Setting off is the moment worth stamping: the one the customer is
       // waiting on, and a record of what happened rather than a promise.
       //

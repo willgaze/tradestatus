@@ -30,6 +30,7 @@ import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
 import FindWords from '@/components/FindWords'
 import { windowSummary, windowHours, windowRevisionLine } from '@/lib/window'
+import { PAUSE_BACK, pauseBackLine } from '@/lib/pause-words'
 import { TickIcon } from '@/components/icons'
 import { DB_REASONS } from '@/lib/db-errors'
 import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon, PlusIcon, ChevronIcon } from '@/components/icons'
@@ -470,6 +471,25 @@ export default function Console({ assistant = false }) {
                   </button>
                 ))}
               </div>
+
+              {/* Paused: when will you be back? One tap, your words, with the
+                  time. The customer reads the same sentence. */}
+              {t.stage === 'PAUSED' && (
+                <div className="mt-3.5 rounded-2xl px-4 py-3" style={{ background: 'color-mix(in srgb, var(--stage-paused) 12%, transparent)' }}>
+                  <p className="text-[14px] font-semibold">
+                    {t.pauseBack && t.pauseBackAt
+                      ? `You said: ${pauseBackLine(t.pauseBack, t.pauseBackAt).replace(/^./, (c) => c.toLowerCase())}`
+                      : `Paused${t.pausedAt ? ` at ${new Date(t.pausedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''} — when will you be back?`}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {Object.entries(PAUSE_BACK).map(([key, c]) => (
+                      <button key={key} type="button" onClick={() => patch(t.id, { pauseBack: key })}
+                              className={`btn !min-h-[40px] !px-3.5 !text-[13px] ${t.pauseBack === key ? 'accent-fill' : 'btn-grey'}`}>{c.chip}</button>
+                    ))}
+                    {t.pauseBack && <button type="button" onClick={() => patch(t.id, { pauseBack: null })} className="btn btn-grey !min-h-[40px] !px-3.5 !text-[13px]">Clear</button>}
+                  </div>
+                </div>
+              )}
 
               {/* "Are you still coming?" — the customer asked, or the window has
                   started and the card has not moved. Answer in one tap: set off,

@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.53.0'
+export const VERSION = '1.54.0'
 export const BUILD_DATE = '2026-10-13'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 35
+export const THEME_INDEX = 36
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.54.0', date: '2026-10-13', notes: [
+    'Paused says when you expect to be back. Tap Paused and the card asks: 30 min, 1 hour, 2 hours, after lunch, later today, tomorrow, another day. The customer\'s page reads Paused at 10:40 and Sam says: back in about an hour, said at 10:40 — your words, with the time you said them, never a time the product worked out. Once the hour has gone it says that was 11:40, still paused, taking longer than they thought, rather than keep promising.',
+    'One tap goes to the four places about 30 minutes late already goes: the card, a push to the customer, the record, and the ServiceM8 diary. Leaving Paused clears it. Tomorrow and another day carry no clock time at all; the hours for that come under When suits you? like any other window.',
+  ] },
   { version: '1.53.0', date: '2026-10-13', notes: [
     'Turning forwarding on is one button and two Cloudflare steps. It was four steps and two of them needed a laptop \u2014 an environment variable in Vercel plus a redeploy, and a Worker deployed with a terminal. Asked twice more to just set it up, which is the same signal as the push script being run none of the four times it was asked for, so two steps were deleted rather than explained again.',
     'Switch it on writes the password itself, to a row, so there is no Vercel visit and nothing to redeploy. The environment variable still wins wherever it is set.',

@@ -931,6 +931,25 @@ runs from the cron two hours after the last DONE event, pushes once per job
 note (`feedbackText`/`feedbackAt`); the note goes to the trade's phone, the
 card and the diary, and `publicShape` carries only the two times.
 
+## Paused, and when you are back (`src/lib/pause.js`)
+
+Paused already carried the reason (the stage note). The return is the trade's
+**own choice from seven fixed words** — `PAUSE_BACK`: 30 min, 1 hour, 2 hours,
+after lunch, later today, tomorrow, another day — written to `pauseBack` with
+`pauseBackAt`, the time it was said. `pausedAt` is stamped on entering Paused;
+leaving Paused clears all three (`pauseStampFor()` in the tracker PATCH). The
+customer's page reads *Paused at 10:40. Sam says: back in about an hour, said
+at 10:40.* and, once the minute-shaped ones run out, *That was 11:40. Still
+paused…* — a fact about the clock, not a fresh estimate. `pauseBackLine()` is
+the one wording, used by the card, the dashboard banner, the event and the
+diary; the push body says the same.
+
+This stays inside the no-promised-time rule the same way "about 30 minutes
+late" does: the product never computes a return and never shows a countdown.
+Tomorrow and another day carry no clock time at all. Do not add a typed
+free-text estimate; seven words are the whole vocabulary so one tap on a
+driveway is enough and the customer reads the same sentence every time.
+
 ## A revised promise is shown as revised (`revisionFor()` in `src/lib/window.js`)
 
 The window is the one time-shaped thing the trade publishes, and moving it used
