@@ -80,7 +80,7 @@ export const WEDGES = [
   { sector: 'Parcel carriers', perMiss: 'Nothing to the recipient. The retailer carries it', rule: 'Contract is with the retailer', owns: 'The carrier', system: 'Follow My Parcel and the carrier apps', ours: 'Last. Offer the pass as a tick-box once the household holds the card for everything else', state: 'gray',
     href: 'https://app.dpdgroup.co.uk/content/products_services/followmyparcel.jsp' },
   { sector: 'Insurance claims and retrofit', perMiss: 'No fixed sum. Four firms, four phone numbers', rule: 'Contractor networks; PAS 2035 for retrofit', owns: 'The insurer or the retrofit coordinator', system: 'Claims platforms; TrustMark lodgement', ours: 'Several firms on one card. The multi-party product, later', state: 'gray',
-    href: 'https://github.com/willgaze/tradestatus/blob/main/docs/research/formal-processes.md' },
+    href: 'https://github.com/willgaze/turnup/blob/main/docs/research/formal-processes.md' },
 ]
 
 /** Why the line sits where it does. */

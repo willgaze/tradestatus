@@ -12,7 +12,7 @@
 # minutes late still beats one that never comes, and nothing in this product
 # promises a time.
 #
-# COST: nil, because willgaze/tradestatus is public and Actions minutes are
+# COST: nil, because willgaze/turnup is public and Actions minutes are
 # free and unlimited on public repositories. This matters more than it looks:
 # GitHub bills a MINIMUM OF ONE MINUTE per job, so every five minutes is about
 # 8,640 minutes a month against a 2,000-minute free allowance. **If this repo

@@ -24,9 +24,10 @@ are written down:
 
 **Read this first, because the mistake has been made twice.**
 
-TurnUp (until v1.13.0 called My Trade Status; the GitHub repo `tradestatus`, the
-Vercel project `turnup`, the old `tradestatus.vercel.app` URL, the Prisma models and
-the `mts-` CSS/cookie prefixes keep their old names because nobody reads them)
+TurnUp (until v1.13.0 called My Trade Status; the GitHub repo is `willgaze/turnup`
+since 13 Oct 2026, with the old `tradestatus` name redirecting; the old
+`tradestatus.vercel.app` URL, the Prisma models and the `mts-` CSS/cookie prefixes
+keep their old names because nobody reads them)
 is its own product, in its own repository, with its own database and its own
 Vercel project. Anywhere a person reads the name, it is **TurnUp**. Rosebourne Plumbing is a *customer* of it
 — the first one, and currently the only one. The two share nothing but an
