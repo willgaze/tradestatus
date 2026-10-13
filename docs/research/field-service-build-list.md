@@ -29,7 +29,7 @@ capability we do not have) · No.
 | Customer page shows "last updated hh:mm" and the last honest stage | Improve | Done 1.40.0 — footer says Updated / Last checked; mid-visit the card says when the trade's phone last reached the server after 15 quiet minutes (dashboard heartbeat) |
 | "Customer not home" in one tap: fix, door photo, attempts, wait clock, message with three replies | Copy | Done 1.26.0 (fee deliberately absent; the next step is offered first) |
 | Automatic concrete message at window end: wait / later today / rebook | Improve | Done 1.24.0 (the new window is proposed by the trade, never generated) |
-| Revised promise shown as revised, original kept | Copy | Next |
+| Revised promise shown as revised, original kept | Copy | Done 1.52.0 — first hours and first day kept on the row; the page says Revised hh:mm, they first said…; withdrawal and a customer's agreed counter worded as such; a line in the record for every change |
 | Customer buttons before arrival: I'm running late / someone else will let you in / rebook | Copy | Done 1.40.0 — Running late yourself? (15/30/60, I'm there now) joins someone else and move it |
 | Paused visible to the customer with reason and expected return | Improve | Done (Paused + note); expected return: Next |
 | Name and photo of who is coming, on the page and in the On-my-way message | Copy | Done (Who to expect, van, name; photo taken on the phone, on the card and in the On-my-way notification, 1.50.0) |

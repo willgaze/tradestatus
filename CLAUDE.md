@@ -916,6 +916,32 @@ runs from the cron two hours after the last DONE event, pushes once per job
 note (`feedbackText`/`feedbackAt`); the note goes to the trade's phone, the
 card and the diary, and `publicShape` carries only the two times.
 
+## A revised promise is shown as revised (`revisionFor()` in `src/lib/window.js`)
+
+The window is the one time-shaped thing the trade publishes, and moving it used
+to overwrite it: the customer's page said *Between 14:00 and 16:00* as if it
+had always said that. Now the **first published hours are written once**
+(`windowFirstStart/End/At`) and never again; every later change of published
+hours stamps `windowRevisedAt`, `windowRevisedBy` and bumps `windowRevisions`;
+`windowShownStart/End` keep the hours the customer could last see, so agreeing
+a counter is compared with what stood before the counter and not with itself.
+The day does the same with `scheduledWas` (set once) and `scheduledMovedAt`.
+
+**Every write that publishes hours from the trade's side goes through
+`revisionFor(current, next, { by })`**: the dashboard PATCH (propose, agree,
+clear), and `syncTracker()` when a ServiceM8 booking moves. The customer's own
+counter is not the trade publishing anything, so it is neither a first nor a
+revision, and `scripts/check-public-shape.mjs` proves a pending counter can
+never surface as `was`. Each revision also leaves an event in the record
+(*Hours changed from between 09:00 and 11:00 to between 14:00 and 16:00*,
+*Moved from Tuesday 13 October to Wednesday 14 October*).
+
+`windowRevisionLine(win, side)` is the one place the words live, read by
+`Window.jsx` for the customer and `Console.jsx` for the trade: *Revised 10:02.
+They first said between 09:00 and 11:00.* / *Changed at your request, 10:02.*
+/ *The hours were withdrawn at 10:02; the day stands.* Do not add a second
+wording. A first window carries no line at all.
+
 ## Who is coming, with a face (`/api/profile/photo`)
 
 The engineer's photo is **taken on the phone, not pasted as a URL**. `Profile.jsx`

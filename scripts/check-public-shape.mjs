@@ -109,6 +109,16 @@ if (customerCounter.start || customerCounter.end) {
 
 if (row.windowNote && 'windowNote' in out) failures.push('windowNote is public — it is the customer saying why a time does not suit')
 
+// The revision. `was` is the first hours the TRADE published and may be shown
+// at any state; the customer's pending counter must not become it, and a row
+// with no first must publish no `was`.
+const noFirst = windowFor({ windowFirstStart: null, windowFirstEnd: null })
+if (noFirst.was) failures.push('a window with no first published hours is publishing a `was`')
+const revised = windowFor({ windowState: 'PROPOSED', windowBy: 'CUSTOMER', windowFirstStart: new Date('2026-10-01T08:00:00Z'), windowFirstEnd: new Date('2026-10-01T10:00:00Z'), windowRevisedAt: new Date('2026-10-01T07:30:00Z'), windowRevisedBy: 'TRADE', windowRevisions: 1 })
+if (!revised.was?.start) failures.push('the first published hours are being withheld while a counter is open — they were already public')
+if (revised.start || revised.end) failures.push('a customer counter leaked through the revision shape')
+if (revised.was?.start && revised.was.start !== '2026-10-01T08:00:00.000Z') failures.push('`was` is reading the current (customer) hours, not the first published ones')
+
 
 if (failures.length) {
   console.error('\nThe window gate is wrong:\n')

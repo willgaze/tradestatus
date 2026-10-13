@@ -63,7 +63,7 @@ export function publicWindow(row) {
   // A customer's pending counter is the customer telling the trade something.
   // It is not published back, for the same reason "No, I'm out" is not.
   const fromTrade = state === 'AGREED' || by === 'TRADE'
-  if (!fromTrade) return { state, by, start: null, end: null, at }
+  if (!fromTrade) return { state, by, start: null, end: null, at, ...revisionShape(row) }
 
   return {
     state,
@@ -71,6 +71,24 @@ export function publicWindow(row) {
     start: row.windowStart ? row.windowStart.toISOString() : null,
     end: row.windowEnd ? row.windowEnd.toISOString() : null,
     at,
+    ...revisionShape(row),
+  }
+}
+
+/**
+ * The revision, as the page sees it. `was` is the FIRST hours the trade
+ * published — only ever written by the trade's own writes (revisionFor below),
+ * so a customer's counter can never land here; the check script proves it.
+ */
+function revisionShape(row) {
+  const first = row.windowFirstStart
+    ? { start: row.windowFirstStart.toISOString(), end: row.windowFirstEnd ? row.windowFirstEnd.toISOString() : null, at: row.windowFirstAt ? row.windowFirstAt.toISOString() : null }
+    : null
+  return {
+    was: first,
+    revisedAt: row.windowRevisedAt ? row.windowRevisedAt.toISOString() : null,
+    revisedBy: isWindowParty(row.windowRevisedBy) ? row.windowRevisedBy : null,
+    revisions: row.windowRevisions || 0,
   }
 }
 
@@ -97,6 +115,66 @@ export function windowSummary(win, side = 'CUSTOMER') {
   // They are waiting on the reader.
   if (!hours) return side === 'TRADE' ? 'They have asked for a different time' : 'They have suggested a time'
   return side === 'TRADE' ? `They asked for ${hours.toLowerCase()}` : `${hours} — does that suit?`
+}
+
+const sameInstant = (a, b) => (a ? new Date(a).getTime() : null) === (b ? new Date(b).getTime() : null)
+const sameHours = (a, b) => sameInstant(a?.start, b?.start) && sameInstant(a?.end, b?.end)
+
+/**
+ * A revised promise is shown as revised, and the original is kept.
+ *
+ * Call this with the row as it stands and the hours the TRADE is about to
+ * publish — their own proposal, a customer's counter they are agreeing, a
+ * booking moved in ServiceM8, or nothing (a withdrawal). It returns the extra
+ * columns to write alongside. The first published hours are written once and
+ * never again; every later change of published hours stamps a revision.
+ *
+ * The customer's own counter-offer never comes through here: it is not the
+ * trade publishing anything, so it is neither a first nor a revision.
+ */
+export function revisionFor(current, next, { by = 'TRADE' } = {}) {
+  const now = new Date()
+  const start = next?.start ?? null
+  const end = next?.end ?? null
+  // What the customer could last see. Kept on its own columns because the
+  // row's hours are overwritten by a customer's counter, and agreeing that
+  // counter has to be compared with what stood before it, not with itself.
+  const out = { windowShownStart: start, windowShownEnd: end }
+  if (!current.windowFirstStart) {
+    if (!start) return out
+    return { ...out, windowFirstStart: start, windowFirstEnd: end, windowFirstAt: now }
+  }
+  if (sameHours(lastShown(current), { start, end })) return out
+  return { ...out, windowRevisedAt: now, windowRevisedBy: isWindowParty(by) ? by : 'TRADE', windowRevisions: (current.windowRevisions || 0) + 1 }
+}
+
+/** The hours the customer could last see, for the line in the record. */
+export const lastShown = (current) => ({ start: current.windowShownStart ?? null, end: current.windowShownEnd ?? null })
+
+/** The day moved: keep the day first booked, once, and stamp the move. */
+export function dayMoveFor(current, nextDay) {
+  if (!current.scheduledFor || !nextDay) return {}
+  const a = new Date(current.scheduledFor), b = new Date(nextDay)
+  if (a.toDateString() === b.toDateString()) return {}
+  return { scheduledWas: current.scheduledWas || current.scheduledFor, scheduledMovedAt: new Date() }
+}
+
+/**
+ * One line saying the hours changed, and from what. `side` is who is reading.
+ * Null until something has been revised, so a first window carries no line.
+ */
+export function windowRevisionLine(win, side = 'CUSTOMER', { time = (v) => timeOnly(v) } = {}) {
+  if (!win?.revisedAt) return null
+  const first = win.was?.start ? windowHours(win.was) : null
+  const changed = first && !sameHours(win.was, win) ? `${side === 'TRADE' ? 'You' : 'They'} first said ${first.toLowerCase()}.` : null
+  const when = time(win.revisedAt)
+  if (!win.state) {
+    return [`The hours were withdrawn at ${when}; the day stands.`, changed].filter(Boolean).join(' ')
+  }
+  if (win.revisedBy === 'CUSTOMER') {
+    return [`Changed at ${side === 'TRADE' ? 'their' : 'your'} request, ${when}.`, changed].filter(Boolean).join(' ')
+  }
+  return [`Revised ${when}.`, changed].filter(Boolean).join(' ')
 }
 
 /** The day the window falls on, for a heading. */

@@ -52,6 +52,8 @@ export const PHASES = [
         what: 'Set once in Who to expect. The wallet card carries it too once Apple signs it.' },
       { key: 'who-to-expect', name: 'Who is coming and what they drive', state: 'live',
         what: 'Name, the plate and a photo you take on the phone, shown only once you set off. The face is in the On-my-way notification too.' },
+      { key: 'revised', name: 'A revised promise is shown as revised', state: 'live',
+        what: 'Move the hours or the day and the page says so, with the original kept beside it: Revised 10:02, they first said between 09:00 and 11:00. Every change is a line in the record.' },
       { key: 'calendar', name: 'Put it in my calendar', state: 'live',
         what: 'Apple and Google. All day, or the window if you have set one.' },
       { key: 'installable', name: 'Add to home screen', state: 'live',

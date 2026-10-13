@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.51.0'
-export const BUILD_DATE = '2026-10-12'
+export const VERSION = '1.52.0'
+export const BUILD_DATE = '2026-10-13'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 33
+export const THEME_INDEX = 34
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.52.0', date: '2026-10-13', notes: [
+    'A revised promise is shown as revised, and the original is kept. Move the hours and the customer\'s page says Revised 10:02, they first said between 09:00 and 11:00; agree their counter and it says changed at your request; withdraw the hours and it says so, with the day standing. Move the day and Booked for says which day it was first. Nobody is told the new time was always the time.',
+    'Every change is a line in the record: Hours changed from between 09:00 and 11:00 to between 14:00 and 16:00, Moved from Tuesday 13 October to Wednesday 14 October, in ServiceM8 or on the dashboard alike. The dashboard shows the same words under the window, so you know what they are reading. The first hours are written once and never overwritten; scripts/check-public-shape.mjs proves a customer\'s counter can never become them.',
+  ] },
   { version: '1.51.0', date: '2026-10-12', notes: [
     'A flatter look, the same page. Geist is the typeface everywhere now, bundled with the app so an Android and an iPhone show the same product. Cards are a surface and a hairline, with no blur and nothing cast under them; buttons, fields and the stage control share one corner radius with the cards, instead of capsules sitting on rounded boxes. The stage colours, the wash and the rail are untouched: they mean something, and nothing here changes what they say.',
   ] },

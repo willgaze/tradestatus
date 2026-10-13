@@ -120,6 +120,10 @@ export function publicShape(row) {
     jobAddress: row.jobAddress || null,
     jobSummary: row.jobSummary || null,
     scheduledFor: row.scheduledFor ? row.scheduledFor.toISOString() : null,
+    // The day first booked, kept once it moves, and when it last moved. The
+    // trade's own arrangement, shown as changed rather than silently replaced.
+    scheduledWas: row.scheduledWas ? row.scheduledWas.toISOString() : null,
+    scheduledMovedAt: row.scheduledMovedAt ? row.scheduledMovedAt.toISOString() : null,
     arrivingAt: row.arrivingAt ? row.arrivingAt.toISOString() : null,
     updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
     // ---------------------------------------------------------------------

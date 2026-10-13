@@ -26,6 +26,8 @@ import { notifyStage } from './push'
 import { cleanText } from './clean-text'
 import { generateCode } from './trade-status'
 import { nudgeIfDue } from './nudge'
+import { revisionFor, dayMoveFor, windowHours, lastShown } from './window'
+import { dayOnly } from './when'
 import { createHmac } from 'node:crypto'
 
 // SM8_API_BASE exists so a test can stand a fake ServiceM8 up on localhost.
@@ -186,9 +188,18 @@ export async function syncTracker(tracker, { source = 'sync' } = {}) {
     const same = (a, b) => (a ? new Date(a).getTime() : 0) === (b ? b.getTime() : 0)
     if (booking && tracker.stage !== 'DONE' && !(tracker.windowState === 'PROPOSED' && tracker.windowBy === 'CUSTOMER')
         && !(same(tracker.windowStart, booking.start) && same(tracker.windowEnd, booking.end) && tracker.windowState === 'AGREED')) {
+      // A booking moved in ServiceM8 is a revised promise like any other: the
+      // first hours and the first day are kept, and the change is on the record.
+      const revision = revisionFor(tracker, { start: booking.start, end: booking.end }, { by: 'TRADE' })
+      const moved = dayMoveFor(tracker, booking.start)
+      const notes = []
+      if (revision.windowRevisedAt) notes.push({ stage: tracker.stage, note: `Hours changed in ServiceM8 from ${windowHours(lastShown(tracker))?.toLowerCase() || 'none'} to ${windowHours(booking).toLowerCase()}.` })
+      if (moved.scheduledMovedAt) notes.push({ stage: tracker.stage, note: `Moved in ServiceM8 from ${dayOnly(tracker.scheduledFor)} to ${dayOnly(booking.start)}.` })
       await prisma.tradeStatus.update({ where: { id: tracker.id }, data: {
         scheduledFor: booking.start, windowStart: booking.start, windowEnd: booking.end,
         windowState: 'AGREED', windowBy: 'TRADE', windowAt: new Date(),
+        ...revision, ...moved,
+        ...(notes.length ? { events: { create: notes } } : {}),
       } })
       outcome = 'window'
     }

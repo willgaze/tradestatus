@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { windowHours } from '@/lib/window'
+import { windowHours, windowRevisionLine } from '@/lib/window'
 import { timeOnly } from '@/lib/when'
 import { ClockIcon, TickIcon } from '@/components/icons'
 import { readOwn, writeOwn } from './own-answers'
@@ -189,6 +189,14 @@ export default function Window({ status, onSaved }) {
             </button>
           ) : form}
         </>
+      )}
+
+      {/* A revised promise is shown as revised, and the original is kept.
+          The customer is never told the new hours were always the hours. */}
+      {windowRevisionLine(win, 'CUSTOMER') && (
+        <p className="mt-3 text-[14px] font-medium" style={{ color: 'var(--stage-paused)' }}>
+          {windowRevisionLine(win, 'CUSTOMER')}
+        </p>
       )}
 
       {win.at && (

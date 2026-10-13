@@ -10,7 +10,8 @@ import { dbReason } from '@/lib/db-errors'
 import { cleanText } from '@/lib/clean-text'
 import { notifyStage } from '@/lib/push'
 import { syncTrackerToCards } from '@/lib/arrivals'
-import { proposeWindow, agreeWindow, clearWindow } from '@/lib/window'
+import { proposeWindow, agreeWindow, clearWindow, revisionFor, dayMoveFor, windowHours, lastShown } from '@/lib/window'
+import { dayOnly } from '@/lib/when'
 import { normaliseW3w, normaliseMapPin, normalisePhotoUrl } from '@/lib/places'
 
 export const dynamic = 'force-dynamic'
@@ -65,10 +66,29 @@ export async function PATCH(request, { params }) {
     // A window is an arrangement now, not a field. Setting one is a PROPOSAL
     // the customer can agree to or counter; "windowAgree" takes their counter.
     // See the state machine in src/lib/window.js.
+    //
+    // A revised promise is shown as revised, with the original kept: every
+    // write that publishes hours from the trade's side goes through
+    // revisionFor(), and a change of published hours leaves a line in the
+    // record. The customer's own counter does not come through here.
+    const extraEvents = []
+    const hoursNote = (from, to) => `Hours changed from ${windowHours(from) ? windowHours(from).toLowerCase() : 'none'} to ${windowHours(to) ? windowHours(to).toLowerCase() : 'none'}.`
+    const standing = lastShown(current)
+    const onTable = { start: current.windowStart, end: current.windowEnd }
+    const revise = (next, by) => {
+      const r = revisionFor(current, next, { by })
+      Object.assign(data, r)
+      if (r.windowRevisedAt) extraEvents.push({ stage: current.stage, note: hoursNote(standing, next) })
+    }
     if (body.windowAgree) {
+      if (current.windowState !== 'PROPOSED') return NextResponse.json({ error: 'nothing_proposed' }, { status: 409 })
       Object.assign(data, agreeWindow({ by: 'TRADE' }))
+      // Agreeing the customer's counter publishes their hours; the change is
+      // at their request and the line says so.
+      revise(onTable, current.windowBy === 'CUSTOMER' ? 'CUSTOMER' : 'TRADE')
     } else if (body.windowClear) {
       Object.assign(data, clearWindow())
+      revise({ start: null, end: null }, 'TRADE')
     } else if (body.windowStart !== undefined || body.windowEnd !== undefined) {
       const at = {}
       for (const f of ['windowStart', 'windowEnd']) {
@@ -84,6 +104,7 @@ export async function PATCH(request, { params }) {
       // table to agree to, and leaving a dangling end time would say there is.
       if (body.windowStart !== undefined && !at.windowStart) {
         Object.assign(data, clearWindow())
+        revise({ start: null, end: null }, 'TRADE')
       } else {
         // Narrowing one end of a window that already exists keeps the other.
         const current = await prisma.tradeStatus.findUnique({
@@ -98,6 +119,7 @@ export async function PATCH(request, { params }) {
         // Proposing again reopens it: a window the customer already agreed to
         // and the trade then moved is not still agreed.
         Object.assign(data, proposeWindow({ start, end, by: 'TRADE', note: null }))
+        revise({ start, end }, 'TRADE')
       }
     }
 
@@ -112,6 +134,12 @@ export async function PATCH(request, { params }) {
         return NextResponse.json({ error: 'bad_scheduled_date' }, { status: 400 })
       }
       data.scheduledFor = when
+      // The day moved: keep the day first booked and say so in the record.
+      const moved = dayMoveFor(current, when)
+      if (moved.scheduledMovedAt) {
+        Object.assign(data, moved)
+        extraEvents.push({ stage: current.stage, note: `Moved from ${dayOnly(current.scheduledFor)} to ${dayOnly(when)}.` })
+      }
     }
 
     if (body.isActive !== undefined) data.isActive = Boolean(body.isActive)
@@ -132,6 +160,9 @@ export async function PATCH(request, { params }) {
         deviceAt: tap.deviceAt, offline: tap.offline, lat: tap.lat, lng: tap.lng, accuracy: tap.accuracy, fixValidated: tap.fixValidated, tapId: tap.tapId,
       } }
       if (data.stage === 'ON_MY_WAY' && tap.deviceAt) data.arrivingAt = tap.deviceAt
+    }
+    if (extraEvents.length) {
+      data.events = { create: data.events ? [data.events.create, ...extraEvents] : extraEvents }
     }
 
     const tracker = await prisma.tradeStatus.update({ where: { id }, data })

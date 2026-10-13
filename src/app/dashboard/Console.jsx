@@ -29,7 +29,7 @@ import { dayAndTime } from '@/lib/when'
 import { mapsDirectionsUrl, w3wUrl } from '@/lib/places'
 import DropPin from '@/components/DropPin'
 import FindWords from '@/components/FindWords'
-import { windowSummary, windowHours } from '@/lib/window'
+import { windowSummary, windowHours, windowRevisionLine } from '@/lib/window'
 import { TickIcon } from '@/components/icons'
 import { DB_REASONS } from '@/lib/db-errors'
 import { StageIcon, PresenceIcon, CopyIcon, EyeIcon, MessageIcon, LinkOffIcon, CompassIcon, KeyIcon, PinIcon, PlusIcon, ChevronIcon } from '@/components/icons'
@@ -569,6 +569,19 @@ export default function Console({ assistant = false }) {
               {t.windowState === 'PROPOSED' && t.windowBy === 'TRADE' && (
                 <p className="mt-3 text-[15px] muted">
                   {windowHours({ start: t.windowStart, end: t.windowEnd })} — sent, waiting on them
+                </p>
+              )}
+              {/* What the customer reads when the hours or the day have moved:
+                  the change, and the original beside it. Same words as their page. */}
+              {t.windowRevisedAt && (
+                <p className="mt-1 text-[13px]" style={{ color: 'var(--stage-paused)' }}>
+                  {windowRevisionLine({ state: t.windowState, start: t.windowStart, end: t.windowEnd, revisedAt: t.windowRevisedAt, revisedBy: t.windowRevisedBy,
+                    was: t.windowFirstStart ? { start: t.windowFirstStart, end: t.windowFirstEnd } : null }, 'TRADE')}
+                </p>
+              )}
+              {t.scheduledWas && t.scheduledMovedAt && (
+                <p className="mt-1 text-[13px]" style={{ color: 'var(--stage-paused)' }}>
+                  Day moved from {new Date(t.scheduledWas).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}; the card says so.
                 </p>
               )}
 

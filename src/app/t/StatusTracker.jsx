@@ -20,7 +20,7 @@ import { presenceOf, presenceIsFresh, presenceAgeLabel } from '@/lib/presence'
 import Mark from '@/components/Mark'
 import BuildStamp from '@/components/BuildStamp'
 import { windowLabel, positionLabel } from '@/lib/calendar'
-import { windowSummary } from '@/lib/window'
+import { windowSummary, windowRevisionLine } from '@/lib/window'
 import { w3wUrl, mapsSearchUrl } from '@/lib/places'
 import { timeOnly, dayOnly, dayAndTime, dayNumber } from '@/lib/when'
 import { StageIcon, PhoneIcon, PinIcon, KeyIcon, HouseIcon, WaveIcon, VanIcon, ClockIcon, ChevronIcon, CompassIcon, BellIcon, TickIcon } from '@/components/icons'
@@ -397,7 +397,8 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           return (
             <Disclosure icon={<ClockIcon size={19} />} title="When suits you?" delay="172ms"
                         accent={needsThem || !win.state}
-                        summary={windowSummary(win, 'CUSTOMER') || 'No hours set — tap to ask for some'}
+                        summary={[windowSummary(win, 'CUSTOMER') || 'No hours set — tap to ask for some',
+                                  win.revisedAt && win.state && 'revised'].filter(Boolean).join(' · ')}
                         open={openRow === 'when'} onToggle={() => toggle('when')}>
               <Window status={status} onSaved={(patch) => setStatus((s) => ({ ...s, ...patch }))} />
             </Disclosure>
@@ -413,7 +414,11 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
           <dl className="space-y-3.5">
             {status.scheduledFor && (
               <Row label="Booked for" value={dayOnly(status.scheduledFor)}
-                   hint={windowLabel(status) || 'No arrival time is promised'} />
+                   hint={[
+                     status.scheduledWas && status.scheduledMovedAt
+                       && `Moved ${timeOnly(status.scheduledMovedAt)} from ${dayOnly(status.scheduledWas)}.`,
+                     windowLabel(status) || 'No arrival time is promised',
+                   ].filter(Boolean).join(' ')} />
             )}
             {status.jobAddress && <Row label="Address" value={status.jobAddress} />}
             {(status.jobAddress || own.what3words || own.mapPin) && (
