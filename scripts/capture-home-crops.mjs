@@ -19,7 +19,9 @@
  *
  * Playwright is not a dependency: `npm install --no-save playwright`.
  * `ONLY=sm8 node scripts/capture-home-crops.mjs` cuts only the /with-servicem8
- * parts (no browser needed) and leaves the homepage crops untouched.
+ * parts, `ONLY=house` only the household card (no browser either way),
+ * `ONLY=after` only the How-did-it-go row from /preview?stage=DONE, and
+ * leaves every other crop untouched.
  */
 import { chromium } from 'playwright'
 import sharp from 'sharp'
@@ -88,11 +90,32 @@ const SM8 = {
   'sm8-lately':          ['dashboard-lately.webp', 0,   0, 716, 504],
 }
 
+// The household card, cut from public/home/household.webp: a 390x844 shot at 2x
+// of /h/<seeded code> (scripts/local-db.sh seeds HOME24XK). The dashboard's
+// Household cards panel shows it.
+const HOUSE = {
+  'house-card': ['household.webp', 24, 80, 732, 1180],
+}
+
+// ONLY=sm8 or ONLY=house cuts just that group from its existing capture, no
+// browser, and leaves every other crop as it is.
+const GROUPS = { sm8: ['with-servicem8', SM8], house: ['home', HOUSE] }
+
+// How did it go?, on the DONE page: a section with no button to open, so it
+// is photographed whole. ONLY=after shoots just this one (browser needed).
+const shootAfter = async (page, open) => {
+  await open('/preview?stage=DONE')
+  const section = page.locator('section', { hasText: 'How did it go?' }).first()
+  await section.scrollIntoViewIfNeeded()
+  await save(await section.screenshot({ type: 'png' }), 'row-after')
+}
+
 const run = async () => {
   await mkdir(OUT, { recursive: true })
-  // ONLY=sm8 skips the browser and keeps the existing home crops as they are
   const existing = JSON.parse(await readFile(`${ROOT}src/lib/home-crops.json`, 'utf8').catch(() => '{}'))
-  if (process.env.ONLY !== 'sm8') {
+  const only = process.env.ONLY
+  if (only && only !== 'after' && !GROUPS[only]) throw new Error(`ONLY=${only}: not one of after, ${Object.keys(GROUPS).join(', ')}`)
+  if (!only || only === 'after') {
   const browser = await chromium.launch({ executablePath: EXEC })
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: 'light' })
   const page = await ctx.newPage()
@@ -104,6 +127,11 @@ const run = async () => {
       throw new Error(`${BASE} is a dev server. Capture against \`next start\`.`)
     }
   }
+
+  if (only === 'after') {
+    await shootAfter(page, open)
+    await browser.close()
+  } else {
 
   // The status card, one per stage.
   for (const stage of ['BOOKED', 'ON_MY_WAY', 'ON_SITE', 'PAUSED', 'DONE']) {
@@ -131,6 +159,7 @@ const run = async () => {
     await page.waitForTimeout(250)
   }
 
+  await shootAfter(page, open)
   await browser.close()
 
   for (const [name, [src, left, top, width, height]] of [...Object.entries(CUSTOMER), ...Object.entries(TRADE)]) {
@@ -138,10 +167,14 @@ const run = async () => {
     await save(png, name)
   }
   }
+  }
 
-  for (const [name, [src, left, top, width, height]] of Object.entries(SM8)) {
-    const png = await sharp(`${ROOT}public/with-servicem8/${src}`).extract({ left, top, width, height }).png().toBuffer()
-    await save(png, name)
+  for (const [group, [dir, map]] of Object.entries(GROUPS)) {
+    if (only && only !== group) continue
+    for (const [name, [src, left, top, width, height]] of Object.entries(map)) {
+      const png = await sharp(`${ROOT}public/${dir}/${src}`).extract({ left, top, width, height }).png().toBuffer()
+      await save(png, name)
+    }
   }
 
   await writeFile(`${ROOT}src/lib/home-crops.json`, JSON.stringify({ ...existing, ...sizes }, null, 2) + '\n')
