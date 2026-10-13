@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.51.0](./v1.51.0/) | 2026-10-12 | Moss — the flat look: Geist, hairline cards, one corner radius |
 | [v1.50.0](./v1.50.0/) | 2026-10-12 | Harbour — who is coming, with a face: a photo taken on the phone, on the card from On my way and in the notification |
 | [v1.49.0](./v1.49.0/) | 2026-10-12 | Ochre — the letterbox: the four steps to turn forwarding on, the Cloudflare Worker, and a raw email read into four facts |
 | [v1.48.0](./v1.48.0/) | 2026-10-12 | Plum — a parcel lands, a person knocks; your own jobs on a household card, in step with every stage tap |

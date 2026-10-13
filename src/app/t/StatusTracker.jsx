@@ -131,7 +131,7 @@ export default function StatusTracker({ initialStatus, initialProfile, initialBr
         {brand?.logo ? (
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={brand.logo} alt={TRADE_NAME} className="h-9 w-9 rounded-[10px] object-cover bg-white/60" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            <img src={brand.logo} alt={TRADE_NAME} className="h-9 w-9 rounded-lg object-cover bg-white/60" onError={(e) => { e.currentTarget.style.display = 'none' }} />
             <p className="text-[15px] font-semibold" style={{ color: 'var(--tint)' }}>{TRADE_NAME}</p>
           </div>
         ) : (

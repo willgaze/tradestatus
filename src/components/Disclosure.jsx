@@ -23,7 +23,7 @@ export default function Disclosure({ icon, title, summary, open, onToggle, accen
           The tap target stays well over the 44px iOS minimum. */}
       <button type="button" onClick={onToggle} aria-expanded={open}
               className="flex min-h-[54px] w-full items-center gap-3.5 px-4 py-2.5 text-left">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[13px]"
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
               style={accent
                 ? { color: 'var(--tint)', background: 'color-mix(in srgb, var(--tint) 14%, transparent)' }
                 : { background: 'rgb(var(--glass-line) / 0.09)' }}>

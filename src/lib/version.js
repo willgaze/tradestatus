@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.50.0'
+export const VERSION = '1.51.0'
 export const BUILD_DATE = '2026-10-12'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 32
+export const THEME_INDEX = 33
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,9 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.51.0', date: '2026-10-12', notes: [
+    'A flatter look, the same page. Geist is the typeface everywhere now, bundled with the app so an Android and an iPhone show the same product. Cards are a surface and a hairline, with no blur and nothing cast under them; buttons, fields and the stage control share one corner radius with the cards, instead of capsules sitting on rounded boxes. The stage colours, the wash and the rail are untouched: they mean something, and nothing here changes what they say.',
+  ] },
   { version: '1.50.0', date: '2026-10-12', notes: [
     'Who is coming, with a face. Under Who to expect, Take or choose a photo opens the phone camera, squares the picture off on the phone and keeps it at 512 pixels, so nothing is pasted and nothing large is sent. The moment you tap On my way the customer\'s card shows your face, your name, the van and the plate; at On site it reads is with you. Before that, nothing, as before.',
     'The On-my-way notification now says who: Sam Hale is on the way, from Sam Hale Plumbing, look out for a White Vauxhall Vivaro, AB12 CDE, with the face as the icon where the phone shows one. The photo is served from the app itself, never pasted from a link, and Remove takes it down everywhere at once.',

@@ -1,4 +1,5 @@
 import './globals.css'
+import { GeistSans } from 'geist/font/sans'
 import { theme } from '@/lib/version'
 
 export const metadata = {
@@ -25,7 +26,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   const t = theme()
   return (
-    <html lang="en-GB"
+    // Geist is bundled with the app (the `geist` package, self-hosted by
+    // next/font), so the page looks the same on every phone and never waits
+    // on a font server. The system stack stays behind it as the fallback.
+    <html lang="en-GB" className={GeistSans.variable}
           style={{ '--theme-bg': t.bg, '--theme-bg-dark': t.bgDark, '--mts-accent': t.accent, '--mts-deep': t.deep }}>
       <body className="min-h-screen antialiased">{children}</body>
     </html>

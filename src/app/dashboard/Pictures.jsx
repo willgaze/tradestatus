@@ -14,7 +14,7 @@ export function TradeBanner({ title, body, when = 'now' }) {
     <div className="r-inner px-3.5 py-3 text-[#15161a] shadow-[0_10px_24px_-14px_rgba(0,0,0,.5)] ring-1 ring-black/[.06]"
          style={{ background: 'rgba(255,255,255,.92)' }}>
       <div className="flex items-start gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white shadow-sm"><Mark className="h-5 w-auto" id="nudge" /></span>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white shadow-sm"><Mark className="h-5 w-auto" id="nudge" /></span>
         <span className="min-w-0 flex-1">
           <span className="flex items-baseline justify-between gap-2">
             <span className="text-[15px] font-semibold">{title}</span>

@@ -153,7 +153,7 @@ export default function Home() {
           <div className="glass r-outer flex flex-col p-5">
             <p className="text-[13px] font-semibold uppercase tracking-wide muted">Now</p>
             {/* the inbox a booking turns into: drawn, nobody's brand */}
-            <ul className="mt-4 divide-y divide-black/[.06] rounded-[16px] bg-black/[.04] text-[13px] dark:divide-white/10 dark:bg-white/[.06]">
+            <ul className="mt-4 divide-y divide-black/[.06] rounded-xl bg-black/[.04] text-[13px] dark:divide-white/10 dark:bg-white/[.06]">
               {[['Your booking is confirmed', 'Mon'], ['Reminder: your appointment tomorrow', 'Wed'], ['Someone will be with you between 8 and 6', 'Thu'], ['Your engineer is on the way', 'Thu'], ['How did we do? Rate your visit', 'Thu']].map(([subj, day]) => (
                 <li key={subj} className="flex items-baseline gap-2 px-3 py-2">
                   <span className="h-2 w-2 shrink-0 translate-y-[-1px] rounded-full" style={{ background: 'var(--mts-accent)' }} />
@@ -166,7 +166,7 @@ export default function Home() {
           </div>
           <div className="glass r-outer flex flex-col p-5" style={{ '--tint': '#5856d6' }}>
             <p className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: 'var(--tint)' }}>With TurnUp</p>
-            <div className="relative mt-4 overflow-hidden rounded-[22px] bg-[#0b0c10] px-6 py-6">
+            <div className="relative mt-4 overflow-hidden rounded-xl bg-[#0b0c10] px-6 py-6">
               <div aria-hidden="true" className="pointer-events-none absolute inset-0"
                    style={{ background: 'radial-gradient(60% 50% at 50% 45%, color-mix(in srgb, var(--tint) 36%, transparent), transparent 72%)' }} />
               <div className="relative mx-auto max-w-[260px]" style={{ perspective: '1000px' }}>
