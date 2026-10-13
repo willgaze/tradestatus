@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { fileEmail } from '@/lib/arrivals'
 import { inboxKeyFrom } from '@/lib/inbox-address'
 import { readRawEmail } from '@/lib/mime'
+import { inboundToken } from '@/lib/inbound-config'
 
 /**
  * Where forwarded emails land.
@@ -68,7 +69,9 @@ async function readEnvelope(request) {
 
 export async function POST(request, { params }) {
   const { token } = await params
-  const expected = process.env.INBOUND_EMAIL_TOKEN
+  // Either the environment variable or the row written by one tap on the
+  // dashboard. See src/lib/inbound-config.js for why there are two.
+  const expected = await inboundToken()
   // Fails closed. With no token configured there is no inbound address to
   // point at this anyway, and an open mail sink is not a thing to ship by
   // accident.

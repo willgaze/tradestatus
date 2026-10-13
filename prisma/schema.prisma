@@ -488,3 +488,22 @@ model Arrival {
   @@unique([placeId, dedupeKey])
   @@index([placeId, expectedFor])
 }
+
+/// The letterbox's password, when nobody has set it as an environment variable.
+///
+/// A NEW TABLE, so it fails soft before the migration has run — see the
+/// migration table in CLAUDE.md. It exists to delete a step: setting
+/// INBOUND_EMAIL_TOKEN in Vercel needs a Vercel login and a redeploy, and the
+/// owner works off a phone between jobs. One tap on the dashboard writes a row
+/// here instead, and the route accepts either.
+///
+/// The environment variable still wins where it is set, so a deployment that
+/// prefers its secrets in one place can keep them there.
+model InboundSecret {
+  /// Always "singleton". One letterbox per deployment.
+  id        String   @id @default("singleton")
+  token     String   @unique
+  host      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

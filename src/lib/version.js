@@ -16,7 +16,7 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.52.0'
+export const VERSION = '1.53.0'
 export const BUILD_DATE = '2026-10-13'
 
 export const THEMES = [
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 34
+export const THEME_INDEX = 35
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.53.0', date: '2026-10-13', notes: [
+    'Turning forwarding on is one button and two Cloudflare steps. It was four steps and two of them needed a laptop \u2014 an environment variable in Vercel plus a redeploy, and a Worker deployed with a terminal. Asked twice more to just set it up, which is the same signal as the push script being run none of the four times it was asked for, so two steps were deleted rather than explained again.',
+    'Switch it on writes the password itself, to a row, so there is no Vercel visit and nothing to redeploy. The environment variable still wins wherever it is set.',
+    'And the Worker is handed over finished, with the address and the password already in it, to paste into Cloudflare\u2019s own editor in a browser. Pressing the button twice keeps the same password rather than quietly stranding a Worker that is already deployed.',
+    'What is left is a Cloudflare account and a nameserver change. Nothing can delete those: one is an account somebody has to own, the other is a domain somebody has to prove they control.',
+  ] },
   { version: '1.52.0', date: '2026-10-13', notes: [
     'A revised promise is shown as revised, and the original is kept. Move the hours and the customer\'s page says Revised 10:02, they first said between 09:00 and 11:00; agree their counter and it says changed at your request; withdraw the hours and it says so, with the day standing. Move the day and Booked for says which day it was first. Nobody is told the new time was always the time.',
     'Every change is a line in the record: Hours changed from between 09:00 and 11:00 to between 14:00 and 16:00, Moved from Tuesday 13 October to Wednesday 14 October, in ServiceM8 or on the dashboard alike. The dashboard shows the same words under the window, so you know what they are reading. The first hours are written once and never overwritten; scripts/check-public-shape.mjs proves a customer\'s counter can never become them.',

@@ -760,16 +760,31 @@ the parts array and throws on an ordinary multipart email, and `=C2=A3` is two
 UTF-8 **bytes**, so resolving each escape straight to a character gives a price
 that reads as `Â£`.
 
-**Turning it on is a panel, not a command** (`src/app/dashboard/InboundSetup.jsx`,
-reference in `docs/cloudflare-email.md`) — the same shape and the same reasons
-as the push one. The token is made in the browser by `crypto.getRandomValues`:
-generated in a Claude session it lands in a transcript, generated on a password
-website it lands on a stranger's server. The same value goes to Vercel's
-`INBOUND_EMAIL_TOKEN` and the Worker's `INBOUND_TOKEN` secret and nowhere else.
-A session cannot do any of the four steps — Vercel's connector is read-only for
-environment variables and the rest are account logins — so the whole job here
-was to write the Worker, write and test the parsing, and reduce the owner's
-part to copy buttons.
+**Turning it on is one button and two Cloudflare steps**
+(`src/app/dashboard/InboundSetup.jsx`, `/api/dashboard/inbound`, reference in
+`docs/cloudflare-email.md`). **It was four, and the cut is the lesson.** Two of
+those steps needed a laptop: an environment variable in Vercel plus a redeploy,
+and a Worker deployed with wrangler. Told to do them, the owner asked twice
+more for the whole thing to be set up for him — which is the same signal as the
+push script being run none of the four times it was asked for. **When an ask
+keeps not happening, change the ask.** So:
+
+- **The password writes itself to a row** (`InboundSecret`, a new table, so it
+  fails soft; `src/lib/inbound-config.js`). No Vercel visit, no redeploy.
+  `INBOUND_EMAIL_TOKEN` still wins wherever it is set, so nothing that already
+  works stops working. Pressing the button twice returns the same password
+  rather than stranding a Worker that is already deployed — rotating is its own
+  verb (`DELETE`), because it stops every live Worker.
+- **The Worker is handed over finished**, with the address and the password
+  already in it, to paste into Cloudflare's own editor. The tidier form is a
+  wrangler secret; that needs a terminal. Inside a Worker the source is private
+  to that account, which is where a secret would have lived anyway, so the cost
+  is tidiness and the gain is that it can be done at all.
+
+What is left cannot be deleted by anybody: a Cloudflare account is an account
+somebody has to own, and a nameserver change is a domain somebody has to prove
+they control. There are no Cloudflare tools in a Claude session — checked, not
+assumed — and Vercel's connector is still read-only for environment variables.
 
 Still to do: let a household make a card themselves rather than being given
 one, and a way to connect a source other than forwarding (Gmail's

@@ -41,12 +41,8 @@ function nextStage(current, incoming) {
   return b >= a ? incoming : current
 }
 
-/**
- * The gate. With no token set nothing can post, so the dashboard says
- * forwarding is off rather than handing out an address that silently swallows
- * mail — the push row that opened onto an empty drawer is the mistake here.
- */
-export const INBOUND_CONFIGURED = Boolean(process.env.INBOUND_EMAIL_TOKEN)
+// The gate lives in src/lib/inbound-config.js now, because it has to read a
+// row as well as an environment variable and so cannot be a constant.
 
 /** Make a household card. Two secrets: one to read it, one to post to it. */
 export async function createPlace(label) {

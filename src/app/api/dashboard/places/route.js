@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requireOperator } from '@/lib/operator-auth'
 import { cleanText } from '@/lib/clean-text'
 import { dbReason } from '@/lib/db-errors'
-import { createPlace, inboxAddress, INBOUND_HOST, INBOUND_CONFIGURED } from '@/lib/arrivals'
+import { createPlace, inboxAddress } from '@/lib/arrivals'
+import { INBOUND_HOST, inboundConfigured } from '@/lib/inbound-config'
 
 /**
  * Household cards, from the trade's side.
@@ -31,7 +32,7 @@ export async function GET() {
       include: { _count: { select: { arrivals: true } } },
     })
     return NextResponse.json({
-      configured: INBOUND_CONFIGURED,
+      configured: await inboundConfigured(),
       host: INBOUND_HOST,
       places: rows.map((p) => ({
         code: p.code,

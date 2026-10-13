@@ -67,11 +67,15 @@ same reason, and that is tested.
 
 | | Step | Needs |
 |---|---|---|
-| — | Make the token | the dashboard panel (made in the browser, sent nowhere) |
-| 1 | `INBOUND_EMAIL_TOKEN` and `INBOUND_EMAIL_HOST` in Vercel, then redeploy | a Vercel login |
-| 2 | `getturnup.com` onto Cloudflare DNS, nameservers changed at Hostinger | both logins |
-| 3 | Email Routing on, subdomain `in` added, catch-all → the Worker | a Cloudflare login |
-| 4 | `npx wrangler deploy` and `wrangler secret put INBOUND_TOKEN` | a laptop |
+| — | **Switch it on** | one tap on the dashboard. Writes the password to a row |
+| 1 | `getturnup.com` onto Cloudflare DNS, nameservers changed at Hostinger | a Cloudflare account and a Hostinger login |
+| 2 | Email Routing on, subdomain `in` added, the Worker pasted in, catch-all → it | a browser |
+
+**This used to be four steps and two of them needed a laptop.** The Vercel
+environment variable and the wrangler deploy are both gone: the password is
+written by the button, and the Worker is handed over with the address and the
+password already in it, to paste into Cloudflare's own editor. `wrangler` and
+`cloudflare/email-worker/` still exist for anyone who prefers a terminal.
 
 **A Claude session can do none of steps 1 to 4.** Vercel's connector is
 read-only for environment variables (403, confirmed more than once — see

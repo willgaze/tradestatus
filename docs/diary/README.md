@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.53.0](./v1.53.0/) | 2026-10-13 | Plum — turning forwarding on is one button and two Cloudflare steps, not four with a laptop |
 | [v1.52.0](./v1.52.0/) | 2026-10-13 | Slate — a revised promise is shown as revised, with the original kept; every change a line in the record |
 | [v1.51.0](./v1.51.0/) | 2026-10-12 | Moss — the flat look: Geist, hairline cards, one corner radius |
 | [v1.50.0](./v1.50.0/) | 2026-10-12 | Harbour — who is coming, with a face: a photo taken on the phone, on the card from On my way and in the notification |
