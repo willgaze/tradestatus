@@ -1038,6 +1038,13 @@ page is (glass, wash, `tone-booked`), one line, the box, and under it `Shot`'s
 `scripts/capture-with-servicem8.mjs`, which needs a stand-in ServiceM8 on
 `SM8_API_BASE`; re-shoot it when that page changes.
 
+The household card (v1.53.0): no sentence under the heading, the rows say what they
+are; an empty card shows one example row drawn with the real `Row`. The dashboard's
+Household cards panel shows `house-card`, cut with `ONLY=house` from
+`public/home/household.webp`, a 2x phone shot of `/h/HOME24XK` on the seeded database.
+**If that shot says "That card has expired", the seed skipped the Place table**: run
+`npx prisma generate` and the seed again. Three diaries photographed that dead end.
+
 The wallet section (`src/components/WalletStory.jsx`) is drawn from
 `PassCard`, the same component the real pass is built from, so it cannot
 drift. It carries the same badges the posters do, and the lock screen shows

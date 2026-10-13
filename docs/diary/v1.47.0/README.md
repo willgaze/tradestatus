@@ -52,3 +52,8 @@
 ### household-dark
 
 ![household-dark](./household-dark.webp)
+
+Note, added the same night: `household.webp` and `household-dark.webp` show "That card has
+expired". The seeded card did not exist: `scripts/local-db.sh` had run against a stale
+Prisma client, so the seed skipped the Place table and said so only in a line nobody
+read. The same shot in v1.44.0 has the same cause. The v1.51.0 folder has the card.
