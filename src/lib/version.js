@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.54.0'
-export const BUILD_DATE = '2026-10-13'
+export const VERSION = '1.55.0'
+export const BUILD_DATE = '2026-10-14'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 36
+export const THEME_INDEX = 37
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.55.0', date: '2026-10-14', notes: [
+    'The business plan reads the app as it is tonight. The household card was live for two days and the plan did not mention it: it is now on the Product page, in the flow diagram, in the status table and in moat 1, which moves from 55 to 70 per cent with a card per address live and a household making its own card as the thing still missing. Push is green, not amber. ServiceM8 is described as what it does \u2014 reads every booking, texts the link, follows a move \u2014 and as the first tap, because the thirty days start with it; the letterbox is the fourth tap and secondary, as decided on 11 Oct.',
+    'Rivals and alternatives take the 14 Oct research: ServiceM8\u2019s own Track My Arrival, a map that goes dark when navigation ends; Shop, which needs a tracking number before it will read an email; both sourced on the Facts page. Two risks added, both about where a household card\u2019s email comes from. One decision recorded in the owner\u2019s words: the household card waits for the pilot. Releases this week is a number the plan counts from the changelog, so it cannot go stale.',
+  ] },
   { version: '1.54.0', date: '2026-10-13', notes: [
     'Paused says when you expect to be back. Tap Paused and the card asks: 30 min, 1 hour, 2 hours, after lunch, later today, tomorrow, another day. The customer\'s page reads Paused at 10:40 and Sam says: back in about an hour, said at 10:40 — your words, with the time you said them, never a time the product worked out. Once the hour has gone it says that was 11:40, still paused, taking longer than they thought, rather than keep promising.',
     'One tap goes to the four places about 30 minutes late already goes: the card, a push to the customer, the record, and the ServiceM8 diary. Leaving Paused clears it. Tomorrow and another day carry no clock time at all; the hours for that come under When suits you? like any other window.',
