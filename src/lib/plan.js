@@ -122,6 +122,7 @@ export const PRODUCT = {
   ],
   never: [
     { label: 'No arrival time promised' },
+    { label: 'No button that does nothing', note: 'a row renders only when it works; see the InPost research' },
     { label: 'No live GPS tracking' },
     { label: 'No customer app to install' },
     { label: 'No customer account, ever' },

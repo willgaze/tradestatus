@@ -269,6 +269,7 @@ export default function Home() {
               ['It never invents a time.', 'No countdown. No “with you in 20 minutes”.'],
               ['It never shows a time you have not agreed.', 'Two people agree a window, or it is not shown.'],
               ['It never puts their details on a forwarded link.', 'Which door, the dog, who is in: between you and them.'],
+              ['It never shows a button that does nothing.', 'A row is there because it works. No “tap to change” that cannot.'],
             ].map(([title, body]) => (
               <li key={title} className="glass r-outer flex items-start gap-4 p-5">
                 <span className="mt-0.5 shrink-0" style={{ color: 'var(--tint)' }}><TickIcon size={20} /></span>
