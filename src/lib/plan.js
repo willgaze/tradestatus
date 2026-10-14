@@ -31,7 +31,7 @@ export const PLAN_META = {
   walletDocUrl: 'https://github.com/willgaze/turnup/blob/main/docs/apple-wallet.md',
   diaryUrl: 'https://github.com/willgaze/turnup/tree/main/docs/diary',
   liveSince: '8 Oct 2026',
-  updated: '12 Oct 2026',
+  updated: '14 Oct 2026',
 }
 
 export const STAGES = [
@@ -170,18 +170,23 @@ export const ALTERNATIVES = [
 ]
 
 /**
- * Five rivals, each with their edge, ours, and the move that beats them.
- * Researched 9 Oct 2026; sources on the facts page and the landscape asset.
+ * Six rivals, each with their edge, ours, and the move that beats them.
+ * Researched 9 Oct 2026, the carriers and the day-of-service layer re-read 14 Oct
+ * 2026 (docs/research/inpost-and-the-day-of-service.md).
  */
 export const RIVALS = [
   { name: 'Descartes Localz', who: 'Enterprise engineer tracking, inside a logistics software giant since April 2023', href: 'https://www.descartes.com/resources/news/descartes-acquires-localz',
     their: 'Ten years of enterprise contracts. Plugged into Salesforce, ServiceMax, FieldAware. RAC, British Gas, DPD on the customer list, by their own account. Sold for about 6 million dollars.',
     ours: 'Free for the trade. A card, not a link. The household kept between jobs. Both ends can start it.',
     beat: 'Sell under them: the one to fifty van firms they do not chase, and the card their SMS could open.' },
-  { name: 'The carriers: DPD, Evri, Royal Mail', who: 'Parcel day-of tracking at national volume', href: 'https://app.dpdgroup.co.uk/content/products_services/followmyparcel.jsp',
-    their: 'Everyone has used Follow My Parcel. One-hour slot, live map, 15-minute alert, divert on the day.',
-    ours: 'Everything that is not a parcel. One card for the plumber, the cleaner, the courier. No ETA promise to break.',
-    beat: 'Never race on parcels. Win the home, then offer them the pass as a tick-box, the way AfterShip did.' },
+  { name: 'The carriers: DPD, InPost, Evri, Royal Mail', who: 'Parcel day-of tracking at national volume', href: 'https://app.dpdgroup.co.uk/content/products_services/followmyparcel.jsp',
+    their: 'Everyone has used Follow My Parcel. One-hour slot, live map, 15-minute alert, divert on the day. InPost, which now owns Yodel and Menzies, texts a two-hour window from a bare number and a link whose options can all read "not available".',
+    ours: 'Everything that is not a parcel. One card for the plumber, the cleaner, the courier. No window the product worked out, a sender named every time, and no row that cannot do what it says.',
+    beat: 'Never race on parcels. Read them: the household card takes InPost\'s email. Win the home, then offer them the pass as a tick-box, the way AfterShip did.' },
+  { name: 'The day-of-service layer: On My Way, Glympse, Arrivy', who: 'A live map and an ETA bolted onto someone else\'s scheduler', href: 'https://tryonmyway.com/features/',
+    their: 'On My Way sits on Oracle, Salesforce and SAP, names Bosch and E.ON, and installs in four to six weeks. Glympse PRO is about $15 a seat a month and has a five-step journey, Delayed and No Show included. All of them track a dot during the drive.',
+    ours: 'The whole job, not the drive: Booked, the terms, Paused with the reason, Done, the review. Both ends propose the hours. Nobody found has a reason for a pause or a counter-offer.',
+    beat: 'Stay under their price floor and over their vocabulary. A sole trader is not a 4-to-6-week install.' },
   { name: 'ServiceM8', who: 'Job software for small trades, with an automatic on-the-way text', href: 'https://www.servicem8.com/features-communication',
     their: 'Already where the trade runs the day. The text sends itself. Customer zero uses it.',
     ours: 'The whole job on one card. The two-way question. The wallet. The connector is built.',
@@ -353,6 +358,9 @@ export const FACTS_TABLE = [
   { figure: '£50 / £20', what: 'Ofwat GSS per missed water appointment, England / Wales, from July 2025', source: 'Consumer Council for Water', href: 'https://www.ccw.org.uk/faq/what-standards-are-guaranteed-by-water-and-sewerage-companies/', kind: 'fact' },
   { figure: '£20 to £50', what: 'Housing Ombudsman awards per missed repair appointment', source: 'Ombudsman decisions 2023 to 2024', href: 'https://www.housing-ombudsman.org.uk/decisions/london-borough-of-tower-hamlets-202419479/', kind: 'fact' },
   { figure: '$6.2m', what: 'Descartes paid for Localz, April 2023', source: 'Descartes press release', href: 'https://www.descartes.com/resources/news/descartes-acquires-localz', kind: 'fact' },
+  { figure: '2 hours', what: 'InPost home-delivery window, texted on the day once the driver has started the route', source: 'InPost help centre and four texts to the owner\'s phone, Aug to Oct 2026', href: 'https://inpost.co.uk/help/can-i-get-a-delivery-time-window', kind: 'fact' },
+  { figure: '~$15 a seat a month', what: 'Glympse PRO, the one small-business tracker with a status vocabulary beyond the drive', source: 'TrustRadius listing', href: 'https://tr-web.dev.trustradius.com/compare-products/glympse-pro-vs-localz', kind: 'fact' },
+  { figure: '16 Sept 2026', what: 'Rated People entered liquidation; Checkatrade bought the brand the next day', source: 'MyJobQuote', href: 'https://www.myjobquote.co.uk/blog/rated-people-acquired-by-checkatrade', kind: 'fact' },
   { figure: PLAN_META.liveSince, what: 'Live on getturnup.com', source: 'This repository', href: PLAN_META.repoUrl, kind: 'fact' },
   { figure: `${ROADMAP_COUNTS.live}`, what: 'Roadmap items live today', source: 'src/lib/roadmap.js', href: PLAN_META.repoUrl, kind: 'fact' },
   { figure: `${ROADMAP_COUNTS.ready}`, what: 'Built, waiting on a key or an account', source: 'src/lib/roadmap.js', href: PLAN_META.repoUrl, kind: 'fact' },

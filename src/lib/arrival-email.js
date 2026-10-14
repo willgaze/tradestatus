@@ -48,8 +48,13 @@ const CARRIERS = [
     ref: [/\b(H[0-9A-Z]{15,19})\b/, /\b(\d{16})\b/], track: (r) => `https://www.evri.com/track/parcel/${r}` },
   { id: 'dpd', name: 'DPD', domains: [/(^|\.)dpd\.co\.uk$/i, /(^|\.)dpdgroup\.co\.uk$/i],
     ref: [/\b(\d{14})\b/], track: (r) => `https://track.dpd.co.uk/search?reference=${r}` },
+  // Yodel merged into InPost on 17 July 2026; a yodel.co.uk tracking link now
+  // 302s to this InPost address (checked 14 Oct 2026). The email may still come
+  // from either domain, so both are matched and both land on the same page.
+  { id: 'inpost', name: 'InPost', domains: [/(^|\.)inpost\.co\.uk$/i],
+    ref: [/\b(JJD\d{15,18})\b/, /\b([A-Z0-9]{10,16})\b/], track: (r) => `https://inpost.co.uk/tracking/result?parcel_code=${r}` },
   { id: 'yodel', name: 'Yodel', domains: [/(^|\.)yodel\.co\.uk$/i],
-    ref: [/\b(JJD\d{15,18})\b/, /\b([A-Z0-9]{10,16})\b/], track: (r) => `https://www.yodel.co.uk/track/${r}` },
+    ref: [/\b(JJD\d{15,18})\b/, /\b([A-Z0-9]{10,16})\b/], track: (r) => `https://inpost.co.uk/tracking/result?parcel_code=${r}` },
   { id: 'dhl', name: 'DHL', domains: [/(^|\.)dhl\.(com|co\.uk|de)$/i],
     ref: [/\b(\d{10,12})\b/], track: (r) => `https://www.dhl.com/gb-en/home/tracking.html?tracking-id=${r}` },
   { id: 'ups', name: 'UPS', domains: [/(^|\.)ups\.com$/i],
@@ -173,12 +178,16 @@ function guessYear(month, day, now) {
   return asThisYear < now.getTime() - 60 * 24 * 3600 * 1000 ? y + 1 : y
 }
 
-/** "between 1pm and 2pm", "13:00 - 14:00", "1-2pm" */
+/** "between 1pm and 2pm", "13:00 - 14:00", "1-2pm", and InPost's "ETA: 17:00-19:00" */
 export function statedWindow(text) {
   const s = String(text || '')
   const m =
     s.match(/\bbetween\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:and|-|–|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i) ||
-    s.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-|–|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i)
+    s.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(?:-|–|to)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i) ||
+    // Twenty-four hour clock on both sides and no am/pm at all, which is how a
+    // carrier's routing engine writes it. The empty groups keep the indices
+    // the same as the two patterns above.
+    s.match(/\b(\d{1,2}):(\d{2})()\s*(?:-|–|to)\s*(\d{1,2}):(\d{2})()\b/)
   if (!m) return null
   const h = (hh, mm, ap) => {
     let n = Number(hh)
