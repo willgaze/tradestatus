@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.54.0'
-export const BUILD_DATE = '2026-10-13'
+export const VERSION = '1.55.0'
+export const BUILD_DATE = '2026-10-14'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 36
+export const THEME_INDEX = 37
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,12 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.55.0', date: '2026-10-14', notes: [
+    'Turn on forwarding says where it has got to, and checks itself every twenty seconds. Switched on here, the domain is on Cloudflare, mail points at Cloudflare, something has arrived \u2014 each one asked of the internet rather than assumed, so setting this up stops being four things done blind in four different websites.',
+    'Asked of two DNS-over-HTTPS resolvers, not the server\u2019s own, which in the container this was written in answered ENODATA for records that plainly exist. A step somebody HAS done must never be drawn with a cross because a lookup failed, so unknown is its own state and draws the same empty circle as not-yet.',
+    'Something has arrived is a demonstration, not a claim: it counts what actually reached the letterbox and says what became of the last one \u2014 filed as OUT_FOR_DELIVERY, not an arrival, or arrived but no card address in it. Those are three different problems with three different fixes, and before this they all looked like silence.',
+    'The nameserver half is written out as a Cowork job in docs/cowork-nameservers.md, per the standing rule that clicking through a console is a paste, not a step list.',
+  ] },
   { version: '1.54.0', date: '2026-10-13', notes: [
     'Paused says when you expect to be back. Tap Paused and the card asks: 30 min, 1 hour, 2 hours, after lunch, later today, tomorrow, another day. The customer\'s page reads Paused at 10:40 and Sam says: back in about an hour, said at 10:40 — your words, with the time you said them, never a time the product worked out. Once the hour has gone it says that was 11:40, still paused, taking longer than they thought, rather than keep promising.',
     'One tap goes to the four places about 30 minutes late already goes: the card, a push to the customer, the record, and the ServiceM8 diary. Leaving Paused clears it. Tomorrow and another day carry no clock time at all; the hours for that come under When suits you? like any other window.',

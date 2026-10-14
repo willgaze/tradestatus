@@ -38,21 +38,61 @@ function Copy({ value, label, wide }) {
   )
 }
 
+/**
+ * One line of the checklist.
+ *
+ * Three states and not two: **unknown is not the same as no.** A lookup that
+ * could not be made must never draw a cross beside a step somebody has
+ * actually done — that sends them back to undo work that was right.
+ */
+function Step({ done, children, note }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <span className="mt-[3px] shrink-0"
+            style={{ color: done === true ? 'var(--stage-done)' : 'var(--label-3)' }}>
+        {done === true
+          ? <TickIcon size={16} />
+          : <span className="block h-4 w-4 rounded-full" style={{ boxShadow: 'inset 0 0 0 1.5px currentColor' }} />}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[15px]" style={{ color: done === true ? 'var(--label-1)' : 'var(--label-2)' }}>
+          {children}
+        </span>
+        {note && <span className="block text-[13px]" style={{ color: 'var(--label-3)' }}>{note}</span>}
+      </span>
+    </li>
+  )
+}
+
 export default function InboundSetup() {
   const [state, setState] = useState('checking')
   const [info, setInfo] = useState(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
+  const [progress, setProgress] = useState(null)
 
-  const read = useCallback(async () => {
+  const read = useCallback(async (withProgress) => {
     try {
-      const r = await fetch('/api/dashboard/inbound', { cache: 'no-store' })
+      const r = await fetch(`/api/dashboard/inbound${withProgress ? '?progress=1' : ''}`, { cache: 'no-store' })
       const d = await r.json()
       setInfo(d)
       setState(d.configured ? 'on' : 'off')
+      if (withProgress) setProgress({ dns: d.dns, seen: d.seen })
     } catch { setState('off') }
   }, [])
-  useEffect(() => { read() }, [read])
+
+  useEffect(() => { read(false) }, [read])
+
+  // Once it is switched on, keep asking where it has got to. A DNS change and
+  // a first email both land while somebody is looking at this page, and the
+  // whole point is that they see it happen rather than being told it should
+  // have happened.
+  useEffect(() => {
+    if (state !== 'on') return undefined
+    read(true)
+    const t = setInterval(() => read(true), 20000)
+    return () => clearInterval(t)
+  }, [state, read])
 
   const switchOn = async () => {
     setBusy(true); setErr('')
@@ -104,6 +144,34 @@ export default function InboundSetup() {
 
         {state === 'on' && info?.worker && (
           <>
+            {progress && (
+              <div className="r-inner mb-4 p-3.5" style={{ background: 'color-mix(in srgb, var(--mts-accent) 6%, transparent)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--label-3)' }}>
+                  Where it has got to
+                </p>
+                <ul className="mt-2 grid gap-2">
+                  <Step done>Switched on here</Step>
+                  <Step done={progress.dns?.onCloudflare}
+                        note={progress.dns?.onCloudflare === false
+                          ? `Still on ${(progress.dns.nameservers || []).join(', ') || 'the old nameservers'} \u2014 the Hostinger half of step 1`
+                          : progress.dns?.onCloudflare === null ? 'Could not check just now' : null}>
+                    The domain is on Cloudflare
+                  </Step>
+                  <Step done={progress.dns?.mailRouted}
+                        note={progress.dns?.mailRouted === false ? 'No mail records on the subdomain yet \u2014 step 2' : null}>
+                    Mail for {info.host} points at Cloudflare
+                  </Step>
+                  <Step done={Boolean(progress.seen?.at)}
+                        note={progress.seen?.at
+                          ? `${progress.seen.count} so far, last one ${progress.seen.result}`
+                          : 'Nothing has reached it yet'}>
+                    Something has arrived
+                  </Step>
+                </ul>
+                <p className="mt-2.5 text-[12px]">Checks itself every 20 seconds.</p>
+              </div>
+            )}
+
             <p>
               <b>Done on this side.</b> Two things left, both inside Cloudflare, both in a browser.
               Do them on a quiet evening — step 1 moves the website&apos;s DNS and is the only
@@ -125,8 +193,16 @@ export default function InboundSetup() {
                   Domains → {bare} → <b>Change nameservers</b>, and paste the two Cloudflare gives you.
                 </p>
                 <p className="mt-1.5 text-[13px]">
-                  <b>You will see:</b> Cloudflare says <b>Active</b>, usually within 15 minutes.
+                  <b>You will see:</b> Cloudflare says <b>Active</b>, usually within 15 minutes,
+                  and the tick above appears on its own.
                   Check <a href={`https://www.${bare}`} target="_blank" rel="noreferrer">the website</a> still loads.
+                </p>
+                {/* Clicking through two consoles is a Cowork job, not a step
+                    list — standing rule 3. The whole prompt is in the repo so
+                    it can be pasted in one go rather than followed tap by tap. */}
+                <p className="mt-1.5 text-[13px]">
+                  Rather paste one job into Cowork on the Mac than tap through it?
+                  It is written out in <span className="font-mono">docs/cowork-nameservers.md</span>.
                 </p>
               </li>
 

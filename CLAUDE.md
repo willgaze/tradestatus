@@ -786,6 +786,34 @@ What is left cannot be deleted by anybody: a Cloudflare account is an account
 somebody has to own, and a nameserver change is a domain somebody has to prove
 they control. There are no Cloudflare tools in a Claude session — checked, not
 assumed — and Vercel's connector is still read-only for environment variables.
+The nameserver half is written out as a Cowork job in
+`docs/cowork-nameservers.md`, per the standing rule about consoles.
+
+**The panel says where it has got to, and asks the internet rather than the
+owner.** `letterboxDns()` in `src/lib/dns-check.js` resolves the apex's NS and
+the inbound host's MX; `/api/dashboard/inbound?progress=1` returns that beside
+what has actually reached the letterbox, and the checklist refreshes every
+twenty seconds. It exists because the owner had to ask a Claude session to run
+a DNS query for him to find out whether his own setup had worked.
+
+Two rules in it, both learned the same evening:
+
+- **Asked over DNS-over-HTTPS, from two resolvers, never the local one.** The
+  container this was written in answered `ENODATA` for every record, including
+  ones that plainly exist. A serverless resolver may be no better.
+- **Unknown is its own state and draws the same empty circle as not-yet.** A
+  lookup that could not be made must never put a cross beside a step somebody
+  has actually done, because that sends them back to undo correct work. And
+  DNS is slow: a nameserver change read as "not done" fifteen minutes after it
+  was made read as done shortly after — **a stale lookup is not evidence, and
+  saying so to the owner was wrong.**
+
+**`seenCount`/`lastSeenResult` make the last line a demonstration, not a
+claim.** It says *filed as OUT_FOR_DELIVERY*, or *not an arrival*, or *arrived
+but no card address in it* — three different problems with three different
+fixes, which all look like silence otherwise. `noteInboundSeen()` is
+fire-and-forget from the inbound route for the usual reason: a mail provider
+is waiting on that response and retries a slow one.
 
 Still to do: let a household make a card themselves rather than being given
 one, and a way to connect a source other than forwarding (Gmail's
