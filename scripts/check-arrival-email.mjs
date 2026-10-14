@@ -28,6 +28,11 @@ const CASES = [
       text: 'Your parcel 12345678901234 will be delivered between 1pm and 2pm today.' },
     want: { carrier: 'DPD', stage: 'OUT_FOR_DELIVERY', reference: '12345678901234', hasWindow: true } },
 
+  { name: 'InPost, a two hour window on the day',
+    email: { from: 'InPost <no-reply@inpost.co.uk>', subject: 'Your parcel is out for delivery today',
+      text: 'Parcel JJD0002234062896206 ETA: 17:00-19:00 today. Not going to be in? Tap to update your delivery preferences.' },
+    want: { carrier: 'InPost', stage: 'OUT_FOR_DELIVERY', reference: 'JJD0002234062896206', hasWindow: true } },
+
   { name: 'Missed delivery',
     email: { from: 'Yodel <noreply@yodel.co.uk>', subject: 'Sorry we missed you',
       text: 'Sorry we missed you today. A card was left.' },
