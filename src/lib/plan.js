@@ -131,11 +131,11 @@ export const PRODUCT = {
   ],
   never: [
     { label: 'No arrival time promised' },
+    { label: 'No button that does nothing', note: 'a row renders only when it works; see the InPost research' },
     { label: 'No live GPS tracking' },
     { label: 'No customer app to install' },
     { label: 'No customer account, ever' },
     { label: 'No logos of bodies we follow' },
-    { label: 'No row that cannot do what it says', note: 'push, what3words, forwarding and the box stay hidden until they work' },
     { label: 'No job management, no invoice', note: 'ServiceM8 keeps the job' },
     { label: 'No money held, ever', note: 'pay to book later; escrow only through a partner' },
   ],

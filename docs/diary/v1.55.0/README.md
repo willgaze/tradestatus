@@ -2,7 +2,60 @@
 
 **2026-10-14** · background `#f2f9f9` · accent `#1f6f72`
 
-- The business plan reads the app as it is tonight. The household card was live for two days and the plan did not mention it: it is now on the Product page, in the flow diagram, in the status table and in moat 1, which moves from 55 to 70 per cent with a card per address live and a household making its own card as the thing still missing. Push is green, not amber. ServiceM8 is described as what it does — reads every booking, texts the link, follows a move — and as the first tap, because the thirty days start with it; the letterbox is the fourth tap and secondary, as decided on 11 Oct.
-- Rivals and alternatives take the 14 Oct research: ServiceM8's own Track My Arrival, a map that goes dark when navigation ends; Shop, which needs a tracking number before it will read an email; both sourced on the Facts page. Two risks added, both about where a household card's email comes from. One decision recorded in the owner's words: the household card waits for the pilot. Releases this week is a number the plan counts from the changelog, so it cannot go stale.
+- Turn on forwarding says where it has got to, and checks itself every twenty seconds. Switched on here, the domain is on Cloudflare, mail points at Cloudflare, something has arrived — each one asked of the internet rather than assumed, so setting this up stops being four things done blind in four different websites.
+- Asked of two DNS-over-HTTPS resolvers, not the server’s own, which in the container this was written in answered ENODATA for records that plainly exist. A step somebody HAS done must never be drawn with a cross because a lookup failed, so unknown is its own state and draws the same empty circle as not-yet.
+- Something has arrived is a demonstration, not a claim: it counts what actually reached the letterbox and says what became of the last one — filed as OUT_FOR_DELIVERY, not an arrival, or arrived but no card address in it. Those are three different problems with three different fixes, and before this they all looked like silence.
+- The nameserver half is written out as a Cowork job in docs/cowork-nameservers.md, per the standing rule that clicking through a console is a paste, not a step list.
 
-Not captured this time: a plan-only build from a session without a browser. The app's screens are unchanged from v1.54.0; the plan pages are the change, and `/plan` needs an operator session to photograph.
+
+### wallet-in-stack
+
+![wallet-in-stack](./wallet-in-stack.webp)
+
+### wallet-opened
+
+![wallet-opened](./wallet-opened.webp)
+
+### wallet-alone
+
+![wallet-alone](./wallet-alone.webp)
+
+### customer-light
+
+![customer-light](./customer-light.webp)
+
+### customer-dark
+
+![customer-dark](./customer-dark.webp)
+
+### customer-booked
+
+![customer-booked](./customer-booked.webp)
+
+### dashboard
+
+![dashboard](./dashboard.webp)
+
+### dashboard-setup
+
+![dashboard-setup](./dashboard-setup.webp)
+
+### login
+
+![login](./login.webp)
+
+### homepage
+
+![homepage](./homepage.webp)
+
+### homepage-dark
+
+![homepage-dark](./homepage-dark.webp)
+
+### household
+
+![household](./household.webp)
+
+### household-dark
+
+![household-dark](./household-dark.webp)

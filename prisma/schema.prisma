@@ -511,6 +511,18 @@ model InboundSecret {
   id        String   @id @default("singleton")
   token     String   @unique
   host      String?
+
+  /// The last time ANYTHING reached the inbound route, and what became of it.
+  ///
+  /// Setting this up is four things in a row done in four different websites,
+  /// and until now the only way to know whether it had worked was to ask
+  /// somebody to run a DNS query for you. "Something arrived 30 seconds ago
+  /// and it was filed" is a demonstration; "it should be working now" is not,
+  /// and the gap between them is where people give up.
+  lastSeenAt     DateTime?
+  lastSeenResult String?
+  seenCount      Int       @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

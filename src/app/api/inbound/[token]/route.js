@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { fileEmail } from '@/lib/arrivals'
 import { inboxKeyFrom } from '@/lib/inbox-address'
 import { readRawEmail } from '@/lib/mime'
-import { inboundToken } from '@/lib/inbound-config'
+import { inboundToken, noteInboundSeen } from '@/lib/inbound-config'
 
 /**
  * Where forwarded emails land.
@@ -87,7 +87,10 @@ export async function POST(request, { params }) {
   }
 
   const inboxKey = inboxKeyFrom(envelope.to)
-  if (!inboxKey) return NextResponse.json({ ok: true, filed: false, why: 'no_inbox_in_to' })
+  if (!inboxKey) {
+    noteInboundSeen('arrived, but no card address in it').catch(() => {})
+    return NextResponse.json({ ok: true, filed: false, why: 'no_inbox_in_to' })
+  }
 
   const result = await fileEmail({
     inboxKey,
@@ -96,6 +99,11 @@ export async function POST(request, { params }) {
     text: String(envelope.text || '').slice(0, MAX_TEXT),
     receivedAt: new Date(),
   })
+
+  // Remember that something got here, so the setup panel can show a demonstration
+  // rather than a claim. Un-awaited: a provider is waiting on this response.
+  noteInboundSeen(result.filed ? `filed as ${result.stage}` : (result.why || 'not filed'))
+    .catch(() => {})
 
   // 200 either way: see the note at the top about retry storms.
   return NextResponse.json(result)

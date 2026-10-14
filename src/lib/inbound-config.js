@@ -72,3 +72,27 @@ export async function rotateInboundToken() {
     return true
   } catch { return false }
 }
+
+/**
+ * Remember that something reached the letterbox, and what became of it.
+ *
+ * Fire-and-forget: the inbound route answers a mail provider, and a provider
+ * that gets a slow or failed response retries. Recording the visit must never
+ * be the reason one parcel lands on a card twenty times.
+ */
+export async function noteInboundSeen(result) {
+  try {
+    await prisma.inboundSecret.updateMany({
+      where: { id: ID },
+      data: { lastSeenAt: new Date(), lastSeenResult: String(result || '').slice(0, 60), seenCount: { increment: 1 } },
+    })
+  } catch { /* the row may not exist: the token can come from the environment */ }
+}
+
+/** What the setup panel needs to say where it is up to. */
+export async function inboundSeen() {
+  try {
+    const row = await prisma.inboundSecret.findUnique({ where: { id: ID } })
+    return row ? { at: row.lastSeenAt, result: row.lastSeenResult, count: row.seenCount } : null
+  } catch { return null }
+}

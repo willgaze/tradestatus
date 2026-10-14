@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { requireOperator } from '@/lib/operator-auth'
 import { dbReason } from '@/lib/db-errors'
-import { INBOUND_HOST, ensureInboundToken, inboundToken, rotateInboundToken } from '@/lib/inbound-config'
+import { INBOUND_HOST, ensureInboundToken, inboundToken, rotateInboundToken, inboundSeen } from '@/lib/inbound-config'
+import { letterboxDns } from '@/lib/dns-check'
 import { CANONICAL_HOST } from '@/lib/trade'
 
 /**
@@ -60,13 +61,22 @@ const shape = (token) => {
   return { host: INBOUND_HOST, webhookUrl: url, worker: workerSource(url) }
 }
 
-export async function GET() {
+export async function GET(request) {
   const operator = await requireOperator()
   if (operator !== true) return NextResponse.json({ error: operator.error }, { status: operator.status })
   const token = await inboundToken()
+
+  // The panel asks for progress separately, because a DNS lookup over the
+  // network should not sit in front of the panel drawing itself.
+  const wantProgress = new URL(request.url).searchParams.get('progress') === '1'
+  const progress = wantProgress
+    ? { dns: await letterboxDns(INBOUND_HOST), seen: await inboundSeen() }
+    : null
+
   // The token itself is only ever handed to the operator, who is behind a
   // password and is the person who has to paste it into Cloudflare.
-  return NextResponse.json(token ? { configured: true, ...shape(token) } : { configured: false, host: INBOUND_HOST })
+  const base = token ? { configured: true, ...shape(token) } : { configured: false, host: INBOUND_HOST }
+  return NextResponse.json(progress ? { ...base, ...progress } : base)
 }
 
 export async function POST() {
