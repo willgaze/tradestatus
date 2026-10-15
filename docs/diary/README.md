@@ -20,6 +20,7 @@ the one thing this exists for.
 
 | Version | Date | Theme |
 |---|---|---|
+| [v1.55.0](./v1.55.0/) | 2026-10-14 | Teal — the native shell: your job on your lock screen, written and waiting on Apple |
 | [v1.54.0](./v1.54.0/) | 2026-10-13 | Indigo — Paused says when you expect to be back, in your words with the time you said them |
 | [v1.53.0](./v1.53.0/) | 2026-10-13 | Plum — turning forwarding on is one button and two Cloudflare steps, not four with a laptop |
 | [v1.52.0](./v1.52.0/) | 2026-10-13 | Slate — a revised promise is shown as revised, with the original kept; every change a line in the record |

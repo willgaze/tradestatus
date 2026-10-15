@@ -16,8 +16,8 @@
  *
  * Adding one is welcome. Inventing one at runtime is not.
  */
-export const VERSION = '1.54.0'
-export const BUILD_DATE = '2026-10-13'
+export const VERSION = '1.55.0'
+export const BUILD_DATE = '2026-10-14'
 
 export const THEMES = [
   { id: 'harbour',  name: 'Harbour',   bg: '#f4f7fb', bgDark: '#0b1119', accent: '#255a95', deep: '#122a46' },
@@ -39,7 +39,7 @@ export const THEMES = [
 // those are fixed in globals.css, because they mean something, and a meaning
 // that changes colour every night is not a meaning. See the stage tint block
 // in src/app/globals.css.
-export const THEME_INDEX = 36
+export const THEME_INDEX = 37
 
 export const theme = () => THEMES[THEME_INDEX % THEMES.length]
 
@@ -48,6 +48,10 @@ export const theme = () => THEMES[THEME_INDEX % THEMES.length]
  * by the person who asked for it, not by a release manager.
  */
 export const CHANGELOG = [
+  { version: '1.55.0', date: '2026-10-14', notes: [
+    'Your job on your lock screen, written and waiting on Apple. native/ holds the iOS app: the dashboard in a native window, and the job you are on as a Live Activity — stage, the time it was tapped, the note, and On site / Paused / Back on site / Job done buttons on the lock screen and in the Dynamic Island. A button is a real tap: same record, same push to the customer, same ServiceM8 diary line. Nothing on it predicts; it reports, like the card.',
+    'The dashboard already drives it: inside the app every load syncs the first job you are on to the lock screen and ends it at Job done; in a browser it is a no-op. The buttons sign in with a bearer token the app fetches from the dashboard, so the operator check now accepts a token as well as the cookie. It compiles on a Mac or the macOS workflow the day the Apple Developer membership goes active.',
+  ] },
   { version: '1.54.0', date: '2026-10-13', notes: [
     'Paused says when you expect to be back. Tap Paused and the card asks: 30 min, 1 hour, 2 hours, after lunch, later today, tomorrow, another day. The customer\'s page reads Paused at 10:40 and Sam says: back in about an hour, said at 10:40 — your words, with the time you said them, never a time the product worked out. Once the hour has gone it says that was 11:40, still paused, taking longer than they thought, rather than keep promising.',
     'One tap goes to the four places about 30 minutes late already goes: the card, a push to the customer, the record, and the ServiceM8 diary. Leaving Paused clears it. Tomorrow and another day carry no clock time at all; the hours for that come under When suits you? like any other window.',
